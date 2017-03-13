@@ -1,2 +1,3 @@
-# jmeter-plugins-manager
-Plugins Manager for Apache JMeter
+# Plugins Manager for Apache JMeter
+
+[Official Website](https://jmeter-plugins.org/wiki/PluginsManager/)
