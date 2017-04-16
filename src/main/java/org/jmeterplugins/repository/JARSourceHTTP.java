@@ -229,6 +229,9 @@ public class JARSourceHTTP extends JARSource {
             String filename;
             if (cd != null) {
                 filename = cd.getValue().split(";")[1].split("=")[1];
+                if (filename.length() > 2 && filename.startsWith("\"") && filename.endsWith("\"")) {
+                    filename = filename.substring(1, filename.length() - 1);
+                }
             } else {
                 HttpUriRequest currentReq = (HttpUriRequest) context.getAttribute(ExecutionContext.HTTP_REQUEST);
                 HttpHost currentHost = (HttpHost) context.getAttribute(ExecutionContext.HTTP_TARGET_HOST);
