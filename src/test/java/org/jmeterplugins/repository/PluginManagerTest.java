@@ -77,6 +77,24 @@ public class PluginManagerTest {
         }
     }
 
+    @Test
+    public void testRetryDownload() throws Throwable {
+        String addr = JMeterUtils.getPropDefault("jpgc.repo.address", "https://jmeter-plugins.org/repo/");
+        JMeterUtils.setProperty("jpgc.repo.address", "http://httpstat.us/500");
+        PluginManager mgr = new PluginManager();
+        long start = System.currentTimeMillis();
+        try {
+            mgr.load();
+            fail();
+        } catch (IOException e) {
+            assertEquals("Repository responded with wrong status code: 500", e.getMessage());
+
+        } finally {
+            JMeterUtils.setProperty("jpgc.repo.address", addr);
+        }
+        assertTrue(5000 < (System.currentTimeMillis() - start));
+    }
+
     private class PluginManagerEmul extends PluginManager {
         public PluginManagerEmul(Plugin[] plugins) {
             for (Plugin p : plugins) {
