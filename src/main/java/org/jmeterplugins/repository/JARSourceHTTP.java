@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -32,6 +33,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.NTCredentials;
+import org.apache.http.client.ServiceUnavailableRetryStrategy;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -40,21 +42,27 @@ import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.AbstractHttpClient;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.apache.jmeter.JMeter;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.jmeterplugins.repository.http.HttpRetryStrategy;
+
 
 public class JARSourceHTTP extends JARSource {
     private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final int RETRY_COUNT = 1;
     private final String[] addresses;
     protected AbstractHttpClient httpClient = new DefaultHttpClient();
     private int timeout = 1000; // don't delay JMeter startup for more than 1 second
+    private final ServiceUnavailableRetryStrategy retryStrategy = new HttpRetryStrategy(RETRY_COUNT, 5000);
 
     public JARSourceHTTP(String jmProp) {
         this.addresses = jmProp.split("[;]");
@@ -90,6 +98,7 @@ public class JARSourceHTTP extends JARSource {
                 client.getCredentialsProvider().setCredentials(authscope, credentials);
             }
         }
+        client.setHttpRequestRetryHandler(new DefaultHttpRequestRetryHandler(RETRY_COUNT, true));
         return client;
     }
 
@@ -102,7 +111,7 @@ public class JARSourceHTTP extends JARSource {
         requestParams.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, timeout);
         requestParams.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, timeout);
 
-        HttpResponse result = httpClient.execute(get);
+        HttpResponse result = execute(get);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         HttpEntity entity = result.getEntity();
         try {
@@ -202,7 +211,7 @@ public class JARSourceHTTP extends JARSource {
         HttpGet httpget = new HttpGet(url);
 
         HttpContext context = new BasicHttpContext();
-        HttpResponse response = httpClient.execute(httpget, context);
+        HttpResponse response = execute(httpget, context);
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
             throw new IOException(response.getStatusLine().toString());
         }
@@ -261,7 +270,7 @@ public class JARSourceHTTP extends JARSource {
                 requestParams.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 1000);
 
                 log.debug("Requesting " + uri);
-                httpClient.execute(post);
+                execute(post);
             } finally {
                 if (post != null) {
                     try {
@@ -286,4 +295,38 @@ public class JARSourceHTTP extends JARSource {
 
         return count;
     }
+
+
+    public HttpResponse execute(HttpUriRequest request) throws IOException {
+        return execute(request, null);
+    }
+
+    public HttpResponse execute(HttpUriRequest request, HttpContext context) throws IOException {
+        for (int c = 1;; c++) {
+            HttpResponse response = httpClient.execute(request, context);
+            try {
+                if (retryStrategy.retryRequest(response, c, context)) {
+                    EntityUtils.consume(response.getEntity());
+                    long nextInterval = retryStrategy.getRetryInterval();
+                    try {
+                        log.debug("Wait for " + nextInterval);
+                        Thread.sleep(nextInterval);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new InterruptedIOException();
+                    }
+                } else {
+                    return response;
+                }
+            } catch (RuntimeException ex) {
+                try {
+                    EntityUtils.consume(response.getEntity());
+                } catch (IOException ioex) {
+                    log.warn("I/O error consuming response content", ioex);
+                }
+                throw ex;
+            }
+        }
+    }
+
 }
