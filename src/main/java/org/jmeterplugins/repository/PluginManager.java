@@ -385,10 +385,12 @@ public class PluginManager {
         }
     }
 
-    private static String removeJARVersion(String path) {
+    protected static String removeJARVersion(String path) {
         String result = "";
-        for (String ch : path.split("-")) {
-            if (!ch.isEmpty() && !Character.isDigit(ch.charAt(0))) {
+        String data[] = path.split("-");
+        for (int i = 0; i < data.length; i++) {
+            String ch = data[i];
+            if (!ch.isEmpty() && (!Character.isDigit(ch.charAt(0)) || (i < data.length - 1))) {
                 result  += ch;
             }
         }

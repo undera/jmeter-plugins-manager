@@ -114,4 +114,14 @@ public class PluginManagerTest {
             System.out.println(s);
         }
     }
+
+    @Test
+    public void testRemoveVerisonFromJAR() throws Exception {
+        assertEquals("Apache_core", PluginManager.removeJARVersion("Apache_core-5.2.5"));
+        assertEquals("jmeter1.1api", PluginManager.removeJARVersion("jmeter-1.1-api-2.0.0"));
+        assertEquals("junit", PluginManager.removeJARVersion("junit"));
+        assertEquals("java", PluginManager.removeJARVersion("java-1.7"));
+        assertEquals("testapi", PluginManager.removeJARVersion("test-api"));
+        assertEquals("commonsjexl", PluginManager.removeJARVersion("commons-jexl-1.1"));
+    }
 }
