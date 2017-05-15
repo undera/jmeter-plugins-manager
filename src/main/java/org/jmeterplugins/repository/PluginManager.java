@@ -39,6 +39,7 @@ public class PluginManager {
         if (allPlugins.size() > 0) {
             return;
         }
+        detectJARConflicts();
 
         JSON json = jarSource.getRepo();
 
@@ -363,4 +364,36 @@ public class PluginManager {
                 "There is nothing to update.";
     }
 
+    public static void detectJARConflicts() {
+        String[] paths = System.getProperty("java.class.path").split(File.pathSeparator);
+        final Map<String, String> jarNames = new HashMap<>();
+
+        for (String path : paths) {
+            String name = path;
+            int start = path.lastIndexOf(File.separator);
+            if (start > 0) {
+                name = name.substring(start + 1);
+            }
+            if (path.endsWith(".jar")) {
+                name = name.substring(0, name.length() - 4);
+            }
+            name = removeJARVersion(name);
+            if (jarNames.containsKey(name)) {
+                log.warn("Found JAR conflict: " + path +  " and " + jarNames.get(name));
+            }
+            jarNames.put(name, path);
+        }
+    }
+
+    protected static String removeJARVersion(String path) {
+        String result = "";
+        String data[] = path.split("-");
+        for (int i = 0; i < data.length; i++) {
+            String ch = data[i];
+            if (!ch.isEmpty() && (!Character.isDigit(ch.charAt(0)) || (i < data.length - 1))) {
+                result  += ch;
+            }
+        }
+        return  result;
+    }
 }
