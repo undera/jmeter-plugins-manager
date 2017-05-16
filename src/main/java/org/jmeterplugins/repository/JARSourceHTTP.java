@@ -195,7 +195,46 @@ public class JARSourceHTTP extends JARSource {
             log.warn("Failed to get network addresses", e);
         }
 
-        return DigestUtils.md5Hex(str);
+        return getPlatformName() + '-' + DigestUtils.md5Hex(str);
+    }
+
+    protected String getPlatformName() {
+        if (containsEnvironment("JENKINS_HOME")) {
+            return "jenkins";
+        } else if (containsEnvironment("TRAVIS")) {
+            return "travis";
+        } else if (containsEnvironmentPrefix("bamboo")) {
+            return "bamboo";
+        } else if (containsEnvironment("TEAMCITY_VERSION")) {
+            return "teamcity";
+        } else if (containsEnvironment("DOCKER_HOST")){
+            return "docker";
+        } else if (containsEnvironmentPrefix("AWS_")) {
+            return "amazon";
+        } else if (containsEnvironment("GOOGLE_APPLICATION_CREDENTIALS") || containsEnvironment("CLOUDSDK_CONFIG")) {
+            return "google_cloud";
+        } else if (containsEnvironment("WEBJOBS_NAME")) {
+            return "azure";
+        } else {
+            return getOSName();
+        }
+    }
+
+    private boolean containsEnvironment(String key) {
+        return System.getenv().containsKey(key);
+    }
+
+    private boolean containsEnvironmentPrefix(String prefix) {
+        for (String key : System.getenv().keySet()) {
+            if (key.toLowerCase().startsWith(prefix.toLowerCase())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private String getOSName() {
+        return System.getProperty("os.name").toLowerCase().replace(' ', '_');
     }
 
     @Override
