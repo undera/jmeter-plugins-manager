@@ -36,10 +36,11 @@ public class PluginManager {
     }
 
     public void load() throws Throwable {
+        detectJARConflicts();
+
         if (allPlugins.size() > 0) {
             return;
         }
-        detectJARConflicts();
 
         JSON json = jarSource.getRepo();
 
