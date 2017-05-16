@@ -203,6 +203,10 @@ public class JARSourceHTTP extends JARSource {
             return "jenkins";
         } else if (containsEnvironment("TRAVIS")) {
             return "travis";
+        } else if (containsEnvironmentPrefix("bamboo")) {
+            return "bamboo";
+        } else if (containsEnvironment("TEAMCITY_VERSION")) {
+            return "teamcity";
         } else if (containsEnvironment("DOCKER_HOST")){
             return "docker";
         } else if (containsEnvironmentPrefix("AWS_")) {
@@ -211,10 +215,6 @@ public class JARSourceHTTP extends JARSource {
             return "google_cloud";
         } else if (containsEnvironment("WEBJOBS_NAME")) {
             return "azure";
-        } else if (containsEnvironmentPrefix("bamboo")) {
-            return "bamboo";
-        } else if (containsEnvironment("TEAMCITY_VERSION")) {
-            return "teamcity";
         } else {
             return getOSName();
         }
