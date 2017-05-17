@@ -157,10 +157,7 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
     @Override
     public void actionPerformed(ActionEvent e) {
         statusLabel.setForeground(Color.BLACK);
-        installed.setEnabled(false);
-        available.setEnabled(false);
-        upgrades.setEnabled(false);
-        apply.setEnabled(false);
+        enableComponents(false);
         new Thread() {
             @Override
             public void run() {
@@ -183,10 +180,7 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
                     manager.applyChanges(statusChanged);
                     ActionRouter.getInstance().actionPerformed(new ActionEvent(this, 0, ActionNames.EXIT));
                 } catch (DownloadException ex) {
-                    installed.setEnabled(true);
-                    available.setEnabled(true);
-                    upgrades.setEnabled(true);
-                    apply.setEnabled(true);
+                    enableComponents(true);
                     statusLabel.setForeground(Color.RED);
                     statusChanged.notify("Failed to apply changes: " + ex.getMessage());
                 } catch (Exception ex) {
@@ -196,6 +190,13 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
                 }
             }
         }.start();
+    }
+
+    private void enableComponents(boolean enable) {
+        installed.setEnabled(enable);
+        available.setEnabled(enable);
+        upgrades.setEnabled(enable);
+        apply.setEnabled(enable);
     }
 
     @Override
