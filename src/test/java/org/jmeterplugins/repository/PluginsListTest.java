@@ -47,7 +47,7 @@ public class PluginsListTest {
     }
 
 
-    private class PluginsListExt extends PluginsList {
+    public static class PluginsListExt extends PluginsList {
         public PluginsListExt(Set<Plugin> plugins, ChangeListener checkboxNotifier, GenericCallback<Object> dialogRefresh) {
             super(plugins, checkboxNotifier, dialogRefresh);
         }

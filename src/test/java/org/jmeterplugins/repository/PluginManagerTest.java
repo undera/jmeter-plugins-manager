@@ -1,8 +1,11 @@
 package org.jmeterplugins.repository;
 
 import kg.apc.emulators.TestJMeterUtils;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import org.apache.jmeter.engine.JMeterEngine;
 import org.apache.jmeter.util.JMeterUtils;
+import org.jmeterplugins.repository.exception.DownloadException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -74,6 +77,54 @@ public class PluginManagerTest {
             assertTrue(e.getMessage().contains(prefix));
         } finally {
             ifile.setWritable(true);
+        }
+    }
+
+    @Test
+    public void testApplyChanges() throws Exception {
+        String imgPath = "file:///" + new File(".").getAbsolutePath() + "/target/classes/org/jmeterplugins/logo.png";
+        String str = "{\"id\": 0,  \"markerClass\": \"" + PluginsListTest.class.getName() + "\"," +
+                " \"screenshotUrl\": \"" + imgPath + "\", \"name\": 3, \"description\": 4, \"helpUrl\": 5, \"vendor\": 5, \"installerClass\": \"test\", " +
+                "\"versions\" : { \"0.1\" : { \"changes\": \"fix verified exception1\" }," +
+                "\"0.2\" : { \"changes\": \"fix verified exception1\", \"libs\": {\n" +
+                "          \"jpgc-common\": \"http://httpstat.us/500\"\n" +
+                "        }}," +
+                "\"0.3\" : { \"changes\": \"fix verified exception1\", \"downloadUrl\": \"http://httpstat.us/500\" } }}";
+
+        String addr = JMeterUtils.getPropDefault("jpgc.repo.address", "https://jmeter-plugins.org/repo/");
+        try {
+            JMeterUtils.setProperty("jpgc.repo.address", "http://httpstat.us/500");
+
+            Plugin p = Plugin.fromJSON(JSONObject.fromObject(str, new JsonConfig()));
+            PluginManager manager = new PluginManager();
+            manager.allPlugins.put(p, true); // need to install
+            p.setCandidateVersion("0.2");
+
+            try {
+                manager.applyChanges(new GenericCallback<String>() {
+                    @Override
+                    public void notify(String progress) {
+                    }
+                });
+            } catch (DownloadException ex) {
+                assertTrue(ex.getMessage().contains("Failed to download library"));
+            }
+
+            manager = new PluginManager();
+            manager.allPlugins.put(p, true); // need to install
+            p.setCandidateVersion("0.3");
+            try {
+                manager.applyChanges(new GenericCallback<String>() {
+                    @Override
+                    public void notify(String progress) {
+                    }
+                });
+            } catch (DownloadException ex) {
+                assertTrue(ex.getMessage().contains("Failed to download plugin"));
+            }
+
+        } finally {
+            JMeterUtils.setProperty("jpgc.repo.address", addr);
         }
     }
 
