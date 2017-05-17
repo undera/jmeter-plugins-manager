@@ -64,6 +64,7 @@ public class PluginManagerDialogTest {
                 }
             }
             assertTrue(isOk);
+            frame.actionPerformed(null);
         } finally {
             JMeterUtils.setProperty("jpgc.repo.address", addr);
         }
