@@ -46,27 +46,28 @@ public class PluginManagerDialogTest {
 
     @Test
     public void testFailDownload() throws Exception {
-        String addr = JMeterUtils.getPropDefault("jpgc.repo.address", "https://jmeter-plugins.org/repo/");
-        try {
-            JMeterUtils.setProperty("jpgc.repo.address", "http://httpstat.us/500");
-            PluginManager aManager = new PluginManager();
-            PluginManagerDialog frame = new PluginManagerDialog(aManager);
-            frame.componentShown(null);
-            List<JEditorPane> panes = new ArrayList<>();
-            getJEditorPane(frame, panes);
-
-            assertTrue(panes.size() > 0);
-            boolean isOk = false;
-            for (JEditorPane p : panes) {
-                if (p.getText().contains("Failed to download plugins repository.")) {
-                    isOk = true;
-                    break;
+        if (!GraphicsEnvironment.getLocalGraphicsEnvironment().isHeadlessInstance()) {
+            String addr = JMeterUtils.getPropDefault("jpgc.repo.address", "https://jmeter-plugins.org/repo/");
+            try {
+                JMeterUtils.setProperty("jpgc.repo.address", "http://httpstat.us/500");
+                PluginManager aManager = new PluginManager();
+                PluginManagerDialog frame = new PluginManagerDialog(aManager);
+                frame.componentShown(null);
+                List<JEditorPane> panes = new ArrayList<>();
+                getJEditorPane(frame, panes);
+                assertTrue(panes.size() > 0);
+                boolean isOk = false;
+                for (JEditorPane p : panes) {
+                    if (p.getText().contains("Failed to download plugins repository.")) {
+                        isOk = true;
+                        break;
+                    }
                 }
+                assertTrue(isOk);
+                frame.actionPerformed(null);
+            } finally {
+                JMeterUtils.setProperty("jpgc.repo.address", addr);
             }
-            assertTrue(isOk);
-            frame.actionPerformed(null);
-        } finally {
-            JMeterUtils.setProperty("jpgc.repo.address", addr);
         }
     }
 
