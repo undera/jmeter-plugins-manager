@@ -16,6 +16,7 @@ import org.apache.jmeter.engine.JMeterEngine;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.jmeterplugins.repository.exception.DownloadException;
 
 public class PluginManager {
     private static final Logger log = LoggingManager.getLoggerForClass();
@@ -141,7 +142,7 @@ public class PluginManager {
                 String msg = "Failed to download " + entry.getKey();
                 log.error(msg, e);
                 statusChanged.notify(msg);
-                throw new RuntimeException("Failed to download library " + entry.getKey(), e);
+                throw new DownloadException("Failed to download library " + entry.getKey(), e);
             }
         }
 
@@ -152,7 +153,7 @@ public class PluginManager {
                 String msg = "Failed to download " + plugin;
                 log.error(msg, e);
                 statusChanged.notify(msg);
-                throw new RuntimeException("Failed to download plugin " + plugin, e);
+                throw new DownloadException("Failed to download plugin " + plugin, e);
             }
         }
 

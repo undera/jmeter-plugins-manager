@@ -34,6 +34,7 @@ import org.apache.jmeter.gui.action.ActionRouter;
 import org.apache.jorphan.gui.ComponentUtil;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.jmeterplugins.repository.exception.DownloadException;
 
 public class PluginManagerDialog extends JDialog implements ActionListener, ComponentListener, HyperlinkListener {
     /**
@@ -111,6 +112,7 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
         topAndDown.setResizeWeight(.75);
         topAndDown.setDividerSize(5);
         topAndDown.setTopComponent(getTabsPanel());
+
         topAndDown.setBottomComponent(getBottomPanel());
         add(topAndDown, BorderLayout.CENTER);
         statusRefresh.notify(this); // to reflect upgrades
@@ -155,10 +157,7 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
     @Override
     public void actionPerformed(ActionEvent e) {
         statusLabel.setForeground(Color.BLACK);
-        installed.setEnabled(false);
-        available.setEnabled(false);
-        upgrades.setEnabled(false);
-        apply.setEnabled(false);
+        enableComponents(false);
         new Thread() {
             @Override
             public void run() {
@@ -180,6 +179,10 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
                 try {
                     manager.applyChanges(statusChanged);
                     ActionRouter.getInstance().actionPerformed(new ActionEvent(this, 0, ActionNames.EXIT));
+                } catch (DownloadException ex) {
+                    enableComponents(true);
+                    statusLabel.setForeground(Color.RED);
+                    statusChanged.notify("Failed to apply changes: " + ex.getMessage());
                 } catch (Exception ex) {
                     statusLabel.setForeground(Color.RED);
                     statusChanged.notify("Failed to apply changes: " + ex.getMessage());
@@ -187,6 +190,13 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
                 }
             }
         }.start();
+    }
+
+    private void enableComponents(boolean enable) {
+        installed.setEnabled(enable);
+        available.setEnabled(enable);
+        upgrades.setEnabled(enable);
+        apply.setEnabled(enable);
     }
 
     @Override

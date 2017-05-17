@@ -39,16 +39,25 @@ public class PluginsListTest {
 
         p.detectInstalled(null);
         assertEquals(Plugin.VER_STOCK, pluginsList.getCbVersion(pluginsList.getCheckboxItem(p, null)));
+
+        pluginsList.setEnabled(false);
+        assertFalse(pluginsList.getList().isEnabled());
+        assertFalse(pluginsList.getVersion().isEnabled());
+        assertFalse(pluginsList.getList().getModel().getElementAt(0).isEnabled());
     }
 
 
-    private class PluginsListExt extends PluginsList {
+    public static class PluginsListExt extends PluginsList {
         public PluginsListExt(Set<Plugin> plugins, ChangeListener checkboxNotifier, GenericCallback<Object> dialogRefresh) {
             super(plugins, checkboxNotifier, dialogRefresh);
         }
 
         public JList<PluginCheckbox> getList() {
             return list;
+        }
+
+        public JComboBox<String> getVersion() {
+            return version;
         }
     }
 }

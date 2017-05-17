@@ -18,11 +18,20 @@ class PluginCheckbox extends JCheckBox {
     public void setPlugin(Plugin plugin) {
         this.plugin = plugin;
         if (!plugin.canUninstall()) {
-            setEnabled(false);
+            super.setEnabled(false);
         }
     }
 
     public Plugin getPlugin() {
         return plugin;
+    }
+
+    @Override
+    public void setEnabled(boolean b) {
+        if (!plugin.canUninstall()) {
+            super.setEnabled(false);
+        } else {
+            super.setEnabled(b);
+        }
     }
 }

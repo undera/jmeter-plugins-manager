@@ -11,6 +11,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
@@ -187,6 +188,9 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         super.setEnabled(enabled);
         list.setEnabled(enabled);
         version.setEnabled(enabled);
+        for (PluginCheckbox ch : Collections.list(listModel.elements())) {
+            ch.setEnabled(enabled);
+        }
     }
 
     private class VerChoiceChanged implements ItemListener {
