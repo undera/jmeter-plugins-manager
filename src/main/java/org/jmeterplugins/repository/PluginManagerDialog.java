@@ -34,6 +34,7 @@ import org.apache.jmeter.gui.action.ActionRouter;
 import org.apache.jorphan.gui.ComponentUtil;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.jmeterplugins.repository.exception.DownloadException;
 
 public class PluginManagerDialog extends JDialog implements ActionListener, ComponentListener, HyperlinkListener {
     /**
@@ -111,6 +112,7 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
         topAndDown.setResizeWeight(.75);
         topAndDown.setDividerSize(5);
         topAndDown.setTopComponent(getTabsPanel());
+
         topAndDown.setBottomComponent(getBottomPanel());
         add(topAndDown, BorderLayout.CENTER);
         statusRefresh.notify(this); // to reflect upgrades
@@ -180,6 +182,13 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
                 try {
                     manager.applyChanges(statusChanged);
                     ActionRouter.getInstance().actionPerformed(new ActionEvent(this, 0, ActionNames.EXIT));
+                } catch (DownloadException ex) {
+                    installed.setEnabled(true);
+                    available.setEnabled(true);
+                    upgrades.setEnabled(true);
+                    apply.setEnabled(true);
+                    statusLabel.setForeground(Color.RED);
+                    statusChanged.notify("Failed to apply changes: " + ex.getMessage());
                 } catch (Exception ex) {
                     statusLabel.setForeground(Color.RED);
                     statusChanged.notify("Failed to apply changes: " + ex.getMessage());
