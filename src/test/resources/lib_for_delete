@@ -8,16 +8,14 @@
     "vendor": "JMeter-Plugins.org",
     "markerClass": "kg.apc.jmeter.functions.Base64Decode",
     "versions": {
-      "2.0": {
+      "0.1": {
         "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-functions/2.0/jmeter-plugins-functions-2.0.jar",
         "libs": {
-          "lib1>=0.8" : "lib-0.8.jar",
-          "lib2" : "lib2.jar",
-          "lib3>=0.6" : "lib3-0.6.jar",
-          "lib4" : "lib4.jar",
-          "lib7" : "lib7.jar",
-          "lib9_1.0" : "lib9_1.0.jar",
-          "lib10_2.1.0==0.1" : "lib10_2.10-0.1.jar"
+          "cmdrunner>=0.8" : "lib-0.8.jar",
+          "ApacheJMeter_core" : "lib2.jar",
+          "bsf>=0.6" : "lib3-0.6.jar",
+          "commons-codec" : "lib4.jar",
+          "commons-lang3" : "lib7.jar"
         }
       }
     }
@@ -34,12 +32,11 @@
       "0.1": {
         "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-httpraw/0.1/jmeter-plugins-httpraw-0.1.jar",
         "libs": {
-          "lib1" : "lib1.jar",
-          "lib2>=0.8" : "lib2-0.8.jar",
-          "lib3>=0.7" : "lib3-0.7.jar",
-          "lib6==0.5" : "lib6-0.5.jar",
-          "lib8>=0.8" : "lib8-0.8.jar",
-          "lib10_2.1.0" : "lib10_2.1.0.jar"
+          "cmdrunner" : "lib1.jar",
+          "ApacheJMeter_core" : "lib2-0.8.jar",
+          "bsf>=0.7" : "lib3-0.7.jar",
+          "commons-jexl==0.5" : "lib6-0.5.jar",
+          "commons-httpclient>=0.8" : "lib8-0.8.jar"
         }
       }
     }
@@ -56,12 +53,11 @@
       "0.1": {
         "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-httpraw/0.1/jmeter-plugins-httpraw-0.1.jar",
         "libs": {
-          "lib1" : "lib1.jar",
-          "lib3==0.8" : "lib3-0.8.jar",
-          "lib4" : "lib4.jar",
-          "lib5=0.8" : "lib5-0.8.jar",
-          "lib6" : "lib6.jar",
-          "lib9_1.0==0.8" : "lib9_1.0-0.8.jar"
+          "cmdrunner" : "lib1.jar",
+          "bsf==0.8" : "lib3-0.8.jar",
+          "commons-codec" : "lib4.jar",
+          "commons-io=0.8" : "lib5-0.8.jar",
+          "commons-jexl" : "lib6.jar"
         }
       }
     }
