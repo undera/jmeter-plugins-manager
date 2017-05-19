@@ -332,10 +332,6 @@ public class Plugin {
             for (Object o : list.keySet()) {
                 if (o instanceof String) {
                     String dep = (String) o;
-//                    Matcher m = dependsParser.matcher(dep);
-//                    if (!m.find()) {
-//                        throw new IllegalArgumentException("Cannot parse depend str: " + dep);
-//                    }
                     depends.put(dep, list.getString(dep));
                 }
             }
