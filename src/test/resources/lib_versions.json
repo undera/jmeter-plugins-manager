@@ -1,7 +1,7 @@
 [
   {
     "id": "plugin1",
-    "name": "Custom JMeter Functions",
+    "name": "plugin1",
     "description": "A number of additional JMeter functions that cover more of typical needs.",
     "screenshotUrl": "",
     "helpUrl": "https://jmeter-plugins.org/wiki/Functions/",
@@ -23,7 +23,7 @@
   },
   {
     "id": "plugin2",
-    "name": "HTTP Raw Request",
+    "name": "plugin2",
     "description": "Low-level HTTP request, solves memory problem for huge file upload/download case. Also ships Raw Data Source preprocessor.",
     "screenshotUrl": "https://jmeter-plugins.org/img/wiki/rawrequest.png",
     "helpUrl": "https://jmeter-plugins.org/wiki/RawRequest/",
@@ -45,7 +45,7 @@
   },
   {
     "id": "plugin3",
-    "name": "HTTP Raw Request",
+    "name": "plugin3",
     "description": "Low-level HTTP request, solves memory problem for huge file upload/download case. Also ships Raw Data Source preprocessor.",
     "screenshotUrl": "https://jmeter-plugins.org/img/wiki/rawrequest.png",
     "helpUrl": "https://jmeter-plugins.org/wiki/RawRequest/",
