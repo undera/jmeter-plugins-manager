@@ -159,7 +159,7 @@ public class DependencyResolver {
                 }
             }
         }
-        resolveLibsVersionsConflicts(libAdditions);
+        resolveLibsVersionsConflicts();
     }
 
     private void resolveDeleteLibs() {
@@ -205,10 +205,10 @@ public class DependencyResolver {
 
     private static final Pattern dependsParser = Pattern.compile("([^=<>]+)([=<>]+[0-9.]+)?");
 
-    private void resolveLibsVersionsConflicts(Map<String, String> allLibs) {
+    private void resolveLibsVersionsConflicts() {
         Map<String, List<Library>> libsToResolve = new HashMap<>();
 
-        for (String key : allLibs.keySet()) {
+        for (String key : libAdditions.keySet()) {
             Matcher m = dependsParser.matcher(key);
             if (!m.find()) {
                 throw new IllegalArgumentException("Cannot parse str: " + key);
@@ -221,10 +221,10 @@ public class DependencyResolver {
                 verifyConditionFormat(condition);
                 String version = m.group(2).substring(2);
                 if (libsToResolve.containsKey(name)) {
-                    libsToResolve.get(name).add(new Library(name, condition, version, allLibs.get(key)));
+                    libsToResolve.get(name).add(new Library(name, condition, version, libAdditions.get(key)));
                 } else {
                     List<Library> libs = new ArrayList<>();
-                    libs.add(new Library(name, condition, version, allLibs.get(key)));
+                    libs.add(new Library(name, condition, version, libAdditions.get(key)));
                     libsToResolve.put(name, libs);
                 }
             }
@@ -235,12 +235,12 @@ public class DependencyResolver {
             Collections.sort(libs, Library.versionComparator);
 
             for (Library lib : libs)  {
-                allLibs.remove(lib.getFullName());
+                libAdditions.remove(lib.getFullName());
             }
 
             final Library libToInstall = libs.get(libs.size() - 1);
             // override lib
-            allLibs.put(libToInstall.getName(), libToInstall.getLink());
+            libAdditions.put(libToInstall.getName(), libToInstall.getLink());
         }
     }
 
