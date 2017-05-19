@@ -1,0 +1,69 @@
+[
+  {
+    "id": "delete1",
+    "name": "delete1",
+    "description": "A number of additional JMeter functions that cover more of typical needs.",
+    "screenshotUrl": "",
+    "helpUrl": "https://jmeter-plugins.org/wiki/Functions/",
+    "vendor": "JMeter-Plugins.org",
+    "markerClass": "kg.apc.jmeter.functions.Base64Decode",
+    "versions": {
+      "2.0": {
+        "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-functions/2.0/jmeter-plugins-functions-2.0.jar",
+        "libs": {
+          "lib1>=0.8" : "lib-0.8.jar",
+          "lib2" : "lib2.jar",
+          "lib3>=0.6" : "lib3-0.6.jar",
+          "lib4" : "lib4.jar",
+          "lib7" : "lib7.jar",
+          "lib9_1.0" : "lib9_1.0.jar",
+          "lib10_2.1.0==0.1" : "lib10_2.10-0.1.jar"
+        }
+      }
+    }
+  },
+  {
+    "id": "delete2",
+    "name": "delete2",
+    "description": "Low-level HTTP request, solves memory problem for huge file upload/download case. Also ships Raw Data Source preprocessor.",
+    "screenshotUrl": "https://jmeter-plugins.org/img/wiki/rawrequest.png",
+    "helpUrl": "https://jmeter-plugins.org/wiki/RawRequest/",
+    "vendor": "JMeter-Plugins.org",
+    "markerClass": "kg.apc.jmeter.samplers.HTTPRawSampler",
+    "versions": {
+      "0.1": {
+        "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-httpraw/0.1/jmeter-plugins-httpraw-0.1.jar",
+        "libs": {
+          "lib1" : "lib1.jar",
+          "lib2>=0.8" : "lib2-0.8.jar",
+          "lib3>=0.7" : "lib3-0.7.jar",
+          "lib6==0.5" : "lib6-0.5.jar",
+          "lib8>=0.8" : "lib8-0.8.jar",
+          "lib10_2.1.0" : "lib10_2.1.0.jar"
+        }
+      }
+    }
+  },
+  {
+    "id": "installed",
+    "name": "installed",
+    "description": "Low-level HTTP request, solves memory problem for huge file upload/download case. Also ships Raw Data Source preprocessor.",
+    "screenshotUrl": "https://jmeter-plugins.org/img/wiki/rawrequest.png",
+    "helpUrl": "https://jmeter-plugins.org/wiki/RawRequest/",
+    "vendor": "JMeter-Plugins.org",
+    "markerClass": "kg.apc.jmeter.samplers.HTTPRawSampler",
+    "versions": {
+      "0.1": {
+        "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-httpraw/0.1/jmeter-plugins-httpraw-0.1.jar",
+        "libs": {
+          "lib1" : "lib1.jar",
+          "lib3==0.8" : "lib3-0.8.jar",
+          "lib4" : "lib4.jar",
+          "lib5=0.8" : "lib5-0.8.jar",
+          "lib6" : "lib6.jar",
+          "lib9_1.0==0.8" : "lib9_1.0-0.8.jar"
+        }
+      }
+    }
+  }
+]
