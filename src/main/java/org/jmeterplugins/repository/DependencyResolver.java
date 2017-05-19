@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 public class DependencyResolver {
     private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Pattern libNameParser = Pattern.compile("([^=<>]+)([=<>]+[0-9.]+)?");
     public static final String JAVA_CLASS_PATH = "java.class.path";
     protected final Set<Plugin> deletions = new HashSet<>();
     protected final Set<Plugin> additions = new HashSet<>();
@@ -196,20 +197,19 @@ public class DependencyResolver {
     }
 
     private String getLibName(String fullLibName) {
-        Matcher m = dependsParser.matcher(fullLibName);
+        Matcher m = libNameParser.matcher(fullLibName);
         if (!m.find()) {
             throw new IllegalArgumentException("Cannot parse str: " + fullLibName);
         }
         return m.group(1);
     }
 
-    private static final Pattern dependsParser = Pattern.compile("([^=<>]+)([=<>]+[0-9.]+)?");
 
     private void resolveLibsVersionsConflicts() {
         Map<String, List<Library>> libsToResolve = new HashMap<>();
 
         for (String key : libAdditions.keySet()) {
-            Matcher m = dependsParser.matcher(key);
+            Matcher m = libNameParser.matcher(key);
             if (!m.find()) {
                 throw new IllegalArgumentException("Cannot parse str: " + key);
             }
