@@ -1,12 +1,17 @@
 package org.jmeterplugins.repository;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DependencyResolver {
     private static final Logger log = LoggingManager.getLoggerForClass();
@@ -154,6 +159,7 @@ public class DependencyResolver {
                 }
             }
         }
+        resolveLibsVersionsConflicts(libAdditions);
     }
 
     private void resolveDeleteLibs() {
@@ -186,4 +192,54 @@ public class DependencyResolver {
             }
         }
     }
+
+    private static final Pattern dependsParser = Pattern.compile("([^=<>]+)([=<>]+[0-9.]+)?");
+
+    private void resolveLibsVersionsConflicts(Map<String, String> allLibs) {
+        Map<String, List<Library>> libsToResolve = new HashMap<>();
+
+        for (String key : allLibs.keySet()) {
+            Matcher m = dependsParser.matcher(key);
+            if (!m.find()) {
+                throw new IllegalArgumentException("Cannot parse str: " + key);
+            }
+
+            if (m.groupCount() == 2 && m.group(2) != null && !m.group(2).isEmpty()) {
+                String name = m.group(1);
+
+                String condition = m.group(2).substring(0, 2);
+                verifyConditionFormat(condition);
+                String version = m.group(2).substring(2);
+                if (libsToResolve.containsKey(name)) {
+                    libsToResolve.get(name).add(new Library(name, condition, version, allLibs.get(key)));
+                } else {
+                    List<Library> libs = new ArrayList<>();
+                    libs.add(new Library(name, condition, version, allLibs.get(key)));
+                    libsToResolve.put(name, libs);
+                }
+            }
+        }
+
+        for (String key : libsToResolve.keySet()) {
+            List<Library> libs = libsToResolve.get(key);
+            Collections.sort(libs, Library.versionComparator);
+
+            for (Library lib : libs)  {
+                allLibs.remove(lib.getFullName());
+            }
+
+            final Library libToInstall = libs.get(libs.size() - 1);
+            // override lib
+            allLibs.put(libToInstall.getName(), libToInstall.getLink());
+        }
+    }
+
+
+
+    protected void verifyConditionFormat(String condition) {
+        if (!(condition.equals(">=") || condition.equals("=="))) {
+            throw new IllegalArgumentException("Expected conditions are ['>=', '=='], but was: " + condition);
+        }
+    }
+
 }
