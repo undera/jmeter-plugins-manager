@@ -154,7 +154,7 @@ public class DependencyResolver {
         for (Plugin plugin : additions) {
             Map<String, String> libs = plugin.getLibs(plugin.getCandidateVersion());
             for (String lib : libs.keySet()) {
-                if (Plugin.getLibInstallPath(lib) == null) {
+                if (Plugin.getLibInstallPath(getLibName(lib)) == null) {
                     libAdditions.put(lib, libs.get(lib));
                 }
             }
