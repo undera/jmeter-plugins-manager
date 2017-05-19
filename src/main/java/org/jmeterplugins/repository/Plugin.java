@@ -4,8 +4,11 @@ package org.jmeterplugins.repository;
 import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -329,16 +332,17 @@ public class Plugin {
             for (Object o : list.keySet()) {
                 if (o instanceof String) {
                     String dep = (String) o;
-                    Matcher m = dependsParser.matcher(dep);
-                    if (!m.find()) {
-                        throw new IllegalArgumentException("Cannot parse depend str: " + dep);
-                    }
-                    depends.put(m.group(1), list.getString(dep));
+//                    Matcher m = dependsParser.matcher(dep);
+//                    if (!m.find()) {
+//                        throw new IllegalArgumentException("Cannot parse depend str: " + dep);
+//                    }
+                    depends.put(dep, list.getString(dep));
                 }
             }
         }
         return depends;
     }
+
 
     public String getVersionChanges(String versionStr) {
         JSONObject version = versions.getJSONObject(versionStr);
