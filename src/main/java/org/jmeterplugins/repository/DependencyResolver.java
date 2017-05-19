@@ -170,8 +170,8 @@ public class DependencyResolver {
 
             Map<String, String> libs = plugin.getLibs(plugin.getInstalledVersion());
             for (String lib : libs.keySet()) {
-                if (Plugin.getLibInstallPath(lib) != null) {
-                    String name = getLibName(lib);
+                String name = getLibName(lib);
+                if (Plugin.getLibInstallPath(name) != null) {
                     libDeletions.add(name);
                 } else {
                     log.warn("Did not find library to uninstall it: " + lib);
