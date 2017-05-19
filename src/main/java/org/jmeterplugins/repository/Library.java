@@ -33,7 +33,6 @@ public class Library {
                 code = Integer.compare(versions1.length, versions2.length);
             }
 
-
             return code;
         }
     };
@@ -94,5 +93,9 @@ public class Library {
 
     public void setLink(String link) {
         this.link = link;
+    }
+
+    public String getFullName() {
+        return name + condition + version;
     }
 }
