@@ -171,7 +171,8 @@ public class DependencyResolver {
             Map<String, String> libs = plugin.getLibs(plugin.getInstalledVersion());
             for (String lib : libs.keySet()) {
                 if (Plugin.getLibInstallPath(lib) != null) {
-                    libDeletions.add(lib);
+                    String name = getLibName(lib);
+                    libDeletions.add(name);
                 } else {
                     log.warn("Did not find library to uninstall it: " + lib);
                 }
@@ -184,13 +185,22 @@ public class DependencyResolver {
                 //log.debug("Affects " + plugin + " v" + ver);
                 Map<String, String> libs = plugin.getLibs(ver);
                 for (String lib : libs.keySet()) {
-                    if (libDeletions.contains(lib)) {
+                    String name = getLibName(lib);
+                    if (libDeletions.contains(name)) {
                         log.debug("Won't delete lib " + lib + " since it is used by " + plugin);
-                        libDeletions.remove(lib);
+                        libDeletions.remove(name);
                     }
                 }
             }
         }
+    }
+
+    private String getLibName(String fullLibName) {
+        Matcher m = dependsParser.matcher(fullLibName);
+        if (!m.find()) {
+            throw new IllegalArgumentException("Cannot parse str: " + fullLibName);
+        }
+        return m.group(1);
     }
 
     private static final Pattern dependsParser = Pattern.compile("([^=<>]+)([=<>]+[0-9.]+)?");
