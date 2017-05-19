@@ -13,6 +13,8 @@ public class LibraryTest {
         lib2.setName("name2");
         lib2.setCondition("==");
         lib2.setVersion("9.9.8");
+        assertEquals("name2==9.9.8", lib2.getFullName());
+
         lib2.setLink("LINK2");
 
         assertEquals("name2", lib2.getName());
