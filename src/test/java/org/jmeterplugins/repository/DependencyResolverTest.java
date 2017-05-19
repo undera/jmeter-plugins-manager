@@ -209,4 +209,30 @@ public class DependencyResolverTest {
 
         }
     }
+
+    @Test
+    public void testResolveLibBeforeDetete() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/lib_for_delete");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+            plugin.installedPath = "";
+            plugin.installedVersion = "0.1";
+
+            map.put(plugin, !plugin.getName().startsWith("delete"));
+        }
+
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Set<String> libs = resolver.getLibDeletions();
+
+        assertEquals(3, libs.size());
+        assertTrue(libs.contains("ApacheJMeter_core"));
+        assertTrue(libs.contains("commons-lang3"));
+        assertTrue(libs.contains("commons-httpclient"));
+    }
 }
