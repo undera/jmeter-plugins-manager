@@ -98,6 +98,20 @@ public class PluginManagerTest {
             Plugin p = Plugin.fromJSON(JSONObject.fromObject(str, new JsonConfig()));
             PluginManager manager = new PluginManager();
             manager.allPlugins.put(p, true); // need to install
+            p.setCandidateVersion("9999");
+
+            try {
+                manager.applyChanges(new GenericCallback<String>() {
+                    @Override
+                    public void notify(String progress) {
+                    }
+                });
+                fail();
+            } catch (IllegalArgumentException ex) {
+                assertTrue(ex.getMessage().contains("Version 9999 not found for plugin"));
+            }
+
+            manager.allPlugins.put(p, true); // need to install
             p.setCandidateVersion("0.2");
 
             try {
@@ -106,6 +120,7 @@ public class PluginManagerTest {
                     public void notify(String progress) {
                     }
                 });
+                fail();
             } catch (DownloadException ex) {
                 assertTrue(ex.getMessage().contains("Failed to download library"));
             }
@@ -119,6 +134,7 @@ public class PluginManagerTest {
                     public void notify(String progress) {
                     }
                 });
+                fail();
             } catch (DownloadException ex) {
                 assertTrue(ex.getMessage().contains("Failed to download plugin"));
             }

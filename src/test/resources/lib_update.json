@@ -1,0 +1,29 @@
+[
+  {
+    "id": "plugin-for-update",
+    "name": "plugin-for-update",
+    "description": "A number of additional JMeter functions that cover more of typical needs.",
+    "screenshotUrl": "",
+    "helpUrl": "https://jmeter-plugins.org/wiki/Functions/",
+    "vendor": "JMeter-Plugins.org",
+    "markerClass": "kg.apc.jmeter.functions.Base64Decode",
+    "versions": {
+      "0.1": {
+        "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-functions/2.0/jmeter-plugins-functions-2.0.jar",
+        "libs": {
+          "cmdrunner" : "cmdrunner-0.7.jar",
+          "commons-codec" : "commons-codec-0.4.jar",
+          "commons-lang3" : "commons-lang3.jar"
+        }
+      },
+      "0.2": {
+        "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-functions/2.0/jmeter-plugins-functions-2.0.jar",
+        "libs": {
+          "cmdrunner>=9999.8" : "cmdrunner-9999.8.jar",
+          "commons-codec>=999.5" : "commons-codec-999.5.jar",
+          "commons-lang3" : "commons-lang3.jar"
+        }
+      }
+    }
+  }
+]

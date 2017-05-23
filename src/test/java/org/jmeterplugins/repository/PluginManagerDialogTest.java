@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.URL;
 import java.util.*;
 import java.util.List;
 
@@ -24,11 +25,12 @@ public class PluginManagerDialogTest {
     @Test
     public void displayGUI() throws Throwable {
         if (!GraphicsEnvironment.getLocalGraphicsEnvironment().isHeadlessInstance()) {
-            //JMeterUtils.setProperty("jpgc.repo.address", "/home/undera/Sources/JMeter/jmeter-plugins/manager/target/jpgc-repo/all.json");
+//            URL url = PluginManagerTest.class.getResource("/lib_versions.json");
+//            JMeterUtils.setProperty("jpgc.repo.address", url.getPath());
             System.setProperty("http.proxyHost", "localhost");
             System.setProperty("http.proxyPort", "81");
             PluginManager aManager = new PluginManager();
-            //aManager.load();
+            aManager.load();
             PluginManagerDialog frame = new PluginManagerDialog(aManager);
 
             frame.setPreferredSize(new Dimension(800, 600));

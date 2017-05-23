@@ -1,15 +1,21 @@
 package org.jmeterplugins.repository;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class DependencyResolver {
     private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Pattern libNameParser = Pattern.compile("([^=<>]+)([=<>]+[0-9.]+)?");
     public static final String JAVA_CLASS_PATH = "java.class.path";
     protected final Set<Plugin> deletions = new HashSet<>();
     protected final Set<Plugin> additions = new HashSet<>();
@@ -26,6 +32,7 @@ public class DependencyResolver {
         resolveInstallByDependency();
         resolveDeleteLibs();
         resolveInstallLibs();
+        resolveUpgradesLibs();
     }
 
     // TODO: return iterators to make values read-only
@@ -149,11 +156,12 @@ public class DependencyResolver {
         for (Plugin plugin : additions) {
             Map<String, String> libs = plugin.getLibs(plugin.getCandidateVersion());
             for (String lib : libs.keySet()) {
-                if (Plugin.getLibInstallPath(lib) == null) {
+                if (Plugin.getLibInstallPath(getLibName(lib)) == null) {
                     libAdditions.put(lib, libs.get(lib));
                 }
             }
         }
+        resolveLibsVersionsConflicts();
     }
 
     private void resolveDeleteLibs() {
@@ -164,8 +172,9 @@ public class DependencyResolver {
 
             Map<String, String> libs = plugin.getLibs(plugin.getInstalledVersion());
             for (String lib : libs.keySet()) {
-                if (Plugin.getLibInstallPath(lib) != null) {
-                    libDeletions.add(lib);
+                String name = getLibName(lib);
+                if (Plugin.getLibInstallPath(name) != null) {
+                    libDeletions.add(name);
                 } else {
                     log.warn("Did not find library to uninstall it: " + lib);
                 }
@@ -178,12 +187,120 @@ public class DependencyResolver {
                 //log.debug("Affects " + plugin + " v" + ver);
                 Map<String, String> libs = plugin.getLibs(ver);
                 for (String lib : libs.keySet()) {
-                    if (libDeletions.contains(lib)) {
+                    String name = getLibName(lib);
+                    if (libDeletions.contains(name)) {
                         log.debug("Won't delete lib " + lib + " since it is used by " + plugin);
-                        libDeletions.remove(lib);
+                        libDeletions.remove(name);
                     }
                 }
             }
         }
     }
+
+    private void resolveUpgradesLibs() {
+        for (Plugin plugin : deletions) {
+            if (additions.contains(plugin)) { // if upgrade plugin
+                final Map<String, String> installedLibs = plugin.getLibs(plugin.getInstalledVersion());
+                final Map<String, String> candidateLibs = plugin.getLibs(plugin.getCandidateVersion());
+
+                for (String candidateLibName : candidateLibs.keySet()) {
+                    String installedLibName = getMatchLibName(candidateLibName, installedLibs);
+                    if (installedLibName != null) {
+                        // get installed lib version
+                        String installedVersion = Plugin.getVersionFromPath(Plugin.getLibInstallPath(installedLibName));
+                        Library installedLib = getLibrary(installedLibName, installedLibs.get(installedLibName));
+                        installedLib.setVersion(installedVersion);
+
+                        // get candidate lib
+                        Library candidateLib = getLibrary(candidateLibName, candidateLibs.get(candidateLibName));
+
+                        // compare installed and candidate libs
+                        if (candidateLib.getVersion() != null && Library.versionComparator.compare(installedLib, candidateLib) == -1) {
+                            libDeletions.add(installedLib.getName());
+                            libAdditions.put(candidateLib.getName(), candidateLib.getLink());
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    private String getMatchLibName(String candidateLibName, Map<String, String> installedLibs) {
+        final String candidateName = getLibName(candidateLibName);
+
+        for (String installedLibName : installedLibs.keySet()) {
+            if (installedLibName.startsWith(candidateName) && getLibName(installedLibName).equals(candidateName)) {
+                return installedLibName;
+            }
+        }
+
+        return null;
+    }
+
+
+    private String getLibName(String fullLibName) {
+        Matcher m = libNameParser.matcher(fullLibName);
+        if (!m.find()) {
+            throw new IllegalArgumentException("Cannot parse str: " + fullLibName);
+        }
+        return m.group(1);
+    }
+
+    private Library getLibrary(String fullLibName, String link) {
+        Matcher m = libNameParser.matcher(fullLibName);
+        if (!m.find()) {
+            throw new IllegalArgumentException("Cannot parse str: " + fullLibName);
+        }
+
+        final String name = m.group(1);
+        if (m.groupCount() == 2 && m.group(2) != null && !m.group(2).isEmpty()) {
+            String condition = m.group(2).substring(0, 2);
+            verifyConditionFormat(condition);
+            String version = m.group(2).substring(2);
+
+            return new Library(name, version, link);
+        }
+        return new Library(name, link);
+    }
+
+    private void resolveLibsVersionsConflicts() {
+        Map<String, List<Library>> libsToResolve = new HashMap<>();
+
+        for (String key : libAdditions.keySet()) {
+            Library library = getLibrary(key, libAdditions.get(key));
+            if (library.getVersion() != null) {
+                if (libsToResolve.containsKey(library.getName())) {
+                    libsToResolve.get(library.getName()).add(library);
+                } else {
+                    List<Library> libs = new ArrayList<>();
+                    libs.add(library);
+                    libsToResolve.put(library.getName(), libs);
+                }
+            }
+        }
+
+        for (String key : libsToResolve.keySet()) {
+            List<Library> libs = libsToResolve.get(key);
+            Collections.sort(libs, Library.versionComparator);
+
+            for (Library lib : libs)  {
+                libAdditions.remove(lib.getFullName());
+            }
+
+            final Library libToInstall = libs.get(libs.size() - 1);
+            // override lib
+            libAdditions.put(libToInstall.getName(), libToInstall.getLink());
+        }
+    }
+
+
+
+    // TODO: manage '==' and '<=' condition
+    protected void verifyConditionFormat(String condition) {
+        if (!condition.equals(">=")) {
+            throw new IllegalArgumentException("Expected conditions are ['>='], but was: " + condition);
+        }
+    }
+
 }

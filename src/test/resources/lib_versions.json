@@ -1,0 +1,68 @@
+[
+  {
+    "id": "plugin1",
+    "name": "plugin1",
+    "description": "A number of additional JMeter functions that cover more of typical needs.",
+    "screenshotUrl": "",
+    "helpUrl": "https://jmeter-plugins.org/wiki/Functions/",
+    "vendor": "JMeter-Plugins.org",
+    "markerClass": "kg.apc.jmeter.functions.Base64Decode",
+    "versions": {
+      "2.0": {
+        "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-functions/2.0/jmeter-plugins-functions-2.0.jar",
+        "libs": {
+          "jmeter-plugins-cmn-jmeter>=0.4": "jmeter-plugins-cmn-jmeter-0.4.jar",
+          "kafka_2.8.2>=0.8": "kafka_2.8.2_v0.8.jar",
+          "commons-io" : "commons-io.jar",
+          "kafka_2.1.0" : "kafka_2.1.0.jar",
+          "lib" : "lib.jar",
+          "lib2" : "lib2.jar"
+        }
+      }
+    }
+  },
+  {
+    "id": "plugin2",
+    "name": "plugin2",
+    "description": "Low-level HTTP request, solves memory problem for huge file upload/download case. Also ships Raw Data Source preprocessor.",
+    "screenshotUrl": "https://jmeter-plugins.org/img/wiki/rawrequest.png",
+    "helpUrl": "https://jmeter-plugins.org/wiki/RawRequest/",
+    "vendor": "JMeter-Plugins.org",
+    "markerClass": "kg.apc.jmeter.samplers.HTTPRawSampler",
+    "versions": {
+      "0.1": {
+        "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-httpraw/0.1/jmeter-plugins-httpraw-0.1.jar",
+        "libs": {
+          "jmeter-plugins-cmn-jmeter>=0.3": "jmeter-plugins-cmn-jmeter-0.3.jar",
+          "kafka_2.8.2": "kafka_2.8.2_v0.7.jar",
+          "commons-io" : "commons-io.jar",
+          "kafka_2.1.0>=0.1" : "kafka_2.1.0_v.0.1.jar",
+          "lib>=0.7" : "lib-0.7.jar",
+          "lib2" : "lib2.jar"
+        }
+      }
+    }
+  },
+  {
+    "id": "plugin3",
+    "name": "plugin3",
+    "description": "Low-level HTTP request, solves memory problem for huge file upload/download case. Also ships Raw Data Source preprocessor.",
+    "screenshotUrl": "https://jmeter-plugins.org/img/wiki/rawrequest.png",
+    "helpUrl": "https://jmeter-plugins.org/wiki/RawRequest/",
+    "vendor": "JMeter-Plugins.org",
+    "markerClass": "kg.apc.jmeter.samplers.HTTPRawSampler",
+    "versions": {
+      "0.1": {
+        "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-httpraw/0.1/jmeter-plugins-httpraw-0.1.jar",
+        "libs": {
+          "jmeter-plugins-cmn-jmeter": "jmeter-plugins-cmn-jmeter.jar",
+          "kafka_2.8.2>=0.7": "kafka_2.8.2_v0.7.jar",
+          "commons-io" : "commons-io.jar",
+          "kafka_2.1.0" : "kafka_2.1.0.jar",
+          "lib>=0.8" : "lib-0.8.jar",
+          "lib2>=0.2" : "lib2-0.2.jar"
+        }
+      }
+    }
+  }
+]

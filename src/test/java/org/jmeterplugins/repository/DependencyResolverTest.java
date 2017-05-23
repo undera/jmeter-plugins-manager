@@ -1,9 +1,14 @@
 package org.jmeterplugins.repository;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
 import net.sf.json.JsonConfig;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
+import java.io.File;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -166,5 +171,98 @@ public class DependencyResolverTest {
         assertEquals(1, dels.size());
         assertTrue(dels.contains(a));
         assertTrue(adds.contains(b));
+    }
+
+    @Test
+    public void testLibVersionManagement() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/lib_versions.json");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+            map.put(plugin, true);
+        }
+
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Map<String, String> libs = resolver.getLibAdditions();
+
+        for (String libName : libs.keySet()) {
+            if (libName.equals("jmeter-plugins-cmn-jmeter")) {
+                assertEquals("jmeter-plugins-cmn-jmeter-0.4.jar", libs.get(libName));
+            } else if (libName.equals("kafka_2.8.2")) {
+                assertEquals("kafka_2.8.2_v0.8.jar", libs.get(libName));
+            } else if (libName.equals("commons-io")) {
+                assertEquals("commons-io.jar", libs.get(libName));
+            } else if (libName.equals("kafka_2.1.0")) {
+                assertEquals("kafka_2.1.0_v.0.1.jar", libs.get(libName));
+            } else if (libName.equals("lib")) {
+                assertEquals("lib-0.8.jar", libs.get(libName));
+            } else if (libName.equals("lib2")) {
+                assertEquals("lib2-0.2.jar", libs.get(libName));
+            } else {
+                fail("Unexpected lib name: " + libName);
+            }
+
+        }
+    }
+
+    @Test
+    public void testResolveLibBeforeDetete() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/lib_for_delete");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+            plugin.installedPath = "";
+            plugin.installedVersion = "0.1";
+
+            map.put(plugin, !plugin.getName().startsWith("delete"));
+        }
+
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Set<String> libs = resolver.getLibDeletions();
+
+        assertEquals(3, libs.size());
+        assertTrue(libs.contains("ApacheJMeter_core"));
+        assertTrue(libs.contains("commons-lang3"));
+        assertTrue(libs.contains("commons-httpclient"));
+    }
+
+    @Test
+    public void testUpdateLibWithPlugin() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/lib_update.json");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+            plugin.installedPath = "";
+            plugin.installedVersion = "0.1";
+
+            map.put(plugin, true);
+        }
+
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Set<String> libsDeletions = resolver.getLibDeletions();
+
+        assertEquals(2, libsDeletions.size());
+        assertTrue(libsDeletions.contains("cmdrunner"));
+        assertTrue(libsDeletions.contains("commons-codec"));
+
+        Map<String, String> libsAdditions = resolver.getLibAdditions();
+        assertEquals(2, libsAdditions.size());
+        assertEquals("cmdrunner-9999.8.jar", libsAdditions.get("cmdrunner"));
+        assertEquals("commons-codec-999.5.jar", libsAdditions.get("commons-codec"));
     }
 }
