@@ -63,6 +63,11 @@ public class Library {
         this.link = link;
     }
 
+    public Library(String name, String link) {
+        this.name = name;
+        this.link = link;
+    }
+
     public String getName() {
         return name;
     }

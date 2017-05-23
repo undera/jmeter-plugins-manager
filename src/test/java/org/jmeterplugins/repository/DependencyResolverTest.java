@@ -235,4 +235,34 @@ public class DependencyResolverTest {
         assertTrue(libs.contains("commons-lang3"));
         assertTrue(libs.contains("commons-httpclient"));
     }
+
+    @Test
+    public void testUpdateLibWithPlugin() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/lib_update.json");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+            plugin.installedPath = "";
+            plugin.installedVersion = "0.1";
+
+            map.put(plugin, true);
+        }
+
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Set<String> libsDeletions = resolver.getLibDeletions();
+
+        assertEquals(2, libsDeletions.size());
+        assertTrue(libsDeletions.contains("cmdrunner"));
+        assertTrue(libsDeletions.contains("commons-codec"));
+
+        Map<String, String> libsAdditions = resolver.getLibAdditions();
+        assertEquals(2, libsAdditions.size());
+        assertEquals("cmdrunner-9999.8.jar", libsAdditions.get("cmdrunner"));
+        assertEquals("commons-codec-999.5.jar", libsAdditions.get("commons-codec"));
+    }
 }

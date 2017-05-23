@@ -32,6 +32,7 @@ public class DependencyResolver {
         resolveInstallByDependency();
         resolveDeleteLibs();
         resolveInstallLibs();
+        resolveUpgradesLibs();
     }
 
     // TODO: return iterators to make values read-only
@@ -196,6 +197,48 @@ public class DependencyResolver {
         }
     }
 
+    private void resolveUpgradesLibs() {
+        for (Plugin plugin : deletions) {
+            if (additions.contains(plugin)) { // if upgrade plugin
+                final Map<String, String> installedLibs = plugin.getLibs(plugin.getInstalledVersion());
+                final Map<String, String> candidateLibs = plugin.getLibs(plugin.getCandidateVersion());
+
+                for (String candidateLibName : candidateLibs.keySet()) {
+                    String installedLibName = getMatchLibName(candidateLibName, installedLibs);
+                    if (installedLibName != null) {
+                        // get installed lib version
+                        String installedVersion = Plugin.getVersionFromPath(Plugin.getLibInstallPath(installedLibName));
+                        Library installedLib = getLibrary(installedLibName, installedLibs.get(installedLibName));
+                        installedLib.setVersion(installedVersion);
+
+                        // get candidate lib
+                        Library candidateLib = getLibrary(candidateLibName, candidateLibs.get(candidateLibName));
+
+                        // compare installed and candidate libs
+                        if (candidateLib.getVersion() != null && Library.versionComparator.compare(installedLib, candidateLib) == -1) {
+                            libDeletions.add(installedLib.getName());
+                            libAdditions.put(candidateLib.getName(), candidateLib.getLink());
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    private String getMatchLibName(String candidateLibName, Map<String, String> installedLibs) {
+        final String candidateName = getLibName(candidateLibName);
+
+        for (String installedLibName : installedLibs.keySet()) {
+            if (installedLibName.startsWith(candidateName) && getLibName(installedLibName).equals(candidateName)) {
+                return installedLibName;
+            }
+        }
+
+        return null;
+    }
+
+
     private String getLibName(String fullLibName) {
         Matcher m = libNameParser.matcher(fullLibName);
         if (!m.find()) {
@@ -204,28 +247,35 @@ public class DependencyResolver {
         return m.group(1);
     }
 
+    private Library getLibrary(String fullLibName, String link) {
+        Matcher m = libNameParser.matcher(fullLibName);
+        if (!m.find()) {
+            throw new IllegalArgumentException("Cannot parse str: " + fullLibName);
+        }
+
+        final String name = m.group(1);
+        if (m.groupCount() == 2 && m.group(2) != null && !m.group(2).isEmpty()) {
+            String condition = m.group(2).substring(0, 2);
+            verifyConditionFormat(condition);
+            String version = m.group(2).substring(2);
+
+            return new Library(name, condition, version, link);
+        }
+        return new Library(name, link);
+    }
 
     private void resolveLibsVersionsConflicts() {
         Map<String, List<Library>> libsToResolve = new HashMap<>();
 
         for (String key : libAdditions.keySet()) {
-            Matcher m = libNameParser.matcher(key);
-            if (!m.find()) {
-                throw new IllegalArgumentException("Cannot parse str: " + key);
-            }
-
-            if (m.groupCount() == 2 && m.group(2) != null && !m.group(2).isEmpty()) {
-                String name = m.group(1);
-
-                String condition = m.group(2).substring(0, 2);
-                verifyConditionFormat(condition);
-                String version = m.group(2).substring(2);
-                if (libsToResolve.containsKey(name)) {
-                    libsToResolve.get(name).add(new Library(name, condition, version, libAdditions.get(key)));
+            Library library = getLibrary(key, libAdditions.get(key));
+            if (library.getVersion() != null) {
+                if (libsToResolve.containsKey(library.getName())) {
+                    libsToResolve.get(library.getName()).add(library);
                 } else {
                     List<Library> libs = new ArrayList<>();
-                    libs.add(new Library(name, condition, version, libAdditions.get(key)));
-                    libsToResolve.put(name, libs);
+                    libs.add(library);
+                    libsToResolve.put(library.getName(), libs);
                 }
             }
         }
