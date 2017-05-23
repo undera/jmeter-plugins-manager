@@ -259,7 +259,7 @@ public class DependencyResolver {
             verifyConditionFormat(condition);
             String version = m.group(2).substring(2);
 
-            return new Library(name, condition, version, link);
+            return new Library(name, version, link);
         }
         return new Library(name, link);
     }
@@ -296,9 +296,10 @@ public class DependencyResolver {
 
 
 
+    // TODO: manage '==' and '<=' condition
     protected void verifyConditionFormat(String condition) {
-        if (!(condition.equals(">=") || condition.equals("=="))) {
-            throw new IllegalArgumentException("Expected conditions are ['>=', '=='], but was: " + condition);
+        if (!condition.equals(">=")) {
+            throw new IllegalArgumentException("Expected conditions are ['>='], but was: " + condition);
         }
     }
 

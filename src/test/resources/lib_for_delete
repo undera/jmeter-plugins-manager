@@ -35,7 +35,7 @@
           "cmdrunner" : "lib1.jar",
           "ApacheJMeter_core" : "lib2-0.8.jar",
           "bsf>=0.7" : "lib3-0.7.jar",
-          "commons-jexl==0.5" : "lib6-0.5.jar",
+          "commons-jexl>=0.5" : "lib6-0.5.jar",
           "commons-httpclient>=0.8" : "lib8-0.8.jar"
         }
       }
@@ -54,7 +54,7 @@
         "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-httpraw/0.1/jmeter-plugins-httpraw-0.1.jar",
         "libs": {
           "cmdrunner" : "lib1.jar",
-          "bsf==0.8" : "lib3-0.8.jar",
+          "bsf>=0.8" : "lib3-0.8.jar",
           "commons-codec" : "lib4.jar",
           "commons-io=0.8" : "lib5-0.8.jar",
           "commons-jexl" : "lib6.jar"

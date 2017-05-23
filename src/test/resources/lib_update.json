@@ -20,7 +20,7 @@
         "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-functions/2.0/jmeter-plugins-functions-2.0.jar",
         "libs": {
           "cmdrunner>=9999.8" : "cmdrunner-9999.8.jar",
-          "commons-codec==999.5" : "commons-codec-999.5.jar",
+          "commons-codec>=999.5" : "commons-codec-999.5.jar",
           "commons-lang3" : "commons-lang3.jar"
         }
       }
