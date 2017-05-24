@@ -105,6 +105,24 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
             }
         };
 
+        try {
+            manager.load();
+        } catch (Throwable e) {
+            log.error("Failed to load plugins manager", e);
+            ByteArrayOutputStream text = new ByteArrayOutputStream(4096);
+            e.printStackTrace(new PrintStream(text));
+            String msg = "<p>Failed to download plugins repository.<br/>";
+            msg += "One of the possible reasons is that you have proxy requirement for Internet connection.</p>" +
+                    " Please read the instructions on this page: " +
+                    "<a href=\"https://jmeter-plugins.org/wiki/PluginsManagerNetworkConfiguration/\">" +
+                    "https://jmeter-plugins.org/wiki/PluginsManagerNetworkConfiguration/</a>" +
+                    " <br><br>Error's technical details: <pre>" + text.toString() + "</pre><br>";
+            failureLabel.setText("<html>" + msg + "</html>");
+            failureLabel.setEditable(false);
+            add(failureScrollPane, BorderLayout.CENTER);
+            failureLabel.setCaretPosition(0);
+        }
+
         installed = new PluginsList(manager.getInstalledPlugins(), cbNotifier, statusRefresh);
         available = new PluginsList(manager.getAvailablePlugins(), cbNotifier, statusRefresh);
         upgrades = new PluginUpgradesList(manager.getUpgradablePlugins(), cbUpgradeNotifier, statusRefresh);
@@ -211,27 +229,8 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
 
     @Override
     public void componentShown(ComponentEvent evt) {
-        try {
-            manager.load();
-        } catch (Throwable e) {
-            log.error("Failed to load plugins manager", e);
-            ByteArrayOutputStream text = new ByteArrayOutputStream(4096);
-            e.printStackTrace(new PrintStream(text));
-            String msg = "<p>Failed to download plugins repository.<br/>";
-            msg += "One of the possible reasons is that you have proxy requirement for Internet connection.</p>" +
-                    " Please read the instructions on this page: " +
-                    "<a href=\"https://jmeter-plugins.org/wiki/PluginsManagerNetworkConfiguration/\">" +
-                    "https://jmeter-plugins.org/wiki/PluginsManagerNetworkConfiguration/</a>" +
-                    " <br><br>Error's technical details: <pre>" + text.toString() + "</pre><br>";
-            failureLabel.setText("<html>" + msg + "</html>");
-            failureLabel.setEditable(false);
-            add(failureScrollPane, BorderLayout.CENTER);
-            failureLabel.setCaretPosition(0);
-        }
-
         topAndDown.setVisible(!manager.allPlugins.isEmpty());
         failureLabel.setVisible(manager.allPlugins.isEmpty());
-
         pack();
     }
 
