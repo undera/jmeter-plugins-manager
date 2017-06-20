@@ -105,6 +105,22 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
             }
         };
 
+        loadPlugins();
+
+        installed = new PluginsList(manager.getInstalledPlugins(), cbNotifier, statusRefresh);
+        available = new PluginsList(manager.getAvailablePlugins(), cbNotifier, statusRefresh);
+        upgrades = new PluginUpgradesList(manager.getUpgradablePlugins(), cbUpgradeNotifier, statusRefresh);
+
+        topAndDown.setResizeWeight(.75);
+        topAndDown.setDividerSize(5);
+        topAndDown.setTopComponent(getTabsPanel());
+
+        topAndDown.setBottomComponent(getBottomPanel());
+        add(topAndDown, BorderLayout.CENTER);
+        statusRefresh.notify(this); // to reflect upgrades
+    }
+
+    private void loadPlugins() {
         try {
             manager.load();
         } catch (Throwable e) {
@@ -122,18 +138,6 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
             add(failureScrollPane, BorderLayout.CENTER);
             failureLabel.setCaretPosition(0);
         }
-
-        installed = new PluginsList(manager.getInstalledPlugins(), cbNotifier, statusRefresh);
-        available = new PluginsList(manager.getAvailablePlugins(), cbNotifier, statusRefresh);
-        upgrades = new PluginUpgradesList(manager.getUpgradablePlugins(), cbUpgradeNotifier, statusRefresh);
-
-        topAndDown.setResizeWeight(.75);
-        topAndDown.setDividerSize(5);
-        topAndDown.setTopComponent(getTabsPanel());
-
-        topAndDown.setBottomComponent(getBottomPanel());
-        add(topAndDown, BorderLayout.CENTER);
-        statusRefresh.notify(this); // to reflect upgrades
     }
 
     private Component getTabsPanel() {
@@ -229,6 +233,7 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
 
     @Override
     public void componentShown(ComponentEvent evt) {
+        loadPlugins();
         topAndDown.setVisible(!manager.allPlugins.isEmpty());
         failureLabel.setVisible(manager.allPlugins.isEmpty());
         pack();
