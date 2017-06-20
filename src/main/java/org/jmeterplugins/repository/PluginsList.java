@@ -42,7 +42,7 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
     private ItemListener itemListener = new VerChoiceChanged();
     private GenericCallback<Object> dialogRefresh;
 
-    public PluginsList(Set<Plugin> plugins, ChangeListener checkboxNotifier, GenericCallback<Object> dialogRefresh) {
+    public PluginsList(GenericCallback<Object> dialogRefresh) {
         super(new BorderLayout(5, 0));
         this.dialogRefresh = dialogRefresh;
 
@@ -57,11 +57,14 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         add(new JScrollPane(list), BorderLayout.WEST);
         add(getDetailsPanel(), BorderLayout.CENTER);
 
+        list.setComponentPopupMenu(new ToggleAllPopupMenu());
+    }
+
+    public void setPlugins(Set<Plugin> plugins, ChangeListener checkboxNotifier) {
+        listModel.clear();
         for (Plugin plugin : plugins) {
             listModel.addElement(getCheckboxItem(plugin, checkboxNotifier));
         }
-
-        list.setComponentPopupMenu(new ToggleAllPopupMenu());
     }
 
     private JPanel getDetailsPanel() {

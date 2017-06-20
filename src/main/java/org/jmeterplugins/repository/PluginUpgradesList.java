@@ -10,8 +10,8 @@ public class PluginUpgradesList extends PluginsList {
      */
     private static final long serialVersionUID = 525391154129274758L;
 
-    public PluginUpgradesList(Set<Plugin> plugins, ChangeListener checkboxNotifier, GenericCallback<Object> dialogRefresh) {
-        super(plugins, checkboxNotifier, dialogRefresh);
+    public PluginUpgradesList(GenericCallback<Object> dialogRefresh) {
+        super(dialogRefresh);
     }
 
     @Override
