@@ -265,4 +265,30 @@ public class DependencyResolverTest {
         assertEquals("cmdrunner-9999.8.jar", libsAdditions.get("cmdrunner"));
         assertEquals("commons-codec-999.5.jar", libsAdditions.get("commons-codec"));
     }
+
+    @Test
+    public void testUpdateWhenInstall() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/installed.json");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+
+            map.put(plugin, true);
+        }
+
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Set<String> libsDeletions = resolver.getLibDeletions();
+
+        assertEquals(1, libsDeletions.size());
+        assertTrue(libsDeletions.contains("commons-codec"));
+
+        Map<String, String> libsAdditions = resolver.getLibAdditions();
+        assertEquals(1, libsAdditions.size());
+        assertEquals("commons-codec-99.99.jar", libsAdditions.get("commons-codec"));
+    }
 }

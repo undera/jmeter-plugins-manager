@@ -153,15 +153,37 @@ public class DependencyResolver {
     }
 
     private void resolveInstallLibs() {
+
         for (Plugin plugin : additions) {
             Map<String, String> libs = plugin.getLibs(plugin.getCandidateVersion());
+
             for (String lib : libs.keySet()) {
-                if (Plugin.getLibInstallPath(getLibName(lib)) == null) {
+                String installedPath = Plugin.getLibInstallPath(getLibName(lib));
+                if (installedPath == null) {
                     libAdditions.put(lib, libs.get(lib));
+                } else {
+                    resolveUpdateLib(plugin, getLibrary(lib, ""), lib);
                 }
             }
         }
         resolveLibsVersionsConflicts();
+    }
+
+    private void resolveUpdateLib(Plugin plugin, Library installedLib, String candidateLibName) {
+        final Map<String, String> candidateLibs = plugin.getLibs(plugin.getCandidateVersion());
+
+        // get installed lib version
+        String installedVersion = Plugin.getVersionFromPath(Plugin.getLibInstallPath(installedLib.getName()));
+        installedLib.setVersion(installedVersion);
+
+        // get candidate lib
+        Library candidateLib = getLibrary(candidateLibName, candidateLibs.get(candidateLibName));
+
+        // compare installed and candidate libs
+        if (candidateLib.getVersion() != null && Library.versionComparator.compare(installedLib, candidateLib) == -1) {
+            libDeletions.add(installedLib.getName());
+            libAdditions.put(candidateLib.getName(), candidateLib.getLink());
+        }
     }
 
     private void resolveDeleteLibs() {
@@ -206,19 +228,7 @@ public class DependencyResolver {
                 for (String candidateLibName : candidateLibs.keySet()) {
                     String installedLibName = getMatchLibName(candidateLibName, installedLibs);
                     if (installedLibName != null) {
-                        // get installed lib version
-                        String installedVersion = Plugin.getVersionFromPath(Plugin.getLibInstallPath(installedLibName));
-                        Library installedLib = getLibrary(installedLibName, installedLibs.get(installedLibName));
-                        installedLib.setVersion(installedVersion);
-
-                        // get candidate lib
-                        Library candidateLib = getLibrary(candidateLibName, candidateLibs.get(candidateLibName));
-
-                        // compare installed and candidate libs
-                        if (candidateLib.getVersion() != null && Library.versionComparator.compare(installedLib, candidateLib) == -1) {
-                            libDeletions.add(installedLib.getName());
-                            libAdditions.put(candidateLib.getName(), candidateLib.getLink());
-                        }
+                        resolveUpdateLib(plugin, getLibrary(installedLibName, installedLibs.get(installedLibName)), candidateLibName);
                     }
                 }
 
