@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -220,7 +221,10 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
                 }
 
                 URL url = new URL(plugin.getScreenshot());
-                cache.put(url, ImageIO.read(url));
+                BufferedImage image = ImageIO.read(url);
+                if (image != null) {
+                    cache.put(url, image);
+                }
             } catch (IOException e) {
                 log.warn("Cannot cached image " + plugin.getScreenshot());
             }
