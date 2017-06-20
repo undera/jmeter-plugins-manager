@@ -49,7 +49,8 @@ public class PluginsListTest {
 
     public static class PluginsListExt extends PluginsList {
         public PluginsListExt(Set<Plugin> plugins, ChangeListener checkboxNotifier, GenericCallback<Object> dialogRefresh) {
-            super(plugins, checkboxNotifier, dialogRefresh);
+            super(dialogRefresh);
+            setPlugins(plugins, checkboxNotifier);
         }
 
         public JList<PluginCheckbox> getList() {

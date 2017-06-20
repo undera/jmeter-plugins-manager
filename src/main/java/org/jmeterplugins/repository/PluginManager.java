@@ -36,10 +36,14 @@ public class PluginManager {
         }
     }
 
+    public boolean hasPlugins() {
+        return allPlugins.size() > 0;
+    }
+
     public void load() throws Throwable {
         detectJARConflicts();
 
-        if (allPlugins.size() > 0) {
+        if (hasPlugins()) {
             return;
         }
 

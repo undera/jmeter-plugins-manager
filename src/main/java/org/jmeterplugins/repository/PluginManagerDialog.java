@@ -53,6 +53,8 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
     private JLabel statusLabel = new JLabel("");
     private JEditorPane failureLabel = new JEditorPane();
     private JScrollPane failureScrollPane = new JScrollPane(failureLabel);
+    private final ChangeListener cbNotifier;
+    private final ChangeListener cbUpgradeNotifier;
 
     public PluginManagerDialog(PluginManager aManager) {
         super((JFrame) null, "JMeter Plugins Manager", true);
@@ -77,7 +79,7 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
             }
         };
 
-        ChangeListener cbNotifier = new ChangeListener() {
+        cbNotifier = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 if (e.getSource() instanceof PluginCheckbox) {
@@ -89,7 +91,7 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
             }
         };
 
-        ChangeListener cbUpgradeNotifier = new ChangeListener() {
+        cbUpgradeNotifier = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
                 if (e.getSource() instanceof PluginCheckbox) {
@@ -105,27 +107,15 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
             }
         };
 
-        try {
-            manager.load();
-        } catch (Throwable e) {
-            log.error("Failed to load plugins manager", e);
-            ByteArrayOutputStream text = new ByteArrayOutputStream(4096);
-            e.printStackTrace(new PrintStream(text));
-            String msg = "<p>Failed to download plugins repository.<br/>";
-            msg += "One of the possible reasons is that you have proxy requirement for Internet connection.</p>" +
-                    " Please read the instructions on this page: " +
-                    "<a href=\"https://jmeter-plugins.org/wiki/PluginsManagerNetworkConfiguration/\">" +
-                    "https://jmeter-plugins.org/wiki/PluginsManagerNetworkConfiguration/</a>" +
-                    " <br><br>Error's technical details: <pre>" + text.toString() + "</pre><br>";
-            failureLabel.setText("<html>" + msg + "</html>");
-            failureLabel.setEditable(false);
-            add(failureScrollPane, BorderLayout.CENTER);
-            failureLabel.setCaretPosition(0);
-        }
+        installed = new PluginsList(statusRefresh);
+        available = new PluginsList(statusRefresh);
+        upgrades = new PluginUpgradesList(statusRefresh);
 
-        installed = new PluginsList(manager.getInstalledPlugins(), cbNotifier, statusRefresh);
-        available = new PluginsList(manager.getAvailablePlugins(), cbNotifier, statusRefresh);
-        upgrades = new PluginUpgradesList(manager.getUpgradablePlugins(), cbUpgradeNotifier, statusRefresh);
+        if (manager.hasPlugins()) {
+            setPlugins();
+        } else {
+            loadPlugins();
+        }
 
         topAndDown.setResizeWeight(.75);
         topAndDown.setDividerSize(5);
@@ -134,6 +124,36 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
         topAndDown.setBottomComponent(getBottomPanel());
         add(topAndDown, BorderLayout.CENTER);
         statusRefresh.notify(this); // to reflect upgrades
+    }
+
+    private void setPlugins() {
+        installed.setPlugins(manager.getInstalledPlugins(), cbNotifier);
+        available.setPlugins(manager.getAvailablePlugins(), cbNotifier);
+        upgrades.setPlugins(manager.getUpgradablePlugins(), cbUpgradeNotifier);
+    }
+
+    private void loadPlugins() {
+        if (!manager.hasPlugins()) {
+            log.error("start downloading");
+            try {
+                manager.load();
+                setPlugins();
+            } catch (Throwable e) {
+                log.error("Failed to load plugins manager", e);
+                ByteArrayOutputStream text = new ByteArrayOutputStream(4096);
+                e.printStackTrace(new PrintStream(text));
+                String msg = "<p>Failed to download plugins repository.<br/>";
+                msg += "One of the possible reasons is that you have proxy requirement for Internet connection.</p>" +
+                        " Please read the instructions on this page: " +
+                        "<a href=\"https://jmeter-plugins.org/wiki/PluginsManagerNetworkConfiguration/\">" +
+                        "https://jmeter-plugins.org/wiki/PluginsManagerNetworkConfiguration/</a>" +
+                        " <br><br>Error's technical details: <pre>" + text.toString() + "</pre><br>";
+                failureLabel.setText("<html>" + msg + "</html>");
+                failureLabel.setEditable(false);
+                add(failureScrollPane, BorderLayout.CENTER);
+                failureLabel.setCaretPosition(0);
+            }
+        }
     }
 
     private Component getTabsPanel() {
@@ -229,6 +249,7 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
 
     @Override
     public void componentShown(ComponentEvent evt) {
+        loadPlugins();
         topAndDown.setVisible(!manager.allPlugins.isEmpty());
         failureLabel.setVisible(manager.allPlugins.isEmpty());
         pack();
