@@ -5,14 +5,16 @@ import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.jmeter.engine.JMeterEngine;
-import org.apache.jmeter.save.SaveService;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.LogTarget;
 import org.apache.log.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.config.Configuration;
 import org.jmeterplugins.repository.exception.DownloadException;
+import org.jmeterplugins.repository.logging.LoggerAppender;
 import org.jmeterplugins.repository.logging.LoggerPanelWrapping;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,11 +53,10 @@ public class PluginManager {
     private void hookRouterAction() {
         if (!isJMeter32orLater()) {
             Logger logger = LoggingManager.getLoggerFor("jmeter.save.SaveService");
-            logger.error("HAHAHAHA");
             logger.setLogTargets(new LogTarget[]{new LoggerPanelWrapping()});
         } else {
-            org.slf4j.Logger logger = LoggerFactory.getLogger(SaveService.class);
-//            logger.
+            Configuration configuration = ((org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false)).getConfiguration();
+            configuration.getRootLogger().addAppender(LoggerAppender.createAppender("pmgr logging appender", true, null, null), Level.INFO, null);
         }
     }
 
