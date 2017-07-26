@@ -1,22 +1,33 @@
 package org.jmeterplugins.repository;
 
 
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.jmeter.engine.JMeterEngine;
+import org.apache.jmeter.save.SaveService;
+import org.apache.jmeter.util.JMeterUtils;
+import org.apache.jorphan.logging.LoggingManager;
+import org.apache.log.LogTarget;
+import org.apache.log.Logger;
+import org.jmeterplugins.repository.exception.DownloadException;
+import org.jmeterplugins.repository.logging.LoggerPanelWrapping;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.AccessDeniedException;
-import java.util.*;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.jmeter.engine.JMeterEngine;
-import org.apache.jmeter.util.JMeterUtils;
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
-import org.jmeterplugins.repository.exception.DownloadException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class PluginManager {
     private static final Logger log = LoggingManager.getLoggerForClass();
@@ -34,7 +45,38 @@ public class PluginManager {
         } else {
             jarSource = new JARSourceHTTP(jmProp);
         }
+        hookRouterAction();
     }
+
+    private void hookRouterAction() {
+        if (!isJMeter32orLater()) {
+            Logger logger = LoggingManager.getLoggerFor("jmeter.save.SaveService");
+            logger.error("HAHAHAHA");
+            logger.setLogTargets(new LogTarget[]{new LoggerPanelWrapping()});
+        } else {
+            org.slf4j.Logger logger = LoggerFactory.getLogger(SaveService.class);
+//            logger.
+        }
+    }
+
+    public boolean isJMeter32orLater() {
+        try {
+            Class<?> cls = this.getClass().getClassLoader().loadClass("org.apache.jmeter.gui.logging.GuiLogEventBus");
+            if (cls != null) {
+                return true;
+            }
+        } catch (ClassNotFoundException ex) {
+            log.debug("Class 'org.apache.jmeter.gui.logging.GuiLogEventBus' not found", ex);
+            return false;
+        } catch (Throwable ex) {
+            log.warn("Fail to detect JMeter version", ex);
+        }
+        return false;
+    }
+
+
+
+
 
     public boolean hasPlugins() {
         return allPlugins.size() > 0;
@@ -279,6 +321,31 @@ public class PluginManager {
     public void setDoRestart(boolean doRestart) {
         this.doRestart = doRestart;
     }
+
+
+//
+//    // Add Logger panel to JMeter since 3.2
+//    // like this call in JMeter 3.2:
+//    // GuiPackage.getInstance().getLogEventBus().registerEventListener(new LoggerPanelWrapping());
+//    private void addLoggerEventListener() {
+//        try {
+//            Class<GuiPackage> guiClass = GuiPackage.class;
+//            Method getLogEventBusMethod = guiClass.getMethod("getLogEventBus");
+//            getLogEventBusMethod.setAccessible(true);
+//            Object logEventBus = getLogEventBusMethod.invoke(GuiPackage.getInstance());
+//            Class<?> guiLogEventBusCls = logEventBus.getClass();
+//            for (Method registerEventListenerMethod : guiLogEventBusCls.getDeclaredMethods()) {
+//                if (registerEventListenerMethod.getName().equals("registerEventListener")) {
+//                    registerEventListenerMethod.setAccessible(true);
+//                    registerEventListenerMethod.invoke(logEventBus, new LoggerPanelWrapping());
+//                }
+//            }
+//        } catch (Throwable ex) {
+//            log.warn("Cannot add logger event listener to GuiPackage ", ex);
+//        }
+//    }
+
+
 
     private class PluginComparator implements java.util.Comparator<Plugin> {
         @Override
