@@ -9,14 +9,24 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.jmeterplugins.repository.plugins.TestPlanAnalyzer;
 
 import java.io.Serializable;
 
 @Plugin(name = "Logger", category = "Core", elementType = "appender", printObject = true)
 public class LoggerAppender extends AbstractAppender {
 
-    protected LoggerAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions) {
+    protected TestPlanAnalyzer analyzer;
+
+
+    public LoggerAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
+        super(name, filter, layout);
+        this.analyzer = new TestPlanAnalyzer();
+    }
+
+    public LoggerAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions) {
         super(name, filter, layout, ignoreExceptions);
+        this.analyzer = new TestPlanAnalyzer();
     }
 
     @Override
@@ -39,5 +49,13 @@ public class LoggerAppender extends AbstractAppender {
         }
 
         return new LoggerAppender(name, filter, layout, ignoreExceptions);
+    }
+
+    public TestPlanAnalyzer getAnalyzer() {
+        return analyzer;
+    }
+
+    public void setAnalyzer(TestPlanAnalyzer analyzer) {
+        this.analyzer = analyzer;
     }
 }

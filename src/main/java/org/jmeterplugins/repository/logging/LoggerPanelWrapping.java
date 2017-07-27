@@ -2,13 +2,17 @@ package org.jmeterplugins.repository.logging;
 
 import org.apache.jmeter.gui.LoggerPanel;
 import org.apache.log.LogEvent;
+import org.jmeterplugins.repository.plugins.TestPlanAnalyzer;
 
 import javax.swing.*;
 
 public class LoggerPanelWrapping extends LoggerPanel {
 
+    protected TestPlanAnalyzer analyzer;
+
     public LoggerPanelWrapping() {
         super();
+        analyzer = new TestPlanAnalyzer();
     }
 
 
@@ -21,4 +25,11 @@ public class LoggerPanelWrapping extends LoggerPanel {
         }
     }
 
+    public TestPlanAnalyzer getAnalyzer() {
+        return analyzer;
+    }
+
+    public void setAnalyzer(TestPlanAnalyzer analyzer) {
+        this.analyzer = analyzer;
+    }
 }
