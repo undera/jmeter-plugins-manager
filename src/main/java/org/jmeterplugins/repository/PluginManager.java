@@ -50,6 +50,7 @@ public class PluginManager {
         hookRouterAction();
     }
 
+    // TODO: hook just one time
     private void hookRouterAction() {
         if (!isJMeter32orLater()) {
             Logger logger = LoggingManager.getLoggerFor("jmeter.save.SaveService");

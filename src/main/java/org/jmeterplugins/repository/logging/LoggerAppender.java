@@ -9,29 +9,29 @@ import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-import org.jmeterplugins.repository.plugins.TestPlanAnalyzer;
+import org.jmeterplugins.repository.plugins.PluginSuggester;
 
 import java.io.Serializable;
 
 @Plugin(name = "Logger", category = "Core", elementType = "appender", printObject = true)
 public class LoggerAppender extends AbstractAppender {
 
-    protected TestPlanAnalyzer analyzer;
+    protected PluginSuggester suggester;
 
 
     public LoggerAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
         super(name, filter, layout);
-        this.analyzer = new TestPlanAnalyzer();
+        this.suggester = new PluginSuggester();
     }
 
     public LoggerAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions) {
         super(name, filter, layout, ignoreExceptions);
-        this.analyzer = new TestPlanAnalyzer();
+        this.suggester = new PluginSuggester();
     }
 
     @Override
     public void append(LogEvent logEvent) {
-        System.out.println(this + " " + logEvent.getMessage().getFormattedMessage());
+        suggester.checkAndSuggest(logEvent.getMessage().getFormattedMessage());
     }
 
     @PluginFactory
@@ -51,11 +51,11 @@ public class LoggerAppender extends AbstractAppender {
         return new LoggerAppender(name, filter, layout, ignoreExceptions);
     }
 
-    public TestPlanAnalyzer getAnalyzer() {
-        return analyzer;
+    public PluginSuggester getSuggester() {
+        return suggester;
     }
 
-    public void setAnalyzer(TestPlanAnalyzer analyzer) {
-        this.analyzer = analyzer;
+    public void setSuggester(PluginSuggester suggester) {
+        this.suggester = suggester;
     }
 }

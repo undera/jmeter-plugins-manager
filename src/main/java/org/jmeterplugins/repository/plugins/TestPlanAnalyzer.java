@@ -28,6 +28,7 @@ public class TestPlanAnalyzer {
      * @return set of classes, that does not exists or empty list if there are none
      */
     public Set<String> analyze(String path) {
+        log.debug("Analyze test plan: " + path);
         final NodeList nodeList = getNodeListWithClassNames(path);
 
         if (nodeList != null) {

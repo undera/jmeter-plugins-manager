@@ -2,34 +2,28 @@ package org.jmeterplugins.repository.logging;
 
 import org.apache.jmeter.gui.LoggerPanel;
 import org.apache.log.LogEvent;
-import org.jmeterplugins.repository.plugins.TestPlanAnalyzer;
-
-import javax.swing.*;
+import org.jmeterplugins.repository.plugins.PluginSuggester;
 
 public class LoggerPanelWrapping extends LoggerPanel {
 
-    protected TestPlanAnalyzer analyzer;
+    protected PluginSuggester suggester;
 
     public LoggerPanelWrapping() {
         super();
-        analyzer = new TestPlanAnalyzer();
+        this.suggester = new PluginSuggester();
     }
 
 
     @Override
     public void processEvent(LogEvent logEvent) {
-        String msg = logEvent.getMessage();
-        System.out.println("tostr: " + logEvent.toString() + " msg: " + logEvent.getMessage());
-        if (msg != null && msg.contains("Loading file")) {
-            JOptionPane.showMessageDialog(null, msg, "title", JOptionPane.INFORMATION_MESSAGE);
-        }
+        suggester.checkAndSuggest(logEvent.getMessage());
     }
 
-    public TestPlanAnalyzer getAnalyzer() {
-        return analyzer;
+    public PluginSuggester getSuggester() {
+        return suggester;
     }
 
-    public void setAnalyzer(TestPlanAnalyzer analyzer) {
-        this.analyzer = analyzer;
+    public void setSuggester(PluginSuggester suggester) {
+        this.suggester = suggester;
     }
 }
