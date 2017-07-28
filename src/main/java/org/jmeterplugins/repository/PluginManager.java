@@ -53,11 +53,13 @@ public class PluginManager {
     // TODO: hook just one time
     private void hookRouterAction() {
         if (!isJMeter32orLater()) {
+            // TODO: fix error with log4j in 2.13
             Logger logger = LoggingManager.getLoggerFor("jmeter.save.SaveService");
             logger.setLogTargets(new LogTarget[]{new LoggerPanelWrapping()});
         } else {
+            // TODO: fix ERROR here
             Configuration configuration = ((org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false)).getConfiguration();
-            configuration.getRootLogger().addAppender(LoggerAppender.createAppender("pmgr logging appender", true, null, null), Level.INFO, null);
+            configuration.getRootLogger().addAppender(LoggerAppender.createAppender("pmgr-logging-appender", true, null, null), Level.INFO, null);
         }
     }
 
