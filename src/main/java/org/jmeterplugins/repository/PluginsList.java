@@ -132,6 +132,15 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         }
     }
 
+    protected void selectPlugins(Set<Plugin> plugins) {
+        for (int i = 0; i < listModel.size(); i++) {
+            PluginCheckbox checkbox = listModel.getElementAt(i);
+            if (plugins.contains(checkbox.getPlugin())) {
+                checkbox.setSelected(true);
+            }
+        }
+    }
+
     private String getDescriptionHTML(Plugin plugin) {
         String txt = "<h1>" + plugin.getName() + "</h1>";
         if (plugin.isUpgradable()) {

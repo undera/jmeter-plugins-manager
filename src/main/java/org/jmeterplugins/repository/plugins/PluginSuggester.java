@@ -4,9 +4,10 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.jmeterplugins.repository.Plugin;
 import org.jmeterplugins.repository.PluginManager;
+import org.jmeterplugins.repository.PluginManagerDialog;
 
 import javax.swing.*;
-import java.util.Collection;
+import java.awt.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,6 +21,7 @@ public class PluginSuggester {
         analyzer = new TestPlanAnalyzer();
     }
 
+    // TODO: set MINIMUM check interval
     public void checkAndSuggest(String msg) {
         if (msg != null && msg.contains("Loading file")) {
             String path = msg.substring(msg.indexOf(": ") + 2);
@@ -33,10 +35,34 @@ public class PluginSuggester {
                     }
                     message.append("Press 'Install' button to open 'Plugins Manager' and install missing plugins");
 
-                    JOptionPane.showMessageDialog(null, message.toString(), "Attention! Your JMeter missing some plugins", JOptionPane.WARNING_MESSAGE);
+                    int n = JOptionPane.showOptionDialog(
+                            createDialog(),
+                            message.toString(),
+                            "Attention! Your JMeter missing some plugins",
+                            JOptionPane.DEFAULT_OPTION,
+                            JOptionPane.WARNING_MESSAGE,
+                            null,
+                            new Object[]{"Install", "Cancel"},
+                            null);
+
+                    // if click 'Install'
+                    if (n == JOptionPane.YES_OPTION) {
+                        PluginManagerDialog dialog = new PluginManagerDialog(PluginManager.getStaticManager());
+                        dialog.selectPluginsToInstall(pluginsToInstall);
+                        dialog.setVisible(true);
+                        dialog.setAlwaysOnTop(true);
+
+                        System.out.println("PLS INSTALL");
+                    }
                 }
             }
         }
+    }
+
+    private Component createDialog() {
+        final JDialog dialog = new JDialog();
+        dialog.setAlwaysOnTop(true);
+        return dialog;
     }
 
     private Set<Plugin> findPluginsFromClasses(Set<String> nonExistentClasses) {
