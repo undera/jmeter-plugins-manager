@@ -10,7 +10,6 @@ import org.jmeterplugins.repository.Plugin;
 import org.jmeterplugins.repository.PluginManager;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.HashSet;
