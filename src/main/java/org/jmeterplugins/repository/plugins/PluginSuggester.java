@@ -1,18 +1,22 @@
 package org.jmeterplugins.repository.plugins;
 
+import org.apache.jmeter.gui.GuiPackage;
+import org.apache.jmeter.gui.action.ActionNames;
+import org.apache.jmeter.gui.action.ActionRouter;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.jmeterplugins.repository.GenericCallback;
 import org.jmeterplugins.repository.Plugin;
 import org.jmeterplugins.repository.PluginManager;
-import org.jmeterplugins.repository.PluginManagerDialog;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class PluginSuggester {
+public class PluginSuggester implements GenericCallback<String> {
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     protected TestPlanAnalyzer analyzer;
@@ -21,49 +25,50 @@ public class PluginSuggester {
         analyzer = new TestPlanAnalyzer();
     }
 
-    // TODO: set MINIMUM check interval
     public void checkAndSuggest(String msg) {
-        if (msg != null && msg.contains("Loading file")) {
-            String path = msg.substring(msg.indexOf(": ") + 2);
-            Set<String> nonExistentClasses = analyzer.analyze(path);
-            if (nonExistentClasses.size() > 0) {
-                Set<Plugin> pluginsToInstall = findPluginsFromClasses(nonExistentClasses);
-                if (pluginsToInstall.size() > 0) {
-                    StringBuilder message = new StringBuilder("Your JMeter does not have next plugins to open this test plan: \r\n");
-                    for (Plugin plugin : pluginsToInstall) {
-                        message.append("- '").append(plugin.getName()).append("'\r\n");
-                    }
-                    message.append("Press 'Install' button to open 'Plugins Manager' and install missing plugins");
+        Set<Plugin> pluginsToInstall = findPluginsToInstall(msg);
+        if (pluginsToInstall.size() > 0) {
 
-                    // TODO: show message windows relative to MAIN window
-                    int n = JOptionPane.showOptionDialog(
-                            createDialog(),
-                            message.toString(),
-                            "Attention! Your JMeter missing some plugins",
-                            JOptionPane.DEFAULT_OPTION,
-                            JOptionPane.WARNING_MESSAGE,
-                            null,
-                            new Object[]{"Install", "Cancel"},
-                            null);
+            PluginManager pmgr = PluginManager.getStaticManager();
+            togglePlugins(pluginsToInstall);
 
-                    // if click 'Install'
-                    if (n == JOptionPane.YES_OPTION) {
-                        PluginManagerDialog dialog = new PluginManagerDialog(PluginManager.getStaticManager());
-                        dialog.selectPluginsToInstall(pluginsToInstall);
-                        dialog.setVisible(true);
-                        dialog.setAlwaysOnTop(true);
+            int n = JOptionPane.showConfirmDialog(GuiPackage.getInstance().getMainFrame(), generateMessage(pluginsToInstall),
+                    "Attention! Your JMeter missing some plugins", JOptionPane.YES_NO_OPTION);
 
-                        System.out.println("PLS INSTALL");
-                    }
-                }
+            if (n == JOptionPane.YES_OPTION) {
+                pmgr.applyChanges(this);
+                ActionRouter.getInstance().actionPerformed(new ActionEvent(this, 0, ActionNames.EXIT));
             }
         }
     }
 
-    private Component createDialog() {
-        final JDialog dialog = new JDialog();
-        dialog.setAlwaysOnTop(true);
-        return dialog;
+    private Set<Plugin> findPluginsToInstall(String msg) {
+        if (msg != null && msg.contains("Loading file")) {
+            String path = msg.substring(msg.indexOf(": ") + 2);
+            Set<String> nonExistentClasses = analyzer.analyze(path);
+            if (nonExistentClasses.size() > 0) {
+                return findPluginsFromClasses(nonExistentClasses);
+            }
+        }
+        return Collections.emptySet();
+    }
+
+    private void togglePlugins(Set<Plugin> pluginsToInstall) {
+        PluginManager pmgr = PluginManager.getStaticManager();
+        for (Plugin plugin : pluginsToInstall) {
+            pmgr.toggleInstalled(plugin, true);
+        }
+    }
+
+    private String generateMessage(Set<Plugin> pluginsToInstall) {
+        final StringBuilder message = new StringBuilder("Your JMeter does not have next plugins to open this test plan: \r\n");
+        for (Plugin plugin : pluginsToInstall) {
+            message.append("- '").append(plugin.getName()).append("'\r\n");
+        }
+        message.append("Do you want to install plugins automatically? Will be applied next changes: \r\n");
+
+        message.append(PluginManager.getStaticManager().getChangesAsText());
+        return message.toString();
     }
 
     private Set<Plugin> findPluginsFromClasses(Set<String> nonExistentClasses) {
@@ -102,5 +107,14 @@ public class PluginSuggester {
 
     public void setAnalyzer(TestPlanAnalyzer analyzer) {
         this.analyzer = analyzer;
+    }
+
+    @Override
+    public void notify(String s) {
+        if (s.endsWith("%")) {
+            log.debug(s);
+        } else {
+            log.info(s);
+        }
     }
 }

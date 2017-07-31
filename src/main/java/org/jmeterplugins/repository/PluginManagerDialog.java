@@ -267,10 +267,4 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
             PluginsList.openInBrowser(e.getURL().toString());
         }
     }
-
-    public void selectPluginsToInstall(Set<Plugin> pluginsToInstall) {
-        JTabbedPane tabbedPane = (JTabbedPane) topAndDown.getTopComponent();
-        tabbedPane.setSelectedIndex(1);
-        available.selectPlugins(pluginsToInstall);
-    }
 }
