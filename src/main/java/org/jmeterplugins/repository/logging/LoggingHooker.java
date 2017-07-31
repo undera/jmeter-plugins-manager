@@ -15,8 +15,6 @@ public class LoggingHooker {
                 Logger logger = LoggingManager.getLoggerFor("jmeter.save.SaveService");
                 logger.setLogTargets(new LogTarget[]{new LoggerPanelWrapping()});
             } else {
-                // TODO: fix ERROR here
-                // 2017-07-31 11:12:25,783 main ERROR Attempted to append to non-started appender pmgr-logging-appender
                 Class cls = Class.forName("org.jmeterplugins.repository.logging.LoggerAppender");
                 Constructor constructor = cls.getConstructor(String.class);
                 constructor.newInstance("pmgr-logging-appender");
@@ -40,6 +38,4 @@ public class LoggingHooker {
         }
         return false;
     }
-
-
 }
