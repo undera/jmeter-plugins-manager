@@ -10,6 +10,7 @@ import org.jmeterplugins.repository.Plugin;
 import org.jmeterplugins.repository.PluginManager;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,8 +32,9 @@ public class PluginSuggester implements GenericCallback<String> {
             PluginManager pmgr = PluginManager.getStaticManager();
             togglePlugins(pluginsToInstall);
 
-            int n = JOptionPane.showConfirmDialog(GuiPackage.getInstance().getMainFrame(), generateMessage(pluginsToInstall),
-                    "Attention! Your JMeter missing some plugins", JOptionPane.YES_NO_OPTION);
+            Component parent = (GuiPackage.getInstance() != null) ? GuiPackage.getInstance().getMainFrame() : null;
+            int n = JOptionPane.showConfirmDialog(parent, generateMessage(pluginsToInstall),
+                    "JMeter Plugins Manager: Your JMeter missing some plugins", JOptionPane.YES_NO_OPTION);
 
             if (n == JOptionPane.YES_OPTION) {
                 pmgr.applyChanges(this);
@@ -80,24 +82,12 @@ public class PluginSuggester implements GenericCallback<String> {
         }
         final Set<Plugin> availablePlugins = pmgr.getAvailablePlugins();
         final Set<Plugin> pluginsToInstall = new HashSet<>();
-        for (String pluginClass : nonExistentClasses) {
-            Plugin plugin = findPlugin(pluginClass, availablePlugins);
-            if (plugin != null && !pluginsToInstall.contains(plugin)) {
+        for (Plugin plugin : availablePlugins) {
+            if (plugin.containsComponentClasses(nonExistentClasses)) {
                 pluginsToInstall.add(plugin);
             }
         }
         return pluginsToInstall;
-    }
-
-    // TODO: move it into plugin.
-    private Plugin findPlugin(String pluginClass, Set<Plugin> availablePlugins) {
-        for (Plugin plugin : availablePlugins) {
-            if (pluginClass.equals(plugin.getMarkerClass())) {
-                return plugin;
-            }
-        }
-        log.warn("Class " + pluginClass + " does not belong to any plugin");
-        return null;
     }
 
     public TestPlanAnalyzer getAnalyzer() {
