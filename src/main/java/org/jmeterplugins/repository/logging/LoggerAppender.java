@@ -24,7 +24,9 @@ public class LoggerAppender extends AbstractAppender {
 
     @Override
     public void append(LogEvent logEvent) {
-        suggester.checkAndSuggest(logEvent.getMessage().getFormattedMessage());
+        if (logEvent.getLoggerName().contains("SaveService")) {
+            suggester.checkAndSuggest(logEvent.getMessage().getFormattedMessage());
+        }
     }
 
     public PluginSuggester getSuggester() {

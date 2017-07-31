@@ -13,10 +13,11 @@ public class LoggerPanelWrapping extends LoggerPanel {
         this.suggester = new PluginSuggester();
     }
 
-
     @Override
     public void processEvent(LogEvent logEvent) {
-        suggester.checkAndSuggest(logEvent.getMessage());
+        if (logEvent.getCategory().contains("SaveService")) {
+            suggester.checkAndSuggest(logEvent.getMessage());
+        }
     }
 
     public PluginSuggester getSuggester() {
