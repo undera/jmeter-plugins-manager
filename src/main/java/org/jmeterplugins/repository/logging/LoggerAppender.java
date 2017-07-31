@@ -1,10 +1,15 @@
 package org.jmeterplugins.repository.logging;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.jmeterplugins.repository.plugins.PluginSuggester;
+import org.apache.logging.log4j.Level;
+
 
 @Plugin(name = "Logger", category = "Core", elementType = "appender", printObject = true)
 public class LoggerAppender extends AbstractAppender {
@@ -14,11 +19,9 @@ public class LoggerAppender extends AbstractAppender {
 
     public LoggerAppender(String name) {
         super(name, null, PatternLayout.createDefaultLayout());
-        org.apache.logging.log4j.core.config.Configuration configuration =
-                ((org.apache.logging.log4j.core.LoggerContext) org.apache.logging.log4j.LogManager.getContext(false)).getConfiguration();
-        configuration.getRootLogger().addAppender(
-                this,
-                org.apache.logging.log4j.Level.INFO, null);
+        start();
+        Configuration configuration = ((LoggerContext) LogManager.getContext(false)).getConfiguration();
+        configuration.getRootLogger().addAppender(this, Level.INFO, null);
         this.suggester = new PluginSuggester();
     }
 
