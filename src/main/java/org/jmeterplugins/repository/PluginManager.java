@@ -290,30 +290,6 @@ public class PluginManager {
     }
 
 
-//
-//    // Add Logger panel to JMeter since 3.2
-//    // like this call in JMeter 3.2:
-//    // GuiPackage.getInstance().getLogEventBus().registerEventListener(new LoggerPanelWrapping());
-//    private void addLoggerEventListener() {
-//        try {
-//            Class<GuiPackage> guiClass = GuiPackage.class;
-//            Method getLogEventBusMethod = guiClass.getMethod("getLogEventBus");
-//            getLogEventBusMethod.setAccessible(true);
-//            Object logEventBus = getLogEventBusMethod.invoke(GuiPackage.getInstance());
-//            Class<?> guiLogEventBusCls = logEventBus.getClass();
-//            for (Method registerEventListenerMethod : guiLogEventBusCls.getDeclaredMethods()) {
-//                if (registerEventListenerMethod.getName().equals("registerEventListener")) {
-//                    registerEventListenerMethod.setAccessible(true);
-//                    registerEventListenerMethod.invoke(logEventBus, new LoggerPanelWrapping());
-//                }
-//            }
-//        } catch (Throwable ex) {
-//            log.warn("Cannot add logger event listener to GuiPackage ", ex);
-//        }
-//    }
-
-
-
     private class PluginComparator implements java.util.Comparator<Plugin> {
         @Override
         public int compare(Plugin o1, Plugin o2) {
