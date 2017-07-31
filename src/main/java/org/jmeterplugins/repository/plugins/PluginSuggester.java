@@ -35,6 +35,7 @@ public class PluginSuggester {
                     }
                     message.append("Press 'Install' button to open 'Plugins Manager' and install missing plugins");
 
+                    // TODO: show message windows relative to MAIN window
                     int n = JOptionPane.showOptionDialog(
                             createDialog(),
                             message.toString(),

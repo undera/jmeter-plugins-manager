@@ -7,14 +7,9 @@ import net.sf.json.JSONObject;
 import org.apache.jmeter.engine.JMeterEngine;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.LogTarget;
 import org.apache.log.Logger;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.config.Configuration;
 import org.jmeterplugins.repository.exception.DownloadException;
-import org.jmeterplugins.repository.logging.LoggerAppender;
-import org.jmeterplugins.repository.logging.LoggerPanelWrapping;
+import org.jmeterplugins.repository.logging.LoggingHooker;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +28,7 @@ import java.util.TreeSet;
 
 public class PluginManager {
     private static final Logger log = LoggingManager.getLoggerForClass();
+    private static LoggingHooker hooker = new LoggingHooker();
     private static PluginManager staticManager = new PluginManager();
     private final JARSource jarSource;
     protected Map<Plugin, Boolean> allPlugins = new HashMap<>();
@@ -47,40 +43,7 @@ public class PluginManager {
         } else {
             jarSource = new JARSourceHTTP(jmProp);
         }
-        hookRouterAction();
     }
-
-    // TODO: hook just one time
-    private void hookRouterAction() {
-        if (!isJMeter32orLater()) {
-            // TODO: fix error with log4j in 2.13
-            Logger logger = LoggingManager.getLoggerFor("jmeter.save.SaveService");
-            logger.setLogTargets(new LogTarget[]{new LoggerPanelWrapping()});
-        } else {
-            // TODO: fix ERROR here
-            Configuration configuration = ((org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false)).getConfiguration();
-            configuration.getRootLogger().addAppender(LoggerAppender.createAppender("pmgr-logging-appender", true, null, null), Level.INFO, null);
-        }
-    }
-
-    public boolean isJMeter32orLater() {
-        try {
-            Class<?> cls = this.getClass().getClassLoader().loadClass("org.apache.jmeter.gui.logging.GuiLogEventBus");
-            if (cls != null) {
-                return true;
-            }
-        } catch (ClassNotFoundException ex) {
-            log.debug("Class 'org.apache.jmeter.gui.logging.GuiLogEventBus' not found", ex);
-            return false;
-        } catch (Throwable ex) {
-            log.warn("Fail to detect JMeter version", ex);
-        }
-        return false;
-    }
-
-
-
-
 
     public boolean hasPlugins() {
         return allPlugins.size() > 0;
