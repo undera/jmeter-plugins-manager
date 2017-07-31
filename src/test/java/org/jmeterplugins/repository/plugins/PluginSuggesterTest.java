@@ -7,6 +7,7 @@ import org.jmeterplugins.repository.PluginManagerTest;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.awt.*;
 import java.net.URL;
 
 
@@ -19,14 +20,16 @@ public class PluginSuggesterTest {
 
     @Test
     public void testFlow() throws Throwable {
-        URL repo = PluginManagerTest.class.getResource("/suggest.json");
-        URL testPlan = PluginManagerTest.class.getResource("/testplan.xml");
+        if (!GraphicsEnvironment.getLocalGraphicsEnvironment().isHeadlessInstance()) {
+            URL repo = PluginManagerTest.class.getResource("/suggest.json");
+            URL testPlan = PluginManagerTest.class.getResource("/testplan.xml");
 
-        JMeterUtils.setProperty("jpgc.repo.address", repo.getPath());
-        PluginManager pmgr = PluginManager.getStaticManager();
-        pmgr.load();
+            JMeterUtils.setProperty("jpgc.repo.address", repo.getPath());
+            PluginManager pmgr = PluginManager.getStaticManager();
+            pmgr.load();
 
-        PluginSuggester suggester = new PluginSuggester();
-        suggester.checkAndSuggest("Loading file : " + testPlan.getPath());
+            PluginSuggester suggester = new PluginSuggester();
+            suggester.checkAndSuggest("Loading file : " + testPlan.getPath());
+        }
     }
 }
