@@ -67,24 +67,25 @@ public class PluginSuggester {
     }
 
     private Set<Plugin> findPluginsFromClasses(Set<String> nonExistentClasses) {
+        PluginManager pmgr = PluginManager.getStaticManager();
         try {
-            PluginManager pmgr = PluginManager.getStaticManager();
             pmgr.load();
-            final Set<Plugin> availablePlugins = pmgr.getAvailablePlugins();
-            final Set<Plugin> pluginsToInstall = new HashSet<>();
-            for (String pluginClass : nonExistentClasses) {
-                Plugin plugin = findPlugin(pluginClass, availablePlugins);
-                if (plugin != null && !pluginsToInstall.contains(plugin)) {
-                    pluginsToInstall.add(plugin);
-                }
-            }
-            return pluginsToInstall;
         } catch (Throwable throwable) {
-            log.warn("Cannot load plugins repo: " + throwable);
+            log.warn("Cannot load plugins repo: ", throwable);
+            return Collections.emptySet();
         }
-        return Collections.emptySet();
+        final Set<Plugin> availablePlugins = pmgr.getAvailablePlugins();
+        final Set<Plugin> pluginsToInstall = new HashSet<>();
+        for (String pluginClass : nonExistentClasses) {
+            Plugin plugin = findPlugin(pluginClass, availablePlugins);
+            if (plugin != null && !pluginsToInstall.contains(plugin)) {
+                pluginsToInstall.add(plugin);
+            }
+        }
+        return pluginsToInstall;
     }
 
+    // TODO: move it into plugin.
     private Plugin findPlugin(String pluginClass, Set<Plugin> availablePlugins) {
         for (Plugin plugin : availablePlugins) {
             if (pluginClass.equals(plugin.getMarkerClass())) {
