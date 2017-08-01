@@ -20,8 +20,9 @@ public class LoggerPanelWrappingTest {
     @Test
     public void testFlow() throws Exception {
         if (!GraphicsEnvironment.getLocalGraphicsEnvironment().isHeadlessInstance()) {
-            LoggerPanelWrapping wrapping = new LoggerPanelWrapping(PluginManager.getStaticManager());
-            PluginSuggester suggester = new PluginSuggester(PluginManager.getStaticManager());
+            PluginManager pmgr = new PluginManager();
+            LoggerPanelWrapping wrapping = new LoggerPanelWrapping(pmgr);
+            PluginSuggester suggester = new PluginSuggester(pmgr);
             wrapping.setSuggester(suggester);
             assertEquals(suggester, wrapping.getSuggester());
             LogEvent event = new LogEvent();

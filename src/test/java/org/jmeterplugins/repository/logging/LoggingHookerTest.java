@@ -1,11 +1,9 @@
 package org.jmeterplugins.repository.logging;
 
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
 import org.jmeterplugins.repository.PluginManager;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
 public class LoggingHookerTest {
 
@@ -14,7 +12,7 @@ public class LoggingHookerTest {
      */
     @Test
     public void testFlowOld() throws Exception {
-        LoggingHooker hooker = new LoggingHooker(PluginManager.getStaticManager());
+        LoggingHooker hooker = new LoggingHooker(new PluginManager());
         hooker.hook();
         assertFalse(hooker.isJMeter32orLater());
     }

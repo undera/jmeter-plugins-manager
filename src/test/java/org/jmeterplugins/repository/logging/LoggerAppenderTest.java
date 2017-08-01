@@ -14,8 +14,9 @@ public class LoggerAppenderTest {
 
     @Test
     public void testFlow() throws Exception {
-        LoggerAppender appender = new LoggerAppender("test-appender", PluginManager.getStaticManager());
-        PluginSuggester suggester = new PluginSuggester(PluginManager.getStaticManager());
+        PluginManager pmgr = new PluginManager();
+        LoggerAppender appender = new LoggerAppender("test-appender", pmgr);
+        PluginSuggester suggester = new PluginSuggester(pmgr);
         appender.setSuggester(suggester);
         assertEquals(suggester, appender.getSuggester());
 
