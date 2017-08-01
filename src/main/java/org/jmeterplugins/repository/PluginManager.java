@@ -168,6 +168,7 @@ public class PluginManager {
             }
         }
 
+        log.info("Restarting JMeter...");
         statusChanged.notify("Restarting JMeter...");
 
         Set<String> libDeletions = new HashSet<>();
@@ -183,6 +184,7 @@ public class PluginManager {
             @Override
             public void run() {
                 try {
+                    log.info("Starting JMeter Plugins modifications");
                     startModifications(deletions, additions, libInstalls, libDeletions);
                 } catch (Exception e) {
                     log.warn("Failed to run plugin cleaner job", e);
@@ -205,25 +207,25 @@ public class PluginManager {
     public String getChangesAsText() {
         DependencyResolver resolver = new DependencyResolver(allPlugins);
 
-        String text = "";
+        StringBuilder text = new StringBuilder();
 
         for (Plugin pl : resolver.getDeletions()) {
-            text += "Uninstall plugin: " + pl + " " + pl.getInstalledVersion() + "\n";
+            text.append("Uninstall plugin: ").append(pl).append(" ").append(pl.getInstalledVersion()).append("\n");
         }
 
         for (String pl : resolver.getLibDeletions()) {
-            text += "Uninstall library: " + pl + "\n";
+            text.append("Uninstall library: ").append(pl).append("\n");
         }
 
         for (String pl : resolver.getLibAdditions().keySet()) {
-            text += "Install library: " + pl + "\n";
+            text.append("Install library: ").append(pl).append("\n");
         }
 
         for (Plugin pl : resolver.getAdditions()) {
-            text += "Install plugin: " + pl + " " + pl.getCandidateVersion() + "\n";
+            text.append("Install plugin: ").append(pl).append(" ").append(pl.getCandidateVersion()).append("\n");
         }
 
-        return text;
+        return text.toString();
     }
 
     public Set<Plugin> getInstalledPlugins() {
@@ -392,21 +394,21 @@ public class PluginManager {
             }
             name = removeJARVersion(name);
             if (jarNames.containsKey(name)) {
-                log.warn("Found JAR conflict: " + path +  " and " + jarNames.get(name));
+                log.warn("Found JAR conflict: " + path + " and " + jarNames.get(name));
             }
             jarNames.put(name, path);
         }
     }
 
     protected static String removeJARVersion(String path) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         String data[] = path.split("-");
         for (int i = 0; i < data.length; i++) {
             String ch = data[i];
             if (!ch.isEmpty() && (!Character.isDigit(ch.charAt(0)) || (i < data.length - 1))) {
-                result  += ch;
+                result.append(ch);
             }
         }
-        return  result;
+        return result.toString();
     }
 }
