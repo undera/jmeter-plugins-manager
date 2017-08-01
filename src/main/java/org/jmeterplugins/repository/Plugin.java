@@ -72,13 +72,14 @@ public class Plugin {
         }
         if (elm.containsKey("componentClasses")) {
             JSONArray components = elm.getJSONArray("componentClasses");
+            final ArrayList<String> data = new ArrayList<>();
+            data.add(inst.markerClass);
             if (components.size() > 0) {
-                ArrayList<String> data = new ArrayList<>();
                 for (int i = 0; i < components.size(); i++) {
                     data.add(components.getString(i));
                 }
-                inst.componentClasses = data;
             }
+            inst.componentClasses = data;
         }
         return inst;
     }
