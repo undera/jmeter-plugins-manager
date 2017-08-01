@@ -25,6 +25,8 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
         addActionListener(this);
 
         mgr = new PluginManager(); // don't delay startup for longer that 1 second
+        LoggingHooker hooker = new LoggingHooker(mgr);
+        hooker.hook();
         try {
             mgr.load();
         } catch (Throwable e) {
@@ -34,8 +36,6 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
         if (mgr.hasAnyUpdates()) {
             setText("Plugins Manager (has upgrades)");
         }
-        LoggingHooker hooker = new LoggingHooker(mgr);
-        hooker.hook();
     }
 
     @Override
