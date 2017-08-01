@@ -9,7 +9,6 @@ import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.jmeterplugins.repository.exception.DownloadException;
-import org.jmeterplugins.repository.logging.LoggingHooker;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +27,6 @@ import java.util.TreeSet;
 
 public class PluginManager {
     private static final Logger log = LoggingManager.getLoggerForClass();
-    private static LoggingHooker hooker = new LoggingHooker();
     private static PluginManager staticManager = new PluginManager();
     private final JARSource jarSource;
     protected Map<Plugin, Boolean> allPlugins = new HashMap<>();
