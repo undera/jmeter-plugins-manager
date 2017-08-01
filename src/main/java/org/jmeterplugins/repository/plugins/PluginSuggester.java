@@ -44,7 +44,7 @@ public class PluginSuggester implements GenericCallback<String> {
         }
     }
 
-    private Set<Plugin> findPluginsToInstall(String msg) {
+    protected Set<Plugin> findPluginsToInstall(String msg) {
         if (msg != null && msg.contains("Loading file")) {
             String path = msg.substring(msg.indexOf(": ") + 2);
             Set<String> nonExistentClasses = analyzer.analyze(path);
@@ -55,13 +55,13 @@ public class PluginSuggester implements GenericCallback<String> {
         return Collections.emptySet();
     }
 
-    private void togglePlugins(Set<Plugin> pluginsToInstall) {
+    protected void togglePlugins(Set<Plugin> pluginsToInstall) {
         for (Plugin plugin : pluginsToInstall) {
             pmgr.toggleInstalled(plugin, true);
         }
     }
 
-    private String generateMessage(Set<Plugin> pluginsToInstall) {
+    protected String generateMessage(Set<Plugin> pluginsToInstall) {
         final StringBuilder message = new StringBuilder("Your JMeter does not have next plugins to open this test plan: \r\n");
         for (Plugin plugin : pluginsToInstall) {
             message.append("- '").append(plugin.getName()).append("'\r\n");
@@ -72,7 +72,7 @@ public class PluginSuggester implements GenericCallback<String> {
         return message.toString();
     }
 
-    private Set<Plugin> findPluginsFromClasses(Set<String> nonExistentClasses) {
+    protected Set<Plugin> findPluginsFromClasses(Set<String> nonExistentClasses) {
         try {
             pmgr.load();
         } catch (Throwable throwable) {
