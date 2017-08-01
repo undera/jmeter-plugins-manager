@@ -2,15 +2,15 @@ package org.jmeterplugins.repository.plugins;
 
 import org.apache.jmeter.gui.action.ActionNames;
 import org.apache.jmeter.gui.action.ActionRouter;
-import org.apache.jmeter.gui.util.VerticalPanel;
 import org.apache.jorphan.gui.ComponentUtil;
+import org.apache.jorphan.logging.LoggingManager;
+import org.apache.log.Logger;
 import org.jmeterplugins.repository.GenericCallback;
 import org.jmeterplugins.repository.Plugin;
 import org.jmeterplugins.repository.PluginManager;
 import org.jmeterplugins.repository.PluginManagerMenuItem;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,8 +18,8 @@ import java.util.Set;
 
 import static org.jmeterplugins.repository.PluginManagerDialog.SPACING;
 
-public class SuggestDialog extends JDialog {
-
+public class SuggestDialog extends JDialog implements GenericCallback<String> {
+    private static final Logger log = LoggingManager.getLoggerForClass();
     private final PluginManager manager;
     private JLabel titleLabel = new JLabel("");
     private JLabel statusLabel = new JLabel("");
@@ -40,7 +40,7 @@ public class SuggestDialog extends JDialog {
         setIconImage(PluginManagerMenuItem.getPluginsIcon().getImage());
         ComponentUtil.centerComponentInWindow(this);
 
-        JPanel mainPanel = new JPanel(new BorderLayout(0,0));
+        JPanel mainPanel = new JPanel(new BorderLayout(0, 0));
         mainPanel.setBorder(SPACING);
 
         final StringBuilder message = new StringBuilder("<html><p>Your test plan requires following plugins:</p><ul>");
@@ -63,28 +63,25 @@ public class SuggestDialog extends JDialog {
     }
 
     private JPanel getButtonsPanel() {
-        JButton btnYes = new JButton("Yes, install it");
+        final JButton btnYes = new JButton("Yes, install it");
+        final JButton btnNo = new JButton("Cancel");
+        final SuggestDialog dialog = this;
         btnYes.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                manager.applyChanges(new GenericCallback<String>() {
-                    @Override
-                    public void notify(final String s) {
-                        SwingUtilities.invokeLater(
-                                new Runnable() {
+                btnYes.setEnabled(false);
+                btnNo.setEnabled(false);
 
-                                    @Override
-                                    public void run() {
-                                        statusLabel.setText(s);
-                                        repaint();
-                                    }
-                                });
+                new Thread() {
+                    @Override
+                    public void run() {
+                        manager.applyChanges(dialog);
+                        dispose();
+                        ActionRouter.getInstance().actionPerformed(new ActionEvent(this, 0, ActionNames.EXIT));
                     }
-                });
-                ActionRouter.getInstance().actionPerformed(new ActionEvent(this, 0, ActionNames.EXIT));
+                }.start();
             }
         });
 
-        JButton btnNo = new JButton("Cancel");
         btnNo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 dispose();
@@ -112,4 +109,17 @@ public class SuggestDialog extends JDialog {
         return messagePanel;
     }
 
+    @Override
+    public void notify(final String s) {
+        SwingUtilities.invokeLater(
+                new Runnable() {
+
+                    @Override
+                    public void run() {
+                        statusLabel.setText(s);
+                        repaint();
+                    }
+                });
+
+    }
 }
