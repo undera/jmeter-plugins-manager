@@ -51,13 +51,10 @@ public class PluginSuggesterTest {
         assertEquals(analyzer, suggester.getAnalyzer());
 
         suggester.togglePlugins(pmgr.getAvailablePlugins());
-        String msg = suggester.generateMessage(pmgr.getAvailablePlugins());
+        String msg = pmgr.getChangesAsText();
 
-        assertTrue(msg.contains("Dependency plugin1"));
-        assertTrue(msg.contains("Dependency plugin2"));
-
-        suggester.notify("123%");
-        suggester.notify("123");
+        assertTrue(msg.contains("jpgc-plugin1"));
+        assertTrue(msg.contains("jpgc-plugin2"));
     }
 
     @AfterClass

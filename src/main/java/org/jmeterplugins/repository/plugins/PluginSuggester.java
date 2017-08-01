@@ -1,22 +1,17 @@
 package org.jmeterplugins.repository.plugins;
 
 import org.apache.jmeter.gui.GuiPackage;
-import org.apache.jmeter.gui.action.ActionNames;
-import org.apache.jmeter.gui.action.ActionRouter;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
-import org.jmeterplugins.repository.GenericCallback;
 import org.jmeterplugins.repository.Plugin;
 import org.jmeterplugins.repository.PluginManager;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class PluginSuggester implements GenericCallback<String> {
+public class PluginSuggester  {
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     protected TestPlanAnalyzer analyzer;
@@ -33,14 +28,10 @@ public class PluginSuggester implements GenericCallback<String> {
 
             togglePlugins(pluginsToInstall);
 
-            Component parent = (GuiPackage.getInstance() != null) ? GuiPackage.getInstance().getMainFrame() : null;
-            int n = JOptionPane.showConfirmDialog(parent, generateMessage(pluginsToInstall),
-                    "JMeter Plugins Manager: Your JMeter missing some plugins", JOptionPane.YES_NO_OPTION);
-
-            if (n == JOptionPane.YES_OPTION) {
-                pmgr.applyChanges(this);
-                ActionRouter.getInstance().actionPerformed(new ActionEvent(this, 0, ActionNames.EXIT));
-            }
+            Frame parent = (GuiPackage.getInstance() != null) ? GuiPackage.getInstance().getMainFrame() : null;
+            SuggestDialog dialog = new SuggestDialog(parent, pmgr, pluginsToInstall);
+            dialog.setVisible(true);
+            dialog.setAlwaysOnTop(true);
         }
     }
 
@@ -61,16 +52,7 @@ public class PluginSuggester implements GenericCallback<String> {
         }
     }
 
-    protected String generateMessage(Set<Plugin> pluginsToInstall) {
-        final StringBuilder message = new StringBuilder("Your JMeter does not have next plugins to open this test plan: \r\n");
-        for (Plugin plugin : pluginsToInstall) {
-            message.append("- '").append(plugin.getName()).append("'\r\n");
-        }
-        message.append("Do you want to install plugins automatically? Will be applied next changes: \r\n");
 
-        message.append(pmgr.getChangesAsText());
-        return message.toString();
-    }
 
     protected Set<Plugin> findPluginsFromClasses(Set<String> nonExistentClasses) {
         try {
@@ -97,12 +79,4 @@ public class PluginSuggester implements GenericCallback<String> {
         this.analyzer = analyzer;
     }
 
-    @Override
-    public void notify(String s) {
-        if (s.endsWith("%")) {
-            log.debug(s);
-        } else {
-            log.info(s);
-        }
-    }
 }
