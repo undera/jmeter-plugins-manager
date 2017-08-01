@@ -4,6 +4,7 @@ import kg.apc.emulators.TestJMeterUtils;
 import org.apache.jmeter.util.JMeterUtils;
 import org.jmeterplugins.repository.PluginManager;
 import org.jmeterplugins.repository.PluginManagerTest;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -57,5 +58,10 @@ public class PluginSuggesterTest {
 
         suggester.notify("123%");
         suggester.notify("123");
+    }
+
+    @AfterClass
+    public static void tearDown() throws Exception {
+        JMeterUtils.getJMeterProperties().remove("jpgc.repo.address");
     }
 }
