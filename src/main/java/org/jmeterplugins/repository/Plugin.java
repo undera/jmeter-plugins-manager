@@ -42,7 +42,7 @@ public class Plugin {
     protected String vendor;
     protected String candidateVersion;
     protected String installerClass = null;
-    protected List<String> componentClasses = Collections.emptyList();
+    protected List<String> componentClasses;
     protected boolean canUninstall = true;
 
     public Plugin(String aId) {
@@ -53,6 +53,18 @@ public class Plugin {
         Plugin inst = new Plugin(elm.getString("id"));
         if (!(elm.get("markerClass") instanceof JSONNull)) {
             inst.markerClass = elm.getString("markerClass");
+        }
+        inst.componentClasses = new ArrayList<>();
+        if (inst.markerClass != null) {
+            inst.componentClasses.add(inst.markerClass);
+        }
+        if (elm.containsKey("componentClasses")) {
+            JSONArray componentsJSON = elm.getJSONArray("componentClasses");
+            if (componentsJSON.size() > 0) {
+                for (int i = 0; i < componentsJSON.size(); i++) {
+                    inst.componentClasses.add(componentsJSON.getString(i));
+                }
+            }
         }
         if (elm.get("versions") instanceof JSONObject) {
             inst.versions = elm.getJSONObject("versions");
@@ -69,17 +81,6 @@ public class Plugin {
         }
         if (elm.containsKey("installerClass")) {
             inst.installerClass = elm.getString("installerClass");
-        }
-        if (elm.containsKey("componentClasses")) {
-            JSONArray components = elm.getJSONArray("componentClasses");
-            final ArrayList<String> data = new ArrayList<>();
-            data.add(inst.markerClass);
-            if (components.size() > 0) {
-                for (int i = 0; i < components.size(); i++) {
-                    data.add(components.getString(i));
-                }
-            }
-            inst.componentClasses = data;
         }
         return inst;
     }
