@@ -11,9 +11,6 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
 public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
-    /**
-     *
-     */
     private static final long serialVersionUID = -8708638472918746046L;
     private static final Logger log = LoggingManager.getLoggerForClass();
     private static PluginManagerDialog dialog;
