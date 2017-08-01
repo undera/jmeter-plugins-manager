@@ -29,9 +29,6 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 
 public class PluginsList extends JPanel implements ListSelectionListener, HyperlinkListener {
-    /**
-     *
-     */
     private static final long serialVersionUID = 295116233618658217L;
 
     private static final Logger log = LoggingManager.getLoggerForClass();

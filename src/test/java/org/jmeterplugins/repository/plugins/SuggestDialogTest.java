@@ -22,7 +22,6 @@ public class SuggestDialogTest {
             PluginManager pmgr = new PluginManager();
             SuggestDialog suggestDialog = new SuggestDialog(null, pmgr, pmgr.getAvailablePlugins());
             suggestDialog.setVisible(true);
-            assertTrue(suggestDialog.generateMessage(pmgr.getInstalledPlugins()).contains("Your JMeter"));
         }
     }
 }

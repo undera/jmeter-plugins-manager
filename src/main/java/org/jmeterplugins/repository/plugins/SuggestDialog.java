@@ -10,6 +10,7 @@ import org.jmeterplugins.repository.PluginManager;
 import org.jmeterplugins.repository.PluginManagerMenuItem;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,6 +21,7 @@ import static org.jmeterplugins.repository.PluginManagerDialog.SPACING;
 public class SuggestDialog extends JDialog {
 
     private final PluginManager manager;
+    private JLabel titleLabel = new JLabel("");
     private JLabel statusLabel = new JLabel("");
 
     public SuggestDialog(Frame parent, PluginManager manager, Set<Plugin> plugins) {
@@ -31,37 +33,37 @@ public class SuggestDialog extends JDialog {
 
     private void init(Set<Plugin> plugins) {
         setLayout(new BorderLayout());
-        Dimension size = new Dimension(450, 250);
+        Dimension size = new Dimension(800, 600);
         setSize(size);
         setPreferredSize(size);
         setResizable(false);
         setIconImage(PluginManagerMenuItem.getPluginsIcon().getImage());
         ComponentUtil.centerComponentInWindow(this);
 
-        JPanel panel = createPanel(plugins);
-        add(panel);
-        pack();
+        JPanel mainPanel = new JPanel(new BorderLayout(0,0));
+        mainPanel.setBorder(SPACING);
+
+        final StringBuilder message = new StringBuilder("<html><p>Your test plan requires following plugins:</p><ul>");
+        for (Plugin plugin : plugins) {
+            message.append("<li>").append(plugin.getName()).append("</li>");
+        }
+        message.append("</ul>");
+        message.append("<p></p>");
+        message.append("<p>Plugins Manager can install it automatically. Following changes will be applied:</p>");
+        message.append("</html>");
+        titleLabel.setText(message.toString());
+        mainPanel.add(titleLabel, BorderLayout.NORTH);
+
+        mainPanel.add(getDetailsPanel(), BorderLayout.CENTER);
+
+        mainPanel.add(getButtonsPanel(), BorderLayout.SOUTH);
+
+        add(mainPanel, BorderLayout.CENTER);
+        //pack();
     }
 
-    private JPanel createPanel(Set<Plugin> plugins) {
-        Dimension size = new Dimension(450, 170);
-        VerticalPanel mainPanel = new VerticalPanel();
-        mainPanel.setSize(size);
-        mainPanel.setPreferredSize(size);
-
-        JTextArea messageLabel = new JTextArea(generateMessage(plugins));
-        messageLabel.setEditable(false);
-
-        JPanel messagePanel = new JPanel(new BorderLayout());
-        messagePanel.setMaximumSize(size);
-        messagePanel.setPreferredSize(size);
-        messagePanel.setBorder(SPACING);
-        messagePanel.add(new JScrollPane(messageLabel));
-
-        mainPanel.add(messagePanel);
-
-
-        JButton btnYes = new JButton("Yes");
+    private JPanel getButtonsPanel() {
+        JButton btnYes = new JButton("Yes, install it");
         btnYes.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 manager.applyChanges(new GenericCallback<String>() {
@@ -82,13 +84,12 @@ public class SuggestDialog extends JDialog {
             }
         });
 
-        JButton btnNo = new JButton("No");
+        JButton btnNo = new JButton("Cancel");
         btnNo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 dispose();
             }
         });
-
 
         JPanel buttons = new JPanel(new FlowLayout());
         buttons.add(btnYes);
@@ -97,18 +98,18 @@ public class SuggestDialog extends JDialog {
         btnPanel.setBorder(SPACING);
         btnPanel.add(buttons, BorderLayout.EAST);
         btnPanel.add(statusLabel, BorderLayout.WEST);
-        mainPanel.add(btnPanel);
-        return mainPanel;
+        return btnPanel;
     }
 
-    protected String generateMessage(Set<Plugin> plugins) {
-        final StringBuilder message = new StringBuilder("Your JMeter does not have next plugins to open this test plan: \r\n");
-        for (Plugin plugin : plugins) {
-            message.append("- '").append(plugin.getName()).append("'\r\n");
-        }
-        message.append("Do you want to install plugins automatically?\r\nWill be applied next changes: \r\n");
+    private JPanel getDetailsPanel() {
+        JTextArea messageLabel = new JTextArea(manager.getChangesAsText());
+        messageLabel.setEditable(false);
 
-        message.append(manager.getChangesAsText());
-        return message.toString();
+        JPanel messagePanel = new JPanel(new BorderLayout());
+        messagePanel.setBorder(SPACING);
+        messagePanel.add(new JScrollPane(messageLabel));
+
+        return messagePanel;
     }
+
 }
