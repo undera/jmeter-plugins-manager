@@ -289,7 +289,6 @@ public class PluginManager {
         this.doRestart = doRestart;
     }
 
-
     private class PluginComparator implements java.util.Comparator<Plugin> {
         @Override
         public int compare(Plugin o1, Plugin o2) {
