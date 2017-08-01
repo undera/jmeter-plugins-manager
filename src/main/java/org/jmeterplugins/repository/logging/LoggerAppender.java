@@ -10,6 +10,7 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.filter.AbstractFilter;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.jmeterplugins.repository.PluginManager;
 import org.jmeterplugins.repository.plugins.PluginSuggester;
 
 
@@ -18,12 +19,12 @@ public class LoggerAppender extends AbstractAppender {
 
     protected PluginSuggester suggester;
 
-    public LoggerAppender(String name) {
+    public LoggerAppender(String name, PluginManager pmgr) {
         super(name, new SaveServiceFilter(Filter.Result.ACCEPT, Filter.Result.DENY), PatternLayout.createDefaultLayout());
         start();
         Configuration configuration = ((LoggerContext) LogManager.getContext(false)).getConfiguration();
         configuration.getRootLogger().addAppender(this, Level.INFO, new SaveServiceFilter(Filter.Result.ACCEPT, Filter.Result.DENY));
-        this.suggester = new PluginSuggester();
+        this.suggester = new PluginSuggester(pmgr);
     }
 
     @Override

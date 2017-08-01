@@ -20,8 +20,10 @@ public class PluginSuggester implements GenericCallback<String> {
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     protected TestPlanAnalyzer analyzer;
+    private final PluginManager pmgr;
 
-    public PluginSuggester() {
+    public PluginSuggester(PluginManager pmgr) {
+        this.pmgr = pmgr;
         analyzer = new TestPlanAnalyzer();
     }
 
@@ -29,7 +31,6 @@ public class PluginSuggester implements GenericCallback<String> {
         Set<Plugin> pluginsToInstall = findPluginsToInstall(msg);
         if (pluginsToInstall.size() > 0) {
 
-            PluginManager pmgr = PluginManager.getStaticManager();
             togglePlugins(pluginsToInstall);
 
             Component parent = (GuiPackage.getInstance() != null) ? GuiPackage.getInstance().getMainFrame() : null;
@@ -55,7 +56,6 @@ public class PluginSuggester implements GenericCallback<String> {
     }
 
     private void togglePlugins(Set<Plugin> pluginsToInstall) {
-        PluginManager pmgr = PluginManager.getStaticManager();
         for (Plugin plugin : pluginsToInstall) {
             pmgr.toggleInstalled(plugin, true);
         }
@@ -68,12 +68,11 @@ public class PluginSuggester implements GenericCallback<String> {
         }
         message.append("Do you want to install plugins automatically? Will be applied next changes: \r\n");
 
-        message.append(PluginManager.getStaticManager().getChangesAsText());
+        message.append(pmgr.getChangesAsText());
         return message.toString();
     }
 
     private Set<Plugin> findPluginsFromClasses(Set<String> nonExistentClasses) {
-        PluginManager pmgr = PluginManager.getStaticManager();
         try {
             pmgr.load();
         } catch (Throwable throwable) {
