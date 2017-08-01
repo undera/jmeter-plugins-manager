@@ -42,6 +42,7 @@ public class Plugin {
     protected String vendor;
     protected String candidateVersion;
     protected String installerClass = null;
+    protected List<String> componentClasses;
     protected boolean canUninstall = true;
 
     public Plugin(String aId) {
@@ -52,6 +53,18 @@ public class Plugin {
         Plugin inst = new Plugin(elm.getString("id"));
         if (!(elm.get("markerClass") instanceof JSONNull)) {
             inst.markerClass = elm.getString("markerClass");
+        }
+        inst.componentClasses = new ArrayList<>();
+        if (inst.markerClass != null) {
+            inst.componentClasses.add(inst.markerClass);
+        }
+        if (elm.containsKey("componentClasses")) {
+            JSONArray componentsJSON = elm.getJSONArray("componentClasses");
+            if (componentsJSON.size() > 0) {
+                for (int i = 0; i < componentsJSON.size(); i++) {
+                    inst.componentClasses.add(componentsJSON.getString(i));
+                }
+            }
         }
         if (elm.get("versions") instanceof JSONObject) {
             inst.versions = elm.getJSONObject("versions");
@@ -349,6 +362,15 @@ public class Plugin {
 
     public String getInstallerClass() {
         return installerClass;
+    }
+
+    public boolean containsComponentClasses(Set<String> classes) {
+        for (String cls : componentClasses) {
+            if (classes.contains(cls)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private class VersionComparator implements java.util.Comparator<String> {

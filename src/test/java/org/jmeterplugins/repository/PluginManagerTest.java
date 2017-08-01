@@ -48,6 +48,9 @@ public class PluginManagerTest {
         }
     }
 
+    /**
+     * If Failed check, with what repo initialized STATIC pmgr.... it must be "/testVirtualPlugin.json"
+     */
     @Test
     public void testStatus() throws IOException {
         String res = PluginManager.getAllPluginsStatus();
@@ -55,6 +58,9 @@ public class PluginManagerTest {
         assertEquals(expected, res);
     }
 
+    /**
+     * If Failed check, with what repo initialized STATIC pmgr.... it must be "/testVirtualPlugin.json"
+     */
     @Test
     public void testStatusSingle() throws IOException {
         assertEquals("0.0.0-STOCK", PluginManager.getPluginStatus("jpgc-dep2"));
