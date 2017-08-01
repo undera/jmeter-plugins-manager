@@ -420,8 +420,4 @@ public class Plugin {
     public boolean isVirtual() {
         return markerClass == null;
     }
-
-    public String getMarkerClass() {
-        return markerClass;
-    }
 }
