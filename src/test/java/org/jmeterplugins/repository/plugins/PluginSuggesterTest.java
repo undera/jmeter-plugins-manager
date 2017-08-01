@@ -28,7 +28,7 @@ public class PluginSuggesterTest {
             PluginManager pmgr = PluginManager.getStaticManager();
             pmgr.load();
 
-            PluginSuggester suggester = new PluginSuggester();
+            PluginSuggester suggester = new PluginSuggester(pmgr);
             suggester.checkAndSuggest("Loading file : " + testPlan.getPath());
         }
     }
