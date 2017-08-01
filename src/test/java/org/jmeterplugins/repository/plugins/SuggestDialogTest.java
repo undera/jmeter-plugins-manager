@@ -5,6 +5,7 @@ import org.jmeterplugins.repository.PluginManager;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.awt.*;
 
 import static org.junit.Assert.*;
 
@@ -17,8 +18,11 @@ public class SuggestDialogTest {
 
     @Test
     public void testComponent() throws Exception {
-        PluginManager pmgr = new PluginManager();
-        SuggestDialog suggestDialog = new SuggestDialog(null, pmgr, pmgr.getAvailablePlugins());
-        assertTrue(suggestDialog.generateMessage(pmgr.getInstalledPlugins()).contains("Your JMeter"));
+        if (!GraphicsEnvironment.getLocalGraphicsEnvironment().isHeadlessInstance()) {
+            PluginManager pmgr = new PluginManager();
+            SuggestDialog suggestDialog = new SuggestDialog(null, pmgr, pmgr.getAvailablePlugins());
+            suggestDialog.setVisible(true);
+            assertTrue(suggestDialog.generateMessage(pmgr.getInstalledPlugins()).contains("Your JMeter"));
+        }
     }
 }
