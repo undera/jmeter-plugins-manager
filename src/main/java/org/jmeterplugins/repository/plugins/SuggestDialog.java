@@ -33,10 +33,6 @@ public class SuggestDialog extends JDialog implements GenericCallback<String> {
 
     private void init(Set<Plugin> plugins) {
         setLayout(new BorderLayout());
-        Dimension size = new Dimension(800, 600);
-        setSize(size);
-        setPreferredSize(size);
-        setResizable(false);
         setIconImage(PluginManagerMenuItem.getPluginsIcon().getImage());
         ComponentUtil.centerComponentInWindow(this);
 
@@ -59,7 +55,7 @@ public class SuggestDialog extends JDialog implements GenericCallback<String> {
         mainPanel.add(getButtonsPanel(), BorderLayout.SOUTH);
 
         add(mainPanel, BorderLayout.CENTER);
-        //pack();
+        pack();
     }
 
     private JPanel getButtonsPanel() {
