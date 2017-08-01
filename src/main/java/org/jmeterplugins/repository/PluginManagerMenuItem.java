@@ -9,6 +9,7 @@ import javax.swing.JMenuItem;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.jmeterplugins.repository.logging.LoggingHooker;
 
 public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
     /**
@@ -24,6 +25,8 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
         addActionListener(this);
 
         mgr = new PluginManager(); // don't delay startup for longer that 1 second
+        LoggingHooker hooker = new LoggingHooker(mgr);
+        hooker.hook();
         try {
             mgr.load();
         } catch (Throwable e) {
