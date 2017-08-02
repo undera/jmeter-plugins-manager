@@ -64,7 +64,6 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         PluginManager mgr = new PluginManager();
         mgr.setTimeout(30000); // TODO: add property?
         mgr.load();
-        mgr.setDoRestart(false);
 
         for (Map.Entry<String, String> pluginSpec : params.entrySet()) {
             Plugin plugin = mgr.getPluginByID(pluginSpec.getKey());
@@ -73,7 +72,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
             }
             mgr.toggleInstalled(plugin, install);
         }
-        mgr.applyChanges(this);
+        mgr.applyChanges(this, false, null);
     }
 
     private Map<String, String> parseParams(String paramStr) {

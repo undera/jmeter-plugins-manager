@@ -1,5 +1,6 @@
 package org.jmeterplugins.repository.plugins;
 
+import org.apache.jmeter.gui.GuiPackage;
 import org.apache.jmeter.gui.action.ActionNames;
 import org.apache.jmeter.gui.action.ActionRouter;
 import org.apache.jorphan.gui.ComponentUtil;
@@ -14,6 +15,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.LinkedList;
 import java.util.Set;
 
 import static org.jmeterplugins.repository.PluginManagerDialog.SPACING;
@@ -24,14 +26,14 @@ public class SuggestDialog extends JDialog implements GenericCallback<String> {
     private JLabel titleLabel = new JLabel("");
     private JLabel statusLabel = new JLabel("");
 
-    public SuggestDialog(Frame parent, PluginManager manager, Set<Plugin> plugins) {
+    public SuggestDialog(Frame parent, PluginManager manager, Set<Plugin> plugins, final String testPlan) {
         super(parent, "JMeter Plugins Manager", true);
         setLocationRelativeTo(parent);
         this.manager = manager;
-        init(plugins);
+        init(plugins, testPlan);
     }
 
-    private void init(Set<Plugin> plugins) {
+    private void init(Set<Plugin> plugins, final String testPlan) {
         setLayout(new BorderLayout());
         setIconImage(PluginManagerMenuItem.getPluginsIcon().getImage());
         ComponentUtil.centerComponentInWindow(this);
@@ -52,13 +54,13 @@ public class SuggestDialog extends JDialog implements GenericCallback<String> {
 
         mainPanel.add(getDetailsPanel(), BorderLayout.CENTER);
 
-        mainPanel.add(getButtonsPanel(), BorderLayout.SOUTH);
+        mainPanel.add(getButtonsPanel(plugins, testPlan), BorderLayout.SOUTH);
 
         add(mainPanel, BorderLayout.CENTER);
         pack();
     }
 
-    private JPanel getButtonsPanel() {
+    private JPanel getButtonsPanel(final Set<Plugin> plugins, final String testPlan) {
         final JButton btnYes = new JButton("Yes, install it");
         final JButton btnNo = new JButton("Cancel");
         final SuggestDialog dialog = this;
@@ -70,7 +72,10 @@ public class SuggestDialog extends JDialog implements GenericCallback<String> {
                 new Thread() {
                     @Override
                     public void run() {
-                        manager.applyChanges(dialog);
+                        LinkedList<String> options = new LinkedList<>();
+                        options.add("-t");
+                        options.add(testPlan);
+                        manager.applyChanges(dialog, true, options);
                         dispose();
                         ActionRouter.getInstance().actionPerformed(new ActionEvent(this, 0, ActionNames.EXIT));
                     }
@@ -80,6 +85,7 @@ public class SuggestDialog extends JDialog implements GenericCallback<String> {
 
         btnNo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                manager.togglePlugins(plugins, false);
                 dispose();
             }
         });
