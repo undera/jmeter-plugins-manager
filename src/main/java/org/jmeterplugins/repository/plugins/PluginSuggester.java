@@ -38,11 +38,13 @@ public class PluginSuggester  {
     protected Set<Plugin> findPluginsToInstall(String msg) {
         if (msg != null && msg.contains("Loading file")) {
             String path = msg.substring(msg.indexOf(": ") + 2);
-            pmgr.clearAdditionalJMeterOption();
-            pmgr.addAdditionalJMeterOptions("-t", path);
-            Set<String> nonExistentClasses = analyzer.analyze(path);
-            if (nonExistentClasses.size() > 0) {
-                return findPluginsFromClasses(nonExistentClasses);
+            if (!"null".equals(path)) {
+                pmgr.clearAdditionalJMeterOption();
+                pmgr.addAdditionalJMeterOptions("-t", path);
+                Set<String> nonExistentClasses = analyzer.analyze(path);
+                if (nonExistentClasses.size() > 0) {
+                    return findPluginsFromClasses(nonExistentClasses);
+                }
             }
         }
         return Collections.emptySet();
