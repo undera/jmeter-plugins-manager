@@ -64,7 +64,7 @@ public class PluginSuggesterTest {
         assertEquals(1, plugins.size());
         assertEquals("jpgc-plugin2", plugins.toArray(new Plugin[1])[0].getID());
 
-        suggester.togglePlugins(pmgr.getAvailablePlugins());
+        pmgr.togglePlugins(pmgr.getAvailablePlugins(), true);
         String msg = pmgr.getChangesAsText();
 
         assertTrue(msg.contains("jpgc-plugin1"));
