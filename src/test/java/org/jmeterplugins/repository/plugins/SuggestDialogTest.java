@@ -20,7 +20,7 @@ public class SuggestDialogTest {
     public void testComponent() throws Exception {
         if (!GraphicsEnvironment.getLocalGraphicsEnvironment().isHeadlessInstance()) {
             PluginManager pmgr = new PluginManager();
-            SuggestDialog suggestDialog = new SuggestDialog(null, pmgr, pmgr.getAvailablePlugins());
+            SuggestDialog suggestDialog = new SuggestDialog(null, pmgr, pmgr.getAvailablePlugins(), "path");
             suggestDialog.setVisible(true);
         }
     }

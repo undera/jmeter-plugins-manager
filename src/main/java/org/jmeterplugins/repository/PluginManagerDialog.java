@@ -11,6 +11,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.LinkedList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -29,6 +30,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import org.apache.jmeter.gui.GuiPackage;
 import org.apache.jmeter.gui.action.ActionNames;
 import org.apache.jmeter.gui.action.ActionRouter;
 import org.apache.jorphan.gui.ComponentUtil;
@@ -215,7 +217,10 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
                     }
                 };
                 try {
-                    manager.applyChanges(statusChanged);
+                    LinkedList<String> options = new LinkedList<>();
+                    options.add("-t");
+                    options.add(GuiPackage.getInstance().getTestPlanFile());
+                    manager.applyChanges(statusChanged, true, options);
                     ActionRouter.getInstance().actionPerformed(new ActionEvent(this, 0, ActionNames.EXIT));
                 } catch (DownloadException ex) {
                     enableComponents(true);

@@ -7,6 +7,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,9 +57,9 @@ public class ChangesMaker {
     }
 
 
-    public File getRestartFile() throws IOException {
+    public File getRestartFile(LinkedList<String> additionalJMeterOptions) throws IOException {
         File file = File.createTempFile("jpgc-restart-", ".list");
-        try (PrintWriter out = new PrintWriter(file);) {
+        try (PrintWriter out = new PrintWriter(file)) {
 
             out.print(SafeDeleter.getJVM() + "\n");
 
@@ -70,10 +71,20 @@ public class ChangesMaker {
 
             out.print("-jar\n");
 
-            out.print(JMeterUtils.getJMeterBinDir() + File.separator + "ApacheJMeter.jar\n");
+            out.print(getJMeterStartCommand(additionalJMeterOptions));
 
             return file;
         }
+    }
+
+    private String getJMeterStartCommand(LinkedList<String> additionalJMeterOptions) {
+        StringBuilder cmd = new StringBuilder(JMeterUtils.getJMeterBinDir() + File.separator + "ApacheJMeter.jar\n");
+        if (additionalJMeterOptions != null) {
+            for (String option : additionalJMeterOptions) {
+                cmd.append(option).append("\n");
+            }
+        }
+        return cmd.toString();
     }
 
     public File getInstallFile(Set<Plugin> plugins) throws IOException {

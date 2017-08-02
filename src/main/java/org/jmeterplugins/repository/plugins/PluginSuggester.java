@@ -15,6 +15,7 @@ public class PluginSuggester  {
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     protected TestPlanAnalyzer analyzer;
+    protected String testPlan;
     private final PluginManager pmgr;
 
     public PluginSuggester(PluginManager pmgr) {
@@ -29,7 +30,7 @@ public class PluginSuggester  {
             togglePlugins(pluginsToInstall);
 
             Frame parent = (GuiPackage.getInstance() != null) ? GuiPackage.getInstance().getMainFrame() : null;
-            SuggestDialog dialog = new SuggestDialog(parent, pmgr, pluginsToInstall);
+            SuggestDialog dialog = new SuggestDialog(parent, pmgr, pluginsToInstall, testPlan);
             dialog.setVisible(true);
             dialog.setAlwaysOnTop(true);
         }
@@ -37,10 +38,12 @@ public class PluginSuggester  {
 
     protected Set<Plugin> findPluginsToInstall(String msg) {
         if (msg != null && msg.contains("Loading file")) {
-            String path = msg.substring(msg.indexOf(": ") + 2);
-            Set<String> nonExistentClasses = analyzer.analyze(path);
-            if (nonExistentClasses.size() > 0) {
-                return findPluginsFromClasses(nonExistentClasses);
+            testPlan = msg.substring(msg.indexOf(": ") + 2);
+            if (!"null".equals(testPlan)) {
+                Set<String> nonExistentClasses = analyzer.analyze(testPlan);
+                if (nonExistentClasses.size() > 0) {
+                    return findPluginsFromClasses(nonExistentClasses);
+                }
             }
         }
         return Collections.emptySet();

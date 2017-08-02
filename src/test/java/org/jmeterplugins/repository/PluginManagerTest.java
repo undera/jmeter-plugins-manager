@@ -76,7 +76,7 @@ public class PluginManagerTest {
         ifile.setReadOnly();
         mgr.load();
         try {
-            mgr.applyChanges(new LoggingCallback());
+            mgr.applyChanges(new LoggingCallback(), true, null);
             fail();
         } catch (RuntimeException e) {
             String prefix = "Have no write access for JMeter directories, not possible to use Plugins Manager:";
@@ -111,7 +111,7 @@ public class PluginManagerTest {
                     @Override
                     public void notify(String progress) {
                     }
-                });
+                }, true, null);
                 fail();
             } catch (IllegalArgumentException ex) {
                 assertTrue(ex.getMessage().contains("Version 9999 not found for plugin"));
@@ -125,7 +125,7 @@ public class PluginManagerTest {
                     @Override
                     public void notify(String progress) {
                     }
-                });
+                }, true, null);
                 fail();
             } catch (DownloadException ex) {
                 assertTrue(ex.getMessage().contains("Failed to download library"));
@@ -139,7 +139,7 @@ public class PluginManagerTest {
                     @Override
                     public void notify(String progress) {
                     }
-                });
+                }, true, null);
                 fail();
             } catch (DownloadException ex) {
                 assertTrue(ex.getMessage().contains("Failed to download plugin"));
