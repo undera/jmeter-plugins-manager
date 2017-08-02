@@ -31,8 +31,6 @@ public class PluginManager {
     private static PluginManager staticManager = new PluginManager();
     private final JARSource jarSource;
     protected Map<Plugin, Boolean> allPlugins = new HashMap<>();
-    private boolean doRestart = true;
-    private LinkedList<String> additionalJMeterOptions = new LinkedList<>();
 
     public PluginManager() {
         String sysProp = System.getProperty("jpgc.repo.address", "https://jmeter-plugins.org/repo/");
@@ -121,7 +119,8 @@ public class PluginManager {
         }
     }
 
-    public void startModifications(Set<Plugin> delPlugins, Set<Plugin> installPlugins, Map<String, String> installLibs, Set<String> libDeletions, LinkedList<String> additionalJMeterOptions) throws IOException {
+    public void startModifications(Set<Plugin> delPlugins, Set<Plugin> installPlugins, Map<String, String> installLibs,
+                                   Set<String> libDeletions, boolean doRestart, LinkedList<String> additionalJMeterOptions) throws IOException {
         ChangesMaker maker = new ChangesMaker(allPlugins);
         File moveFile = maker.getMovementsFile(delPlugins, installPlugins, installLibs, libDeletions);
         File installFile = maker.getInstallFile(installPlugins);
@@ -136,7 +135,7 @@ public class PluginManager {
         builder.start();
     }
 
-    public void applyChanges(GenericCallback<String> statusChanged) {
+    public void applyChanges(GenericCallback<String> statusChanged, boolean doRestart, LinkedList<String> additionalJMeterOptions) {
         try {
             checkRW();
         } catch (Throwable e) {
@@ -178,16 +177,17 @@ public class PluginManager {
             libDeletions.add(Plugin.getLibInstallPath(lib));
         }
 
-        modifierHook(resolver.getDeletions(), additions, libInstalls, libDeletions);
+        modifierHook(resolver.getDeletions(), additions, libInstalls, libDeletions, doRestart, additionalJMeterOptions);
     }
 
-    private void modifierHook(final Set<Plugin> deletions, final Set<Plugin> additions, final Map<String, String> libInstalls, final Set<String> libDeletions) {
+    private void modifierHook(final Set<Plugin> deletions, final Set<Plugin> additions, final Map<String, String> libInstalls,
+                              final Set<String> libDeletions, final boolean doRestart, final LinkedList<String> additionalJMeterOptions) {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 try {
                     log.info("Starting JMeter Plugins modifications");
-                    startModifications(deletions, additions, libInstalls, libDeletions, additionalJMeterOptions);
+                    startModifications(deletions, additions, libInstalls, libDeletions, doRestart, additionalJMeterOptions);
                 } catch (Exception e) {
                     log.warn("Failed to run plugin cleaner job", e);
                 }
@@ -285,10 +285,6 @@ public class PluginManager {
             }
         }
         throw new IllegalArgumentException("Plugin not found in repo: " + key);
-    }
-
-    public void setDoRestart(boolean doRestart) {
-        this.doRestart = doRestart;
     }
 
     private class PluginComparator implements java.util.Comparator<Plugin> {
@@ -412,19 +408,5 @@ public class PluginManager {
             }
         }
         return result.toString();
-    }
-
-    public void addAdditionalJMeterOptions(String ... options) {
-        for (String option : options) {
-            addAdditionalJMeterOption(option);
-        }
-    }
-
-    public void addAdditionalJMeterOption(String option) {
-        additionalJMeterOptions.add(option);
-    }
-
-    public void clearAdditionalJMeterOption() {
-        additionalJMeterOptions.clear();
     }
 }

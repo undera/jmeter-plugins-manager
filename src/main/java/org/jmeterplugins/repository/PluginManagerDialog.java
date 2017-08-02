@@ -11,6 +11,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.LinkedList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -216,9 +217,10 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
                     }
                 };
                 try {
-                    manager.clearAdditionalJMeterOption();
-                    manager.addAdditionalJMeterOptions("-t", GuiPackage.getInstance().getTestPlanFile());
-                    manager.applyChanges(statusChanged);
+                    LinkedList<String> options = new LinkedList<>();
+                    options.add("-t");
+                    options.add(GuiPackage.getInstance().getTestPlanFile());
+                    manager.applyChanges(statusChanged, true, options);
                     ActionRouter.getInstance().actionPerformed(new ActionEvent(this, 0, ActionNames.EXIT));
                 } catch (DownloadException ex) {
                     enableComponents(true);
