@@ -7,11 +7,12 @@ import org.jmeterplugins.repository.Plugin;
 import org.jmeterplugins.repository.PluginManager;
 
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class PluginSuggester  {
+public class PluginSuggester {
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     protected TestPlanAnalyzer analyzer;
@@ -25,7 +26,6 @@ public class PluginSuggester  {
     public void checkAndSuggest(String msg) {
         Set<Plugin> pluginsToInstall = findPluginsToInstall(msg);
         if (pluginsToInstall.size() > 0) {
-
             togglePlugins(pluginsToInstall);
 
             Frame parent = (GuiPackage.getInstance() != null) ? GuiPackage.getInstance().getMainFrame() : null;
@@ -52,8 +52,6 @@ public class PluginSuggester  {
         }
     }
 
-
-
     protected Set<Plugin> findPluginsFromClasses(Set<String> nonExistentClasses) {
         try {
             pmgr.load();
@@ -68,6 +66,13 @@ public class PluginSuggester  {
                 pluginsToInstall.add(plugin);
             }
         }
+
+        if (pluginsToInstall.isEmpty()) {
+            log.warn("Plugins Manager were unable to find plugins to satisfy Test Plan requirements. " +
+                    "To help improve, please report following list to https://jmeter-plugins.org/support/: " +
+                    Arrays.toString(nonExistentClasses.toArray()));
+        }
+
         return pluginsToInstall;
     }
 
