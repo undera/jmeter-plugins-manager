@@ -27,7 +27,7 @@ public class PluginSuggester  {
         Set<Plugin> pluginsToInstall = findPluginsToInstall(msg);
         if (pluginsToInstall.size() > 0) {
 
-            togglePlugins(pluginsToInstall);
+            pmgr.togglePlugins(pluginsToInstall, true);
 
             Frame parent = (GuiPackage.getInstance() != null) ? GuiPackage.getInstance().getMainFrame() : null;
             SuggestDialog dialog = new SuggestDialog(parent, pmgr, pluginsToInstall, testPlan);
@@ -48,14 +48,6 @@ public class PluginSuggester  {
         }
         return Collections.emptySet();
     }
-
-    protected void togglePlugins(Set<Plugin> pluginsToInstall) {
-        for (Plugin plugin : pluginsToInstall) {
-            pmgr.toggleInstalled(plugin, true);
-        }
-    }
-
-
 
     protected Set<Plugin> findPluginsFromClasses(Set<String> nonExistentClasses) {
         try {
