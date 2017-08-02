@@ -70,7 +70,7 @@ public class TestPlanAnalyzer {
         try {
             Class.forName(SaveService.aliasToClass(className));
             return true;
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | NoClassDefFoundError e) {
             return false;
         }
     }
