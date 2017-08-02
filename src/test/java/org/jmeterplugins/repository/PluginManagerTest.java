@@ -197,4 +197,11 @@ public class PluginManagerTest {
         assertEquals("testapi", PluginManager.removeJARVersion("test-api"));
         assertEquals("commonsjexl", PluginManager.removeJARVersion("commons-jexl-1.1"));
     }
+
+    @Test
+    public void testBuildMap() throws Throwable {
+        PluginManager mgr=new PluginManager();
+        mgr.load();
+        mgr.buildComponentsMap();
+    }
 }

@@ -4,9 +4,19 @@ package org.jmeterplugins.repository;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.jmeter.assertions.Assertion;
+import org.apache.jmeter.config.ConfigElement;
+import org.apache.jmeter.control.Controller;
 import org.apache.jmeter.engine.JMeterEngine;
+import org.apache.jmeter.gui.JMeterGUIComponent;
+import org.apache.jmeter.processor.PostProcessor;
+import org.apache.jmeter.processor.PreProcessor;
+import org.apache.jmeter.samplers.Sampler;
+import org.apache.jmeter.testbeans.TestBean;
+import org.apache.jmeter.timers.Timer;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
+import org.apache.jorphan.reflect.ClassFinder;
 import org.apache.log.Logger;
 import org.jmeterplugins.repository.exception.DownloadException;
 
@@ -410,5 +420,28 @@ public class PluginManager {
             }
         }
         return result.toString();
+    }
+
+    public void buildComponentsMap() {
+        for (Plugin plugin : getInstalledPlugins()) {
+            try {
+                Class[] superClasses = {
+                        Sampler.class,
+                        Controller.class,
+                        Timer.class,
+                        ConfigElement.class,
+                        PreProcessor.class,
+                        PostProcessor.class,
+                        Assertion.class,
+                        JMeterGUIComponent.class,
+                        TestBean.class
+                };
+                String[] searchPaths = {plugin.installedPath};
+                List<String> list = ClassFinder.findClassesThatExtend(searchPaths, superClasses);
+                log.info(plugin.id + "=" + Arrays.toString(list.toArray()));
+            } catch (Throwable e) {
+                log.error("Failed to get classes", e);
+            }
+        }
     }
 }
