@@ -36,7 +36,7 @@
             <stringProp name="cacheKey"></stringProp>
             <stringProp name="filename"></stringProp>
             <stringProp name="parameters"></stringProp>
-            <stringProp name="script">org.jmeterplugins.repository.PluginManager.getStaticManager().buildComponentsMap();</stringProp>
+            <stringProp name="script">org.jmeterplugins.repository.PluginManager.getStaticManager().logPluginComponents();</stringProp>
             <stringProp name="scriptLanguage">groovy</stringProp>
           </JSR223PreProcessor>
           <hashTree/>

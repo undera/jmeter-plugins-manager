@@ -202,6 +202,6 @@ public class PluginManagerTest {
     public void testBuildMap() throws Throwable {
         PluginManager mgr=new PluginManager();
         mgr.load();
-        mgr.buildComponentsMap();
+        mgr.logPluginComponents();
     }
 }
