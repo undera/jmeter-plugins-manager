@@ -29,6 +29,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import org.apache.jmeter.gui.GuiPackage;
 import org.apache.jmeter.gui.action.ActionNames;
 import org.apache.jmeter.gui.action.ActionRouter;
 import org.apache.jorphan.gui.ComponentUtil;
@@ -215,6 +216,8 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
                     }
                 };
                 try {
+                    manager.clearAdditionalJMeterOption();
+                    manager.addAdditionalJMeterOptions("-t", GuiPackage.getInstance().getTestPlanFile());
                     manager.applyChanges(statusChanged);
                     ActionRouter.getInstance().actionPerformed(new ActionEvent(this, 0, ActionNames.EXIT));
                 } catch (DownloadException ex) {

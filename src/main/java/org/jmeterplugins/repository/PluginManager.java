@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,7 @@ public class PluginManager {
     private final JARSource jarSource;
     protected Map<Plugin, Boolean> allPlugins = new HashMap<>();
     private boolean doRestart = true;
+    private LinkedList<String> additionalJMeterOptions = new LinkedList<>();
 
     public PluginManager() {
         String sysProp = System.getProperty("jpgc.repo.address", "https://jmeter-plugins.org/repo/");
@@ -119,13 +121,13 @@ public class PluginManager {
         }
     }
 
-    public void startModifications(Set<Plugin> delPlugins, Set<Plugin> installPlugins, Map<String, String> installLibs, Set<String> libDeletions) throws IOException {
+    public void startModifications(Set<Plugin> delPlugins, Set<Plugin> installPlugins, Map<String, String> installLibs, Set<String> libDeletions, LinkedList<String> additionalJMeterOptions) throws IOException {
         ChangesMaker maker = new ChangesMaker(allPlugins);
         File moveFile = maker.getMovementsFile(delPlugins, installPlugins, installLibs, libDeletions);
         File installFile = maker.getInstallFile(installPlugins);
         File restartFile;
         if (doRestart) {
-            restartFile = maker.getRestartFile();
+            restartFile = maker.getRestartFile(additionalJMeterOptions);
         } else {
             restartFile = null;
         }
@@ -185,7 +187,7 @@ public class PluginManager {
             public void run() {
                 try {
                     log.info("Starting JMeter Plugins modifications");
-                    startModifications(deletions, additions, libInstalls, libDeletions);
+                    startModifications(deletions, additions, libInstalls, libDeletions, additionalJMeterOptions);
                 } catch (Exception e) {
                     log.warn("Failed to run plugin cleaner job", e);
                 }
@@ -410,5 +412,19 @@ public class PluginManager {
             }
         }
         return result.toString();
+    }
+
+    public void addAdditionalJMeterOptions(String ... options) {
+        for (String option : options) {
+            addAdditionalJMeterOption(option);
+        }
+    }
+
+    public void addAdditionalJMeterOption(String option) {
+        additionalJMeterOptions.add(option);
+    }
+
+    public void clearAdditionalJMeterOption() {
+        additionalJMeterOptions.clear();
     }
 }
