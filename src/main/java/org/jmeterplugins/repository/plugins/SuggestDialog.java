@@ -54,13 +54,13 @@ public class SuggestDialog extends JDialog implements GenericCallback<String> {
 
         mainPanel.add(getDetailsPanel(), BorderLayout.CENTER);
 
-        mainPanel.add(getButtonsPanel(testPlan), BorderLayout.SOUTH);
+        mainPanel.add(getButtonsPanel(plugins, testPlan), BorderLayout.SOUTH);
 
         add(mainPanel, BorderLayout.CENTER);
         pack();
     }
 
-    private JPanel getButtonsPanel(final String testPlan) {
+    private JPanel getButtonsPanel(final Set<Plugin> plugins, final String testPlan) {
         final JButton btnYes = new JButton("Yes, install it");
         final JButton btnNo = new JButton("Cancel");
         final SuggestDialog dialog = this;
@@ -85,6 +85,7 @@ public class SuggestDialog extends JDialog implements GenericCallback<String> {
 
         btnNo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                manager.togglePlugins(plugins, false);
                 dispose();
             }
         });

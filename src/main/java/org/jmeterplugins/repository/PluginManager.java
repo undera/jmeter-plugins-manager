@@ -260,6 +260,11 @@ public class PluginManager {
         return result;
     }
 
+    public void togglePlugins(Set<Plugin> pluginsToInstall, boolean isInstall) {
+        for (Plugin plugin : pluginsToInstall) {
+            toggleInstalled(plugin, isInstall);
+        }
+    }
 
     public void toggleInstalled(Plugin plugin, boolean cbState) {
         if (!cbState && !plugin.canUninstall()) {
