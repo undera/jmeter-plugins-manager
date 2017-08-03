@@ -200,7 +200,7 @@ public class JARSourceHTTP extends JARSource {
     }
 
     private String getGuiMode() {
-        return (GuiPackage.getInstance() == null) ? "non-gui" : "gui";
+        return (GuiPackage.getInstance() == null) ? "nongui" : "gui";
     }
 
     protected String getPlatformName() {
