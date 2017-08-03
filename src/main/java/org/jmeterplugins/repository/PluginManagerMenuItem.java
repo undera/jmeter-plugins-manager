@@ -24,7 +24,7 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
     private final PluginManager mgr;
 
     public PluginManagerMenuItem() {
-        super("Plugins Manager", getPluginsIcon());
+        super("Plugins Manager");
         addActionListener(this);
 
         mgr = new PluginManager(); // don't delay startup for longer that 1 second
@@ -39,8 +39,9 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
         if (mgr.hasAnyUpdates()) {
             setText("Plugins Manager (has upgrades)");
             log.info("Plugins Manager has upgrades: " + Arrays.toString(mgr.getUpgradablePlugins().toArray()));
-            addToolbarIcon();
         }
+        addToolbarIcon();
+        setIcon(getPluginsIcon(mgr.hasAnyUpdates()));
     }
 
     private void addToolbarIcon() {
@@ -72,11 +73,13 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
     }
 
     private Component getToolbarButton() {
-        JButton button = new JButton(new ImageIcon(PluginManagerMenuItem.class.getResource("/org/jmeterplugins/logo22.png")));
+        JButton button = new JButton(getIcon22Px(mgr.hasAnyUpdates()));
         button.setToolTipText("Plugins Manager (has upgrades)");
         button.addActionListener(this);
         return button;
     }
+
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -90,7 +93,19 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
         dialog.setVisible(true);
     }
 
-    public static ImageIcon getPluginsIcon() {
-        return new ImageIcon(PluginManagerMenuItem.class.getResource("/org/jmeterplugins/logo.png"));
+    public static ImageIcon getIcon22Px(boolean hasUpdates) {
+        if (hasUpdates) {
+            return new ImageIcon(PluginManagerMenuItem.class.getResource("/org/jmeterplugins/logo22Update.png"));
+        } else {
+            return new ImageIcon(PluginManagerMenuItem.class.getResource("/org/jmeterplugins/logo22.png"));
+        }
+    }
+
+    public static ImageIcon getPluginsIcon(boolean hasUpdates) {
+        if (hasUpdates) {
+            return new ImageIcon(PluginManagerMenuItem.class.getResource("/org/jmeterplugins/logoUpdate.png"));
+        } else {
+            return new ImageIcon(PluginManagerMenuItem.class.getResource("/org/jmeterplugins/logo.png"));
+        }
     }
 }

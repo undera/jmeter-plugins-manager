@@ -66,7 +66,7 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
         Dimension size = new Dimension(1024, 768);
         setSize(size);
         setPreferredSize(size);
-        setIconImage(PluginManagerMenuItem.getPluginsIcon().getImage());
+        setIconImage(PluginManagerMenuItem.getPluginsIcon(manager.hasAnyUpdates()).getImage());
         ComponentUtil.centerComponentInWindow(this);
 
         failureLabel.setContentType("text/html");
