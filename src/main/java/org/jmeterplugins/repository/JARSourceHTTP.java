@@ -50,6 +50,7 @@ import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.apache.jmeter.JMeter;
+import org.apache.jmeter.gui.GuiPackage;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
@@ -195,7 +196,11 @@ public class JARSourceHTTP extends JARSource {
             log.warn("Failed to get network addresses", e);
         }
 
-        return getPlatformName() + '-' + DigestUtils.md5Hex(str);
+        return getPlatformName() + '-' + DigestUtils.md5Hex(str) + '-' + getGuiMode();
+    }
+
+    private String getGuiMode() {
+        return (GuiPackage.getInstance() == null) ? "nongui" : "gui";
     }
 
     protected String getPlatformName() {
