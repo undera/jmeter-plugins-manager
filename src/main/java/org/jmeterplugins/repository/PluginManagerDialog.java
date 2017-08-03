@@ -217,9 +217,13 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
                     }
                 };
                 try {
-                    LinkedList<String> options = new LinkedList<>();
-                    options.add("-t");
-                    options.add(GuiPackage.getInstance().getTestPlanFile());
+                    LinkedList<String> options = null;
+                    String testPlan = GuiPackage.getInstance().getTestPlanFile();
+                    if (testPlan != null) {
+                        options = new LinkedList<>();
+                        options.add("-t");
+                        options.add(testPlan);
+                    }
                     manager.applyChanges(statusChanged, true, options);
                     ActionRouter.getInstance().actionPerformed(new ActionEvent(this, 0, ActionNames.EXIT));
                 } catch (DownloadException ex) {
