@@ -1,6 +1,5 @@
 package org.jmeterplugins.repository;
 
-import java.util.Set;
 
 import javax.swing.event.ChangeListener;
 
