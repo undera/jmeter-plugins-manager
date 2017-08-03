@@ -11,6 +11,8 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.jmeterplugins.repository.logging.LoggingHooker;
 
+import java.util.Arrays;
+
 public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
     private static final long serialVersionUID = -8708638472918746046L;
     private static final Logger log = LoggingManager.getLoggerForClass();
@@ -32,6 +34,7 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
 
         if (mgr.hasAnyUpdates()) {
             setText("Plugins Manager (has upgrades)");
+            log.info("Plugins Manager has upgrades: " + Arrays.toString(mgr.getUpgradablePlugins().toArray()));
         }
     }
 
