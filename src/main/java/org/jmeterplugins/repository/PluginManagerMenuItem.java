@@ -1,15 +1,19 @@
 package org.jmeterplugins.repository;
 
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.ImageIcon;
-import javax.swing.JMenuItem;
+import javax.swing.*;
 
+import org.apache.jmeter.gui.GuiPackage;
+import org.apache.jmeter.gui.MainFrame;
+import org.apache.jmeter.gui.util.JMeterToolBar;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.jmeterplugins.repository.logging.LoggingHooker;
+import org.jmeterplugins.repository.util.ComponentFinder;
 
 import java.util.Arrays;
 
@@ -35,7 +39,43 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
         if (mgr.hasAnyUpdates()) {
             setText("Plugins Manager (has upgrades)");
             log.info("Plugins Manager has upgrades: " + Arrays.toString(mgr.getUpgradablePlugins().toArray()));
+            addToolbarIcon();
         }
+    }
+
+    private void addToolbarIcon() {
+        GuiPackage instance = GuiPackage.getInstance();
+        if (instance != null) {
+            final MainFrame mf = instance.getMainFrame();
+            final ComponentFinder<JMeterToolBar> finder = new ComponentFinder<>(JMeterToolBar.class);
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    JMeterToolBar toolbar = null;
+                    while (toolbar == null) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            log.debug("Did not add btn to toolbar", e);
+                        }
+                        log.debug("Searching for toolbar");
+                        toolbar = finder.findComponentIn(mf);
+                    }
+
+                    int pos = 31;
+                    Component toolbarButton = getToolbarButton();
+                    toolbarButton.setSize(toolbar.getComponent(pos).getSize());
+                    toolbar.add(toolbarButton, pos);
+                }
+            });
+        }
+    }
+
+    private Component getToolbarButton() {
+        JButton button = new JButton(new ImageIcon(PluginManagerMenuItem.class.getResource("/org/jmeterplugins/logo22.png")));
+        button.setToolTipText("Plugins Manager (has upgrades)");
+        button.addActionListener(this);
+        return button;
     }
 
     @Override
