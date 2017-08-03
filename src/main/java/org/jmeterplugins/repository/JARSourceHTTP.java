@@ -196,7 +196,7 @@ public class JARSourceHTTP extends JARSource {
             log.warn("Failed to get network addresses", e);
         }
 
-        return getGuiMode() + '-' + getPlatformName() + '-' + DigestUtils.md5Hex(str);
+        return getPlatformName() + '-' + DigestUtils.md5Hex(str) + '-' + getGuiMode();
     }
 
     private String getGuiMode() {
