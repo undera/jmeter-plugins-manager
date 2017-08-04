@@ -25,7 +25,11 @@ public class DependencyResolver {
 
     public DependencyResolver(Map<Plugin, Boolean> allPlugins) {
         this.allPlugins = allPlugins;
+        resolve();
+    }
 
+    public void resolve() {
+        clear();
         resolveFlags();
         resolveUpgrades();
         resolveDeleteByDependency();
@@ -33,7 +37,16 @@ public class DependencyResolver {
         resolveDeleteLibs();
         resolveInstallLibs();
         resolveUpgradesLibs();
+        detectConflicts();
     }
+
+    public void clear() {
+        deletions.clear();
+        additions.clear();
+        libAdditions.clear();
+        libDeletions.clear();
+    }
+
 
     // TODO: return iterators to make values read-only
     public Set<Plugin> getDeletions() {
@@ -313,4 +326,26 @@ public class DependencyResolver {
         }
     }
 
+    public void detectConflicts() {
+        Set<Plugin> installedPlugins = PluginManager.getInstalledPlugins(allPlugins);
+
+        for (Plugin plugin : installedPlugins) {
+            Map<String, String> requiredLibs = plugin.getRequiredLibs(plugin.getInstalledVersion());
+            for (String libName : requiredLibs.keySet()) {
+                String requiredVersion = Library.getVersionFromFullName(libName);
+                String path = Plugin.getLibInstallPath(DependencyResolver.getLibName(libName));
+                if (path == null || !path.contains(requiredVersion)) {
+                    String name = Library.getNameFromFullName(libName);
+                    log.warn((path == null) ?
+                            "Your must install '" + name + "' lib" :
+                            "Your must upgrade '" + name + "' lib to version " + requiredVersion);
+
+                    libAdditions.put(name, requiredLibs.get(libName));
+                    if (path != null) {
+                        libDeletions.add(name);
+                    }
+                }
+            }
+        }
+    }
 }

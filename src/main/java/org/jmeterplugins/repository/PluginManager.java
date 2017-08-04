@@ -106,7 +106,6 @@ public class PluginManager {
         }
 
         log.info("Plugins Status: " + getAllPluginsStatusString());
-        detectConflicts();
     }
 
     private void checkRW() throws UnsupportedEncodingException, AccessDeniedException {
@@ -244,6 +243,10 @@ public class PluginManager {
     }
 
     public Set<Plugin> getInstalledPlugins() {
+        return getInstalledPlugins(allPlugins);
+    }
+
+    public static Set<Plugin> getInstalledPlugins(Map<Plugin, Boolean> allPlugins) {
         Set<Plugin> result = new TreeSet<>(new PluginComparator());
         for (Plugin plugin : allPlugins.keySet()) {
             if (plugin.isInstalled()) {
@@ -305,7 +308,7 @@ public class PluginManager {
         throw new IllegalArgumentException("Plugin not found in repo: " + key);
     }
 
-    private class PluginComparator implements java.util.Comparator<Plugin> {
+    private static class PluginComparator implements java.util.Comparator<Plugin> {
         @Override
         public int compare(Plugin o1, Plugin o2) {
             return o1.getName().compareTo(o2.getName());
@@ -395,36 +398,7 @@ public class PluginManager {
                 "There is nothing to update.";
     }
 
-    public void detectConflicts() {
-        Map<String, String> libAdditions = null;
-        Set<String> libDeletions = null;
-        Set<Plugin> installedPlugins = getInstalledPlugins();
 
-        for (Plugin plugin : installedPlugins) {
-            Map<String, String> requiredLibs = plugin.getRequiredLibs(plugin.getInstalledVersion());
-            for (String libName : requiredLibs.keySet()) {
-                String requiredVersion = Library.getVersionFromFullName(libName);
-                String path = Plugin.getLibInstallPath(DependencyResolver.getLibName(libName));
-                if (path == null || !path.contains(requiredVersion)) {
-                    if (libAdditions == null) {
-                        libAdditions = new HashMap<>();
-                        libDeletions = new HashSet<>();
-                    }
-                    String name = Library.getNameFromFullName(libName);
-                    log.warn((path == null) ?
-                            "Your must install '" + name + "' lib" :
-                            "Your must upgrade '" + name + "' lib to version " + requiredVersion);
-
-                    libAdditions.put(name, requiredLibs.get(libName));
-                    if (path != null) {
-                        libDeletions.add(path);
-                    }
-                }
-            }
-        }
-
-
-    }
 
 
     public static void detectJARConflicts() {
