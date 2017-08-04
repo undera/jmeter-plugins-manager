@@ -1,6 +1,5 @@
 package org.jmeterplugins.repository.plugins;
 
-import org.apache.jmeter.gui.GuiPackage;
 import org.apache.jmeter.gui.action.ActionNames;
 import org.apache.jmeter.gui.action.ActionRouter;
 import org.apache.jorphan.gui.ComponentUtil;
@@ -35,7 +34,7 @@ public class SuggestDialog extends JDialog implements GenericCallback<String> {
 
     private void init(Set<Plugin> plugins, final String testPlan) {
         setLayout(new BorderLayout());
-        setIconImage(PluginManagerMenuItem.getPluginsIcon().getImage());
+        setIconImage(PluginManagerMenuItem.getPluginsIcon(manager.hasAnyUpdates()).getImage());
         ComponentUtil.centerComponentInWindow(this);
 
         JPanel mainPanel = new JPanel(new BorderLayout(0, 0));
