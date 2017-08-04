@@ -48,6 +48,16 @@ public class PluginManagerCMDTest {
     }
 
     @Test
+    public void processParams_install_all() throws Exception {
+        PluginManagerCMD cmd = new PluginManagerCMD();
+        LinkedList<String> params = new LinkedList<>();
+        params.add("install-all-except");
+        cmd.processParams(params.listIterator());
+        params.add("jpgc-dep1,jpgc-dep2=2.0");
+        cmd.processParams(params.listIterator());
+    }
+
+    @Test
     public void processParams_install_invalid() throws Exception {
         PluginManagerCMD cmd = new PluginManagerCMD();
         LinkedList<String> params = new LinkedList<>();
