@@ -249,7 +249,7 @@ public class DependencyResolver {
     }
 
 
-    private String getLibName(String fullLibName) {
+    public static String getLibName(String fullLibName) {
         Matcher m = libNameParser.matcher(fullLibName);
         if (!m.find()) {
             throw new IllegalArgumentException("Cannot parse str: " + fullLibName);
