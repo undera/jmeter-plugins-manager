@@ -166,20 +166,22 @@ public class DependencyResolver {
     }
 
     private void resolveInstallLibs() {
-
         for (Plugin plugin : additions) {
             Map<String, String> libs = plugin.getLibs(plugin.getCandidateVersion());
-
             for (String lib : libs.keySet()) {
-                String installedPath = Plugin.getLibInstallPath(getLibName(lib));
-                if (installedPath == null) {
-                    libAdditions.put(lib, libs.get(lib));
-                } else {
-                    resolveUpdateLib(plugin, getLibrary(lib, ""), lib);
-                }
+                resolveLibForPlugin(plugin, lib, libs.get(lib));
             }
         }
         resolveLibsVersionsConflicts();
+    }
+
+    private void resolveLibForPlugin(Plugin plugin, String lib, String link) {
+        String installedPath = Plugin.getLibInstallPath(getLibName(lib));
+        if (installedPath == null) {
+            libAdditions.put(lib, link);
+        } else {
+            resolveUpdateLib(plugin, getLibrary(lib, ""), lib);
+        }
     }
 
     private void resolveUpdateLib(Plugin plugin, Library installedLib, String candidateLibName) {
@@ -331,20 +333,8 @@ public class DependencyResolver {
 
         for (Plugin plugin : installedPlugins) {
             Map<String, String> requiredLibs = plugin.getRequiredLibs(plugin.getInstalledVersion());
-            for (String libName : requiredLibs.keySet()) {
-                String requiredVersion = Library.getVersionFromFullName(libName);
-                String path = Plugin.getLibInstallPath(DependencyResolver.getLibName(libName));
-                if (path == null || !path.contains(requiredVersion)) {
-                    String name = Library.getNameFromFullName(libName);
-                    log.warn((path == null) ?
-                            "Your must install '" + name + "' lib" :
-                            "Your must upgrade '" + name + "' lib to version " + requiredVersion);
-
-                    libAdditions.put(name, requiredLibs.get(libName));
-                    if (path != null) {
-                        libDeletions.add(name);
-                    }
-                }
+            for (String lib : requiredLibs.keySet()) {
+                resolveLibForPlugin(plugin, lib, requiredLibs.get(lib));
             }
         }
     }
