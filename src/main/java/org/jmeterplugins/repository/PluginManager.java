@@ -302,7 +302,9 @@ public class PluginManager {
                 return true;
             }
         }
-        return false;
+
+        DependencyResolver resolver = new DependencyResolver(allPlugins);
+        return resolver.hasAnyUpdates();
     }
 
     public Plugin getPluginByID(String key) {

@@ -338,4 +338,8 @@ public class DependencyResolver {
             }
         }
     }
+
+    public boolean hasAnyUpdates() {
+        return !libAdditions.isEmpty() || !libDeletions.isEmpty() || !additions.isEmpty() || !deletions.isEmpty();
+    }
 }
