@@ -243,11 +243,17 @@ public class PluginManager {
     }
 
     public Set<Plugin> getInstalledPlugins() {
-        return getInstalledPlugins(allPlugins);
+        Set<Plugin> result = new TreeSet<>(new PluginComparator());
+        for (Plugin plugin : allPlugins.keySet()) {
+            if (plugin.isInstalled()) {
+                result.add(plugin);
+            }
+        }
+        return result;
     }
 
     public static Set<Plugin> getInstalledPlugins(Map<Plugin, Boolean> allPlugins) {
-        Set<Plugin> result = new TreeSet<>(new PluginComparator());
+        Set<Plugin> result = new HashSet<>();
         for (Plugin plugin : allPlugins.keySet()) {
             if (plugin.isInstalled()) {
                 result.add(plugin);
@@ -308,7 +314,7 @@ public class PluginManager {
         throw new IllegalArgumentException("Plugin not found in repo: " + key);
     }
 
-    private static class PluginComparator implements java.util.Comparator<Plugin> {
+    private class PluginComparator implements java.util.Comparator<Plugin> {
         @Override
         public int compare(Plugin o1, Plugin o2) {
             return o1.getName().compareTo(o2.getName());
