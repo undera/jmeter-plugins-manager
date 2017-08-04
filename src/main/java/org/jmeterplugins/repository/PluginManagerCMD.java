@@ -65,10 +65,10 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         return mgr;
     }
 
-    protected void installAll(ListIterator listIterator, boolean install) throws Throwable {
+    protected void installAll(ListIterator exclusions, boolean install) throws Throwable {
         Set<String> exceptedPlugins = Collections.emptySet();
-        if (listIterator.hasNext()) {
-            exceptedPlugins = parseParams(listIterator.next().toString()).keySet();
+        if (exclusions.hasNext()) {
+            exceptedPlugins = parseParams(exclusions.next().toString()).keySet();
         }
 
         PluginManager mgr = getPluginsManager();
