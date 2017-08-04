@@ -64,9 +64,9 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
                     }
 
                     Component toolbarButton = getToolbarButton();
-                    int pos = toolbar.getComponents().length;
+                    int pos = toolbar.getComponents().length - 1;
                     toolbarButton.setSize(toolbar.getComponent(pos).getSize());
-                    toolbar.add(toolbarButton, pos);
+                    toolbar.add(toolbarButton, pos + 1);
                 }
             });
         }
@@ -78,7 +78,6 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
         button.addActionListener(this);
         return button;
     }
-
 
 
     @Override
