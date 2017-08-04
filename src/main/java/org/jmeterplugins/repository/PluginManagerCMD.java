@@ -30,6 +30,9 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
                 case "install":
                     process(listIterator, true);
                     break;
+                case "install-all-except":
+                    installAll(listIterator, true);
+                    break;
                 case "uninstall":
                     process(listIterator, false);
                     break;
@@ -55,15 +58,36 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         return 0;
     }
 
+    private PluginManager getPluginsManager() throws Throwable {
+        PluginManager mgr = new PluginManager();
+        mgr.setTimeout(30000); // TODO: add property?
+        mgr.load();
+        return mgr;
+    }
+
+    protected void installAll(ListIterator listIterator, boolean install) throws Throwable {
+        Set<String> exceptedPlugins = Collections.emptySet();
+        if (listIterator.hasNext()) {
+            exceptedPlugins = parseParams(listIterator.next().toString()).keySet();
+        }
+
+        PluginManager mgr = getPluginsManager();
+        for (Plugin plugin : mgr.getAvailablePlugins()) {
+            if (!exceptedPlugins.contains(plugin.getID())) {
+                mgr.toggleInstalled(plugin, install);
+            }
+        }
+        mgr.applyChanges(this, false, null);
+    }
+
+
     protected void process(ListIterator listIterator, boolean install) throws Throwable {
         if (!listIterator.hasNext()) {
             throw new IllegalArgumentException("Plugins list parameter is missing");
         }
 
         Map<String, String> params = parseParams(listIterator.next().toString());
-        PluginManager mgr = new PluginManager();
-        mgr.setTimeout(30000); // TODO: add property?
-        mgr.load();
+        PluginManager mgr = getPluginsManager();
 
         for (Map.Entry<String, String> pluginSpec : params.entrySet()) {
             Plugin plugin = mgr.getPluginByID(pluginSpec.getKey());
@@ -92,7 +116,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
     @Override
     protected void showHelp(PrintStream printStream) {
         printStream.println("Options for tool 'PluginManagerCMD': <command> <paramstr> "
-                + " where <command> is one of: help, status, available, upgrades, install, uninstall.");
+                + " where <command> is one of: help, status, available, upgrades, install, install-all-except, uninstall.");
     }
 
     @Override
