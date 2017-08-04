@@ -252,6 +252,16 @@ public class PluginManager {
         return result;
     }
 
+    public static Set<Plugin> getInstalledPlugins(Map<Plugin, Boolean> allPlugins) {
+        Set<Plugin> result = new HashSet<>();
+        for (Plugin plugin : allPlugins.keySet()) {
+            if (plugin.isInstalled()) {
+                result.add(plugin);
+            }
+        }
+        return result;
+    }
+
     public Set<Plugin> getAvailablePlugins() {
         Set<Plugin> result = new TreeSet<>(new PluginComparator());
         for (Plugin plugin : allPlugins.keySet()) {
@@ -393,6 +403,9 @@ public class PluginManager {
                 Arrays.toString(res.toArray()) :
                 "There is nothing to update.";
     }
+
+
+
 
     public static void detectJARConflicts() {
         String[] paths = System.getProperty("java.class.path").split(File.pathSeparator);

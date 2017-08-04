@@ -22,7 +22,6 @@ import org.apache.jmeter.engine.JMeterEngine;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
-
 public class Plugin {
     private static final Logger log = LoggingManager.getLoggerForClass();
     private static final Pattern dependsParser = Pattern.compile("([^=<>]+)([=<>]+[0-9.]+)?");
@@ -351,6 +350,16 @@ public class Plugin {
         return depends;
     }
 
+    public Map<String, String> getRequiredLibs(String verStr) {
+        Map<String, String> libs = getLibs(verStr);
+        Map<String, String> requiredLibs = new HashMap<>();
+        for (String libName : libs.keySet()) {
+            if (libName.contains(">=")) {
+                requiredLibs.put(libName, libs.get(libName));
+            }
+        }
+        return requiredLibs;
+    }
 
     public String getVersionChanges(String versionStr) {
         JSONObject version = versions.getJSONObject(versionStr);

@@ -14,7 +14,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class DependencyResolverTest {
     @Test
@@ -234,6 +237,34 @@ public class DependencyResolverTest {
         assertTrue(libs.contains("ApacheJMeter_core"));
         assertTrue(libs.contains("commons-lang3"));
         assertTrue(libs.contains("commons-httpclient"));
+    }
+
+    @Test
+    public void testResolveLibIfLibBroken() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/broken.json");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+            plugin.installedPath = "";
+            plugin.installedVersion = "0.1";
+
+            map.put(plugin, true);
+        }
+
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Set<String> libs = resolver.getLibDeletions();
+
+        assertEquals(1, libs.size());
+        assertTrue(libs.contains("bsf"));
+
+        Map<String, String> libAdditions = resolver.getLibAdditions();
+        assertEquals(1, libAdditions.size());
+        assertEquals("lib-99.8.jar", libAdditions.get("bsf"));
     }
 
     @Test

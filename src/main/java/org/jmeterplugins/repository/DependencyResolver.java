@@ -25,7 +25,11 @@ public class DependencyResolver {
 
     public DependencyResolver(Map<Plugin, Boolean> allPlugins) {
         this.allPlugins = allPlugins;
+        resolve();
+    }
 
+    public void resolve() {
+        clear();
         resolveFlags();
         resolveUpgrades();
         resolveDeleteByDependency();
@@ -33,7 +37,16 @@ public class DependencyResolver {
         resolveDeleteLibs();
         resolveInstallLibs();
         resolveUpgradesLibs();
+        detectConflicts();
     }
+
+    public void clear() {
+        deletions.clear();
+        additions.clear();
+        libAdditions.clear();
+        libDeletions.clear();
+    }
+
 
     // TODO: return iterators to make values read-only
     public Set<Plugin> getDeletions() {
@@ -153,20 +166,22 @@ public class DependencyResolver {
     }
 
     private void resolveInstallLibs() {
-
         for (Plugin plugin : additions) {
             Map<String, String> libs = plugin.getLibs(plugin.getCandidateVersion());
-
             for (String lib : libs.keySet()) {
-                String installedPath = Plugin.getLibInstallPath(getLibName(lib));
-                if (installedPath == null) {
-                    libAdditions.put(lib, libs.get(lib));
-                } else {
-                    resolveUpdateLib(plugin, getLibrary(lib, ""), lib);
-                }
+                resolveLibForPlugin(plugin, lib, libs.get(lib));
             }
         }
         resolveLibsVersionsConflicts();
+    }
+
+    private void resolveLibForPlugin(Plugin plugin, String lib, String link) {
+        String installedPath = Plugin.getLibInstallPath(getLibName(lib));
+        if (installedPath == null) {
+            libAdditions.put(lib, link);
+        } else {
+            resolveUpdateLib(plugin, getLibrary(lib, ""), lib);
+        }
     }
 
     private void resolveUpdateLib(Plugin plugin, Library installedLib, String candidateLibName) {
@@ -249,7 +264,7 @@ public class DependencyResolver {
     }
 
 
-    private String getLibName(String fullLibName) {
+    public static String getLibName(String fullLibName) {
         Matcher m = libNameParser.matcher(fullLibName);
         if (!m.find()) {
             throw new IllegalArgumentException("Cannot parse str: " + fullLibName);
@@ -313,4 +328,14 @@ public class DependencyResolver {
         }
     }
 
+    public void detectConflicts() {
+        Set<Plugin> installedPlugins = PluginManager.getInstalledPlugins(allPlugins);
+
+        for (Plugin plugin : installedPlugins) {
+            Map<String, String> requiredLibs = plugin.getRequiredLibs(plugin.getInstalledVersion());
+            for (String lib : requiredLibs.keySet()) {
+                resolveLibForPlugin(plugin, lib, requiredLibs.get(lib));
+            }
+        }
+    }
 }
