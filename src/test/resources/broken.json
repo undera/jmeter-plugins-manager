@@ -1,0 +1,21 @@
+[ {
+  "id": "installed",
+  "name": "installed",
+  "description": "Low-level HTTP request, solves memory problem for huge file upload/download case. Also ships Raw Data Source preprocessor.",
+  "screenshotUrl": "https://jmeter-plugins.org/img/wiki/rawrequest.png",
+  "helpUrl": "https://jmeter-plugins.org/wiki/RawRequest/",
+  "vendor": "JMeter-Plugins.org",
+  "markerClass": "kg.apc.jmeter.samplers.HTTPRawSampler",
+  "versions": {
+    "0.1": {
+      "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-httpraw/0.1/jmeter-plugins-httpraw-0.1.jar",
+      "libs": {
+        "bsf>=99.8" : "lib-99.8.jar",
+        "commons-jexl>=0.1" : "lib2-0.1.jar",
+        "commons-codec" : "lib3.jar",
+        "commons-jexl" : "lib4.jar"
+      }
+    }
+  }
+}
+]
