@@ -80,7 +80,6 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         mgr.applyChanges(this, false, null);
     }
 
-
     protected void process(ListIterator listIterator, boolean install) throws Throwable {
         if (!listIterator.hasNext()) {
             throw new IllegalArgumentException("Plugins list parameter is missing");
