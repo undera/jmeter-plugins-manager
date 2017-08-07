@@ -201,7 +201,7 @@ public class DependencyResolver {
 
 
         // compare installed and candidate libs
-        if (candidateLib.getVersion() != null && Library.versionComparator.compare(installedLib, candidateLib) == -1) {
+        if (candidateLib.getVersion() != null && Library.versionComparator.compare(installedLib, candidateLib) < 0) {
             libDeletions.add(installedLib.getName());
             libAdditions.put(candidateLib.getName(), candidateLib.getLink());
         }
