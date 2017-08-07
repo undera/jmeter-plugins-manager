@@ -1,0 +1,28 @@
+[
+  {
+    "id": "jpgc-plugins-manager",
+    "name": "Plugins Manager",
+    "description": "Adds menu item into Options menu to access UI for installing/removing additional plugins",
+    "screenshotUrl": "https://jmeter-plugins.org/img/wiki/pmgr/pmgr_menu_item.png",
+    "helpUrl": "https://jmeter-plugins.org/wiki/PluginsManager/",
+    "vendor": "JMeter-Plugins.org",
+    "markerClass": "org.jmeterplugins.repository.PluginManager",
+    "canUninstall": false,
+    "versions": {
+      "0.13": {
+        "changes": "<p>- Fixed show empty plugins list;</p><p>- Retry JAR download after failed downloads;</p><p>- Inform on potential JAR conflicts;</p><p>- Re-enable manager after failed JAR downloads;</p><p>- Make stats UUID less sensitive + detect CI, clouds and OS;</p><p>- Version management for libs;</p>",
+        "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-manager/0.13/jmeter-plugins-manager-0.13.jar",
+        "libs": {
+          "cmdbeginner": "https://search.maven.org/remotecontent?filepath=kg/apc/cmdrunner/2.0/cmdrunner-2.0.jar"
+        }
+      },
+      "0.14": {
+        "changes": "<p>- Added Plugins Manager button on toolbar;</p><p>- Suggest to install missing plugins;</p><p>- Load last test plan file after restart JMeter;</p><p>- Fixed update lib;</p><p>- Opportunity to fix broken jmeter;</p><p>- Fixed load plugins list;</p><p>- Distinct gui/non-gui mode in stats;</p><p>- Added \"install-all-except\" command to cmd;</p>",
+        "downloadUrl": "https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-manager/0.14/jmeter-plugins-manager-0.14.jar",
+        "libs": {
+          "cmdbeginner": "https://search.maven.org/remotecontent?filepath=kg/apc/cmdrunner/2.0/cmdrunner-2.0.jar"
+        }
+      }
+    }
+  }
+]

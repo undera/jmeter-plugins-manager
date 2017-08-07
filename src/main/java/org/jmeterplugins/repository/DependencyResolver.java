@@ -187,12 +187,18 @@ public class DependencyResolver {
     private void resolveUpdateLib(Plugin plugin, Library installedLib, String candidateLibName) {
         final Map<String, String> candidateLibs = plugin.getLibs(plugin.getCandidateVersion());
 
-        // get installed lib version
-        String installedVersion = Plugin.getVersionFromPath(Plugin.getLibInstallPath(installedLib.getName()));
-        installedLib.setVersion(installedVersion);
-
         // get candidate lib
         Library candidateLib = getLibrary(candidateLibName, candidateLibs.get(candidateLibName));
+
+        // get installed lib version
+        String installedPath = Plugin.getLibInstallPath(installedLib.getName());
+        if (installedPath == null) {
+            libAdditions.put(candidateLib.getName(), candidateLib.getLink());
+            return;
+        }
+        String installedVersion = Plugin.getVersionFromPath(installedPath);
+        installedLib.setVersion(installedVersion);
+
 
         // compare installed and candidate libs
         if (candidateLib.getVersion() != null && Library.versionComparator.compare(installedLib, candidateLib) == -1) {
@@ -309,7 +315,7 @@ public class DependencyResolver {
             List<Library> libs = libsToResolve.get(key);
             Collections.sort(libs, Library.versionComparator);
 
-            for (Library lib : libs)  {
+            for (Library lib : libs) {
                 libAdditions.remove(lib.getFullName());
             }
 
@@ -318,7 +324,6 @@ public class DependencyResolver {
             libAdditions.put(libToInstall.getName(), libToInstall.getLink());
         }
     }
-
 
 
     // TODO: manage '==' and '<=' condition
@@ -332,7 +337,7 @@ public class DependencyResolver {
         Set<Plugin> installedPlugins = PluginManager.getInstalledPlugins(allPlugins);
 
         for (Plugin plugin : installedPlugins) {
-            Map<String, String> requiredLibs = plugin.getRequiredLibs(plugin.getInstalledVersion());
+            Map<String, String> requiredLibs = plugin.getLibs(plugin.getInstalledVersion());
             for (String lib : requiredLibs.keySet()) {
                 resolveLibForPlugin(plugin, lib, requiredLibs.get(lib));
             }
