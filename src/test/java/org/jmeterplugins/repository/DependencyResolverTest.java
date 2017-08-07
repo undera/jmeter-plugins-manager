@@ -273,6 +273,37 @@ public class DependencyResolverTest {
     }
 
     @Test
+    public void testResolveMissingLib() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/self_npe.json");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+            plugin.installedPath = "";
+            plugin.installedVersion = "0.14";
+
+            map.put(plugin, true);
+        }
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Map<String, String> libs = resolver.getLibAdditions();
+
+        assertEquals(1, libs.size());
+        assertNotNull(libs.get("cmdbeginner"));
+
+        Set<Plugin> pluginsAdd = resolver.getAdditions();
+        assertEquals(1, pluginsAdd.size());
+        assertEquals("jpgc-plugins-manager", pluginsAdd.toArray(new Plugin[1])[0].getID());
+
+        Set<Plugin> pluginsDelete = resolver.getDeletions();
+        assertEquals(1, pluginsDelete.size());
+        assertEquals("jpgc-plugins-manager", pluginsDelete.toArray(new Plugin[1])[0].getID());
+    }
+
+    @Test
     public void testResolveLibIfLibBroken() throws Exception {
         URL url = PluginManagerTest.class.getResource("/broken.json");
         JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());

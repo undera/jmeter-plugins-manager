@@ -337,7 +337,7 @@ public class DependencyResolver {
         Set<Plugin> installedPlugins = PluginManager.getInstalledPlugins(allPlugins);
 
         for (Plugin plugin : installedPlugins) {
-            Map<String, String> requiredLibs = plugin.getRequiredLibs(plugin.getInstalledVersion());
+            Map<String, String> requiredLibs = plugin.getLibs(plugin.getInstalledVersion());
             for (String lib : requiredLibs.keySet()) {
                 resolveLibForPlugin(plugin, lib, requiredLibs.get(lib));
             }
