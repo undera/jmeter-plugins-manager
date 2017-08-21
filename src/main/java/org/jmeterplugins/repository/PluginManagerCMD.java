@@ -8,6 +8,7 @@ import kg.apc.cmdtools.AbstractCMDTool;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.apache.log.Priority;
+import org.jmeterplugins.repository.plugins.PluginSuggester;
 
 public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback<String> {
     private static final Logger log = LoggingManager.getLoggerForClass();
@@ -32,6 +33,9 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
                     break;
                 case "install-all-except":
                     installAll(listIterator, true);
+                    break;
+                case "install-plugins":
+                    installPlugins(listIterator);
                     break;
                 case "uninstall":
                     process(listIterator, false);
@@ -63,6 +67,18 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         mgr.setTimeout(30000); // TODO: add property?
         mgr.load();
         return mgr;
+    }
+
+    protected void installPlugins(ListIterator jmxFilesIterator) throws Throwable {
+        PluginManager mgr = getPluginsManager();
+        PluginSuggester suggester = new PluginSuggester(mgr);
+        final Set<Plugin> pluginsToInstall = new HashSet<>();
+        if (jmxFilesIterator.hasNext()) {
+            pluginsToInstall.addAll(suggester.analyzeTestPlan(jmxFilesIterator.next().toString()));
+        }
+
+        mgr.togglePlugins(pluginsToInstall, true);
+        mgr.applyChanges(this, false, null);
     }
 
     protected void installAll(ListIterator exclusions, boolean install) throws Throwable {

@@ -41,20 +41,20 @@ public class PluginSuggester {
         if (msg != null && msg.contains("Loading file")) {
             testPlan = msg.substring(msg.indexOf(": ") + 2);
             if (!"null".equals(testPlan)) {
-                Set<String> nonExistentClasses = analyzer.analyze(testPlan);
-                if (nonExistentClasses.size() > 0) {
-                    return findPluginsFromClasses(nonExistentClasses);
-                }
+                return analyzeTestPlan(testPlan);
             }
         }
         return Collections.emptySet();
     }
 
-    protected void togglePlugins(Set<Plugin> pluginsToInstall) {
-        for (Plugin plugin : pluginsToInstall) {
-            pmgr.toggleInstalled(plugin, true);
+    public Set<Plugin> analyzeTestPlan(String path) {
+        Set<String> nonExistentClasses = analyzer.analyze(path);
+        if (nonExistentClasses.size() > 0) {
+            return findPluginsFromClasses(nonExistentClasses);
         }
+        return Collections.emptySet();
     }
+
 
     protected Set<Plugin> findPluginsFromClasses(Set<String> nonExistentClasses) {
         try {

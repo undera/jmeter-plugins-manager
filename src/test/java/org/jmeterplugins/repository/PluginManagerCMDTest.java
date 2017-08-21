@@ -127,4 +127,16 @@ public class PluginManagerCMDTest {
         int code = cmd.processParams(params.listIterator());
         assertEquals(0, code);
     }
+
+    @Test
+    public void testInstallPluginsForJMX() throws Exception {
+        JMeterUtils.getJMeterProperties().remove("jpgc.repo.address");
+        String path = getClass().getResource("/testplan.xml").getPath();
+        PluginManagerCMD cmd = new PluginManagerCMD();
+        LinkedList<String> params = new LinkedList<>();
+        params.add("install-plugins");
+        params.add(path);
+        int code = cmd.processParams(params.listIterator());
+        assertEquals(0, code);
+    }
 }
