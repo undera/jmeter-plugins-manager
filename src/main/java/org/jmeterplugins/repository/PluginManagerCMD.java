@@ -34,8 +34,8 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
                 case "install-all-except":
                     installAll(listIterator, true);
                     break;
-                case "install-plugins":
-                    installPlugins(listIterator);
+                case "install-for-jmx":
+                    installPluginsForJmx(listIterator);
                     break;
                 case "uninstall":
                     process(listIterator, false);
@@ -69,7 +69,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         return mgr;
     }
 
-    protected void installPlugins(ListIterator jmxFilesIterator) throws Throwable {
+    protected void installPluginsForJmx(ListIterator jmxFilesIterator) throws Throwable {
         PluginManager mgr = getPluginsManager();
         PluginSuggester suggester = new PluginSuggester(mgr);
         final Set<Plugin> pluginsToInstall = new HashSet<>();
