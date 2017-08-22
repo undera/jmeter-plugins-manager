@@ -134,7 +134,7 @@ public class PluginManagerCMDTest {
         String path = getClass().getResource("/testplan.xml").getPath();
         PluginManagerCMD cmd = new PluginManagerCMD();
         LinkedList<String> params = new LinkedList<>();
-        params.add("install-plugins");
+        params.add("install-for-jmx");
         params.add(path);
         int code = cmd.processParams(params.listIterator());
         assertEquals(0, code);
