@@ -37,10 +37,10 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     private final JTextPane description = new JTextPane();
-    private final PlaceholderTextField searchField = new PlaceholderTextField();
+    protected final PlaceholderTextField searchField = new PlaceholderTextField();
+    private final DefaultListModel<PluginCheckbox> searchResults = new DefaultListModel<>();
     protected JList<PluginCheckbox> list = new CheckBoxList<>(5);
     private DefaultListModel<PluginCheckbox> listModel = new DefaultListModel<>();
-    private final DefaultListModel<PluginCheckbox> searchResults = new DefaultListModel<>();
     protected final JComboBox<String> version = new JComboBox<>();
     private ItemListener itemListener = new VerChoiceChanged();
     private GenericCallback<Object> dialogRefresh;
