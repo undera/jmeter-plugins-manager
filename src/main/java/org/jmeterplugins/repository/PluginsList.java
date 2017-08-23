@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
@@ -27,6 +29,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.jmeterplugins.repository.util.PlaceholderTextField;
 
 public class PluginsList extends JPanel implements ListSelectionListener, HyperlinkListener {
     private static final long serialVersionUID = 295116233618658217L;
@@ -34,6 +37,8 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     private final JTextPane description = new JTextPane();
+    protected final PlaceholderTextField searchField = new PlaceholderTextField();
+    private final DefaultListModel<PluginCheckbox> searchResults = new DefaultListModel<>();
     protected JList<PluginCheckbox> list = new CheckBoxList<>(5);
     private DefaultListModel<PluginCheckbox> listModel = new DefaultListModel<>();
     protected final JComboBox<String> version = new JComboBox<>();
@@ -52,10 +57,56 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         list.setBorder(PluginManagerDialog.SPACING);
         list.addListSelectionListener(this);
 
-        add(new JScrollPane(list), BorderLayout.WEST);
+        add(getPluginsListComponent(), BorderLayout.WEST);
         add(getDetailsPanel(), BorderLayout.CENTER);
 
         list.setComponentPopupMenu(new ToggleAllPopupMenu());
+    }
+
+    private Component getPluginsListComponent() {
+        initSearchField();
+        JPanel topAndDown = new JPanel(new BorderLayout(5, 0));
+        topAndDown.add(searchField, BorderLayout.NORTH);
+        topAndDown.add(new JScrollPane(list));
+        return topAndDown;
+    }
+
+    private void initSearchField() {
+        searchField.setPlaceholder("Search...");
+        searchField.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                // NOOP.
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // NOOP.
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                filterPluginsList();
+            }
+        });
+    }
+
+    private void filterPluginsList() {
+        final String filter = searchField.getText().toLowerCase();
+        if (!filter.isEmpty()) {
+            searchResults.clear();
+            for (int i = 0; i < listModel.size(); i++) {
+                PluginCheckbox pluginCheckbox = listModel.getElementAt(i);
+                Plugin plugin = pluginCheckbox.getPlugin();
+                final String data = plugin.getSearchIndexString();
+                if (data.contains(filter)) {
+                    searchResults.addElement(pluginCheckbox);
+                }
+            }
+            list.setModel(searchResults);
+        } else {
+            list.setModel(listModel);
+        }
     }
 
     public void setPlugins(Set<Plugin> plugins, ChangeListener checkboxNotifier) {
