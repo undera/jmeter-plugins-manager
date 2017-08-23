@@ -84,6 +84,10 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
     }
 
     protected void installPluginsForJmx(ListIterator jmxFilesIterator) throws Throwable {
+        if (!jmxFilesIterator.hasNext()) {
+            throw new IllegalArgumentException("No jmx files specified");
+        }
+
         PluginManager mgr = getPluginsManager();
         PluginSuggester suggester = new PluginSuggester(mgr);
         final Set<Plugin> pluginsToInstall = new HashSet<>();
