@@ -27,6 +27,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.jmeterplugins.repository.util.PlaceholderTextField;
 
 public class PluginsList extends JPanel implements ListSelectionListener, HyperlinkListener {
     private static final long serialVersionUID = 295116233618658217L;
@@ -34,6 +35,7 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     private final JTextPane description = new JTextPane();
+    private final PlaceholderTextField searchField = new PlaceholderTextField();
     protected JList<PluginCheckbox> list = new CheckBoxList<>(5);
     private DefaultListModel<PluginCheckbox> listModel = new DefaultListModel<>();
     protected final JComboBox<String> version = new JComboBox<>();
@@ -52,10 +54,18 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         list.setBorder(PluginManagerDialog.SPACING);
         list.addListSelectionListener(this);
 
-        add(new JScrollPane(list), BorderLayout.WEST);
+        add(getPluginsListComponent(), BorderLayout.WEST);
         add(getDetailsPanel(), BorderLayout.CENTER);
 
         list.setComponentPopupMenu(new ToggleAllPopupMenu());
+    }
+
+    private Component getPluginsListComponent() {
+        JPanel topAndDown = new JPanel(new BorderLayout(5, 0));
+        searchField.setPlaceholder("Search...");
+        topAndDown.add(searchField, BorderLayout.NORTH);
+        topAndDown.add(new JScrollPane(list));
+        return topAndDown;
     }
 
     public void setPlugins(Set<Plugin> plugins, ChangeListener checkboxNotifier) {
