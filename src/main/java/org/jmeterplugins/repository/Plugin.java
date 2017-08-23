@@ -42,6 +42,7 @@ public class Plugin {
     protected String installerClass = null;
     protected List<String> componentClasses;
     protected boolean canUninstall = true;
+    private String allData;
 
     public Plugin(String aId) {
         id = aId;
@@ -429,5 +430,20 @@ public class Plugin {
 
     public boolean isVirtual() {
         return markerClass == null;
+    }
+
+    public String getAllData() {
+        if (allData == null || allData.isEmpty()) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(id);
+            builder.append(name);
+            builder.append(description);
+            for (String component : componentClasses) {
+                builder.append(component);
+            }
+            allData = builder.toString();
+        }
+
+        return allData;
     }
 }
