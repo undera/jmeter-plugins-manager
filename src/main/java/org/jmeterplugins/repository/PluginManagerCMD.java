@@ -1,10 +1,12 @@
 package org.jmeterplugins.repository;
 
+import java.io.File;
 import java.io.PrintStream;
 import java.util.*;
 
 import kg.apc.cmdtools.AbstractCMDTool;
 
+import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.apache.log.Priority;
@@ -12,6 +14,16 @@ import org.jmeterplugins.repository.plugins.PluginSuggester;
 
 public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback<String> {
     private static final Logger log = LoggingManager.getLoggerForClass();
+
+    public PluginManagerCMD() {
+        setJMeterHome();
+    }
+
+    private void setJMeterHome() {
+        File self = new File(PluginManagerCMD.class.getProtectionDomain().getCodeSource().getLocation().getFile());
+        String home = self.getParentFile().getParentFile().getParent();
+        JMeterUtils.setJMeterHome(home);
+    }
 
     @Override
     protected int processParams(ListIterator listIterator) throws UnsupportedOperationException, IllegalArgumentException {
