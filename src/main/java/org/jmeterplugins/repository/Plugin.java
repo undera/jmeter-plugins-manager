@@ -42,7 +42,7 @@ public class Plugin {
     protected String installerClass = null;
     protected List<String> componentClasses;
     protected boolean canUninstall = true;
-    private String allData;
+    private String searchIndexString;
 
     public Plugin(String aId) {
         id = aId;
@@ -432,8 +432,8 @@ public class Plugin {
         return markerClass == null;
     }
 
-    public String getAllData() {
-        if (allData == null || allData.isEmpty()) {
+    public String getSearchIndexString() {
+        if (searchIndexString == null || searchIndexString.isEmpty()) {
             StringBuilder builder = new StringBuilder();
             builder.append(id);
             builder.append(name);
@@ -441,9 +441,9 @@ public class Plugin {
             for (String component : componentClasses) {
                 builder.append(component);
             }
-            allData = builder.toString();
+            searchIndexString = builder.toString().toLowerCase();
         }
 
-        return allData;
+        return searchIndexString;
     }
 }

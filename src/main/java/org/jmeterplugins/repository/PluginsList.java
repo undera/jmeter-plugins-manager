@@ -98,7 +98,7 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
             for (int i = 0; i < listModel.size(); i++) {
                 PluginCheckbox pluginCheckbox = listModel.getElementAt(i);
                 Plugin plugin = pluginCheckbox.getPlugin();
-                final String data = plugin.getAllData().toLowerCase();
+                final String data = plugin.getSearchIndexString();
                 if (data.contains(filter)) {
                     searchResults.addElement(pluginCheckbox);
                 }
