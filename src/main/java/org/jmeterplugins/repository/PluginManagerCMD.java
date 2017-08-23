@@ -20,9 +20,11 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
     }
 
     private void setJMeterHome() {
-        File self = new File(PluginManagerCMD.class.getProtectionDomain().getCodeSource().getLocation().getFile());
-        String home = self.getParentFile().getParentFile().getParent();
-        JMeterUtils.setJMeterHome(home);
+        if (JMeterUtils.getJMeterHome() == null || JMeterUtils.getJMeterHome().isEmpty()) {
+            File self = new File(PluginManagerCMD.class.getProtectionDomain().getCodeSource().getLocation().getFile());
+            String home = self.getParentFile().getParentFile().getParent();
+            JMeterUtils.setJMeterHome(home);
+        }
     }
 
     @Override
