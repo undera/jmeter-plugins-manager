@@ -40,6 +40,7 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
     private final PlaceholderTextField searchField = new PlaceholderTextField();
     protected JList<PluginCheckbox> list = new CheckBoxList<>(5);
     private DefaultListModel<PluginCheckbox> listModel = new DefaultListModel<>();
+    private final DefaultListModel<PluginCheckbox> searchResults = new DefaultListModel<>();
     protected final JComboBox<String> version = new JComboBox<>();
     private ItemListener itemListener = new VerChoiceChanged();
     private GenericCallback<Object> dialogRefresh;
@@ -91,8 +92,21 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
     }
 
     private void filterPluginsList() {
-        String filter = searchField.getText();
-        System.out.println(filter);
+        final String filter = searchField.getText().toLowerCase();
+        if (!filter.isEmpty()) {
+            searchResults.clear();
+            for (int i = 0; i < listModel.size(); i++) {
+                PluginCheckbox pluginCheckbox = listModel.getElementAt(i);
+                Plugin plugin = pluginCheckbox.getPlugin();
+                final String data = (plugin.getID() + plugin.getName() + plugin.getDescription()).toLowerCase();
+                if (data.contains(filter)) {
+                    searchResults.addElement(pluginCheckbox);
+                }
+            }
+            list.setModel(searchResults);
+        } else {
+            list.setModel(listModel);
+        }
     }
 
     public void setPlugins(Set<Plugin> plugins, ChangeListener checkboxNotifier) {
