@@ -1,10 +1,13 @@
 package org.jmeterplugins.repository;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -55,6 +58,8 @@ import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.jmeterplugins.repository.http.HttpRetryStrategy;
+
+import java.util.zip.GZIPInputStream;
 
 
 public class JARSourceHTTP extends JARSource {
@@ -109,6 +114,7 @@ public class JARSourceHTTP extends JARSource {
 
         HttpRequestBase get = new HttpGet(uri);
         HttpParams requestParams = get.getParams();
+        get.setHeader("Accept-Encoding", "gzip");
         requestParams.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, timeout);
         requestParams.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, timeout);
 
@@ -121,7 +127,8 @@ public class JARSourceHTTP extends JARSource {
             if (bytes == null) {
                 bytes = "null".getBytes();
             }
-            String response = new String(bytes);
+
+            String response = isGZIPResponse(result) ? convertGZIPToString(bytes) : new String(bytes);
             int statusCode = result.getStatusLine().getStatusCode();
             if (statusCode >= 300) {
                 log.warn("Response with code " + result + ": " + response);
@@ -138,6 +145,25 @@ public class JARSourceHTTP extends JARSource {
                 log.warn("Exception in finalizing request", e);
             }
         }
+    }
+
+    private boolean isGZIPResponse(HttpResponse result) {
+        Header encoding = result.getFirstHeader("Content-Encoding");
+        return encoding != null && "gzip".equals(encoding.getValue().toLowerCase());
+    }
+
+    private String convertGZIPToString(byte[] bytes) throws IOException {
+        GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(bytes));
+        InputStreamReader reader = new InputStreamReader(gzipInputStream);
+        BufferedReader in = new BufferedReader(reader);
+
+        final StringBuilder buffer = new StringBuilder();
+        String line;
+        while ((line = in.readLine()) != null) {
+            buffer.append(line);
+        }
+
+        return buffer.toString();
     }
 
     protected JSONArray getRepositories(String path) throws IOException {
