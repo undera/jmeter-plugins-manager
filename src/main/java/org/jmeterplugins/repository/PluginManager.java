@@ -59,7 +59,7 @@ public class PluginManager {
         return allPlugins.size() > 0;
     }
 
-    public void load() throws Throwable {
+    public synchronized void load() throws Throwable {
         detectJARConflicts();
 
         if (hasPlugins()) {
