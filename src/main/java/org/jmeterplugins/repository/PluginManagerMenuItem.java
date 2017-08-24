@@ -50,6 +50,7 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
 
                 setIcon(getPluginsIcon(mgr.hasAnyUpdates()));
                 toolbarButton.setIcon(getIcon22Px(mgr.hasAnyUpdates()));
+
             }
         }.start();
     }
@@ -92,8 +93,6 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (dialog == null) {
-            int timeout = Integer.parseInt(JMeterUtils.getPropDefault("jpgc.repo.timeout", "30000"));
-            mgr.setTimeout(timeout);
             dialog = new PluginManagerDialog(mgr);
         }
 

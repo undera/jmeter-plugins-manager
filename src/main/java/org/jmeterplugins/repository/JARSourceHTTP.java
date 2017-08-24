@@ -62,7 +62,7 @@ public class JARSourceHTTP extends JARSource {
     private static final int RETRY_COUNT = 1;
     private final String[] addresses;
     protected AbstractHttpClient httpClient = new DefaultHttpClient();
-    private int timeout = 1000; // don't delay JMeter startup for more than 1 second
+    private int timeout = Integer.parseInt(JMeterUtils.getPropDefault("jpgc.repo.timeout", "30000"));
     private final ServiceUnavailableRetryStrategy retryStrategy = new HttpRetryStrategy(RETRY_COUNT, 5000);
 
     public JARSourceHTTP(String jmProp) {
