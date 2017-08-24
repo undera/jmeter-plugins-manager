@@ -30,21 +30,32 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
         mgr = new PluginManager(); // don't delay startup for longer that 1 second
         LoggingHooker hooker = new LoggingHooker(mgr);
         hooker.hook();
-        try {
-            mgr.load();
-        } catch (Throwable e) {
-            log.warn("Failed to load plugin updates info", e);
-        }
+        final JButton toolbarButton = getToolbarButton();
+        addToolbarIcon(toolbarButton);
+        setIcon(getPluginsIcon(false));
 
-        if (mgr.hasAnyUpdates()) {
-            setText("Plugins Manager (has upgrades)");
-            log.info("Plugins Manager has upgrades: " + Arrays.toString(mgr.getUpgradablePlugins().toArray()));
-        }
-        addToolbarIcon();
-        setIcon(getPluginsIcon(mgr.hasAnyUpdates()));
+        new Thread("repo-downloader-thread") {
+            @Override
+            public void run() {
+                try {
+                    mgr.load();
+                } catch (Throwable e) {
+                    log.warn("Failed to load plugin updates info", e);
+                }
+
+                if (mgr.hasAnyUpdates()) {
+                    setText("Plugins Manager (has upgrades)");
+                    log.info("Plugins Manager has upgrades: " + Arrays.toString(mgr.getUpgradablePlugins().toArray()));
+                }
+
+                setIcon(getPluginsIcon(mgr.hasAnyUpdates()));
+                toolbarButton.setIcon(getIcon22Px(mgr.hasAnyUpdates()));
+
+            }
+        }.start();
     }
 
-    private void addToolbarIcon() {
+    private void addToolbarIcon(final Component toolbarButton) {
         GuiPackage instance = GuiPackage.getInstance();
         if (instance != null) {
             final MainFrame mf = instance.getMainFrame();
@@ -63,7 +74,6 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
                         toolbar = finder.findComponentIn(mf);
                     }
 
-                    Component toolbarButton = getToolbarButton();
                     int pos = toolbar.getComponents().length - 1;
                     toolbarButton.setSize(toolbar.getComponent(pos).getSize());
                     toolbar.add(toolbarButton, pos + 1);
@@ -72,7 +82,7 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
         }
     }
 
-    private Component getToolbarButton() {
+    private JButton getToolbarButton() {
         JButton button = new JButton(getIcon22Px(mgr.hasAnyUpdates()));
         button.setToolTipText("Plugins Manager (has upgrades)");
         button.addActionListener(this);
@@ -83,8 +93,6 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (dialog == null) {
-            int timeout = Integer.parseInt(JMeterUtils.getPropDefault("jpgc.repo.timeout", "30000"));
-            mgr.setTimeout(timeout);
             dialog = new PluginManagerDialog(mgr);
         }
 
