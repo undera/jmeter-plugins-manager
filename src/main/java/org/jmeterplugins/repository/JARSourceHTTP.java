@@ -128,7 +128,7 @@ public class JARSourceHTTP extends JARSource {
                 bytes = "null".getBytes();
             }
 
-            String response = convertGZIPToString(bytes);
+            String response = isGZIPResponse(result) ? convertGZIPToString(bytes) : new String(bytes);
             int statusCode = result.getStatusLine().getStatusCode();
             if (statusCode >= 300) {
                 log.warn("Response with code " + result + ": " + response);
@@ -145,6 +145,11 @@ public class JARSourceHTTP extends JARSource {
                 log.warn("Exception in finalizing request", e);
             }
         }
+    }
+
+    private boolean isGZIPResponse(HttpResponse result) {
+        Header encoding = result.getFirstHeader("Content-Encoding");
+        return encoding != null && "gzip".equals(encoding.getValue().toLowerCase());
     }
 
     private String convertGZIPToString(byte[] bytes) throws IOException {
