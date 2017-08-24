@@ -136,7 +136,6 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
 
     private void loadPlugins() {
         if (!manager.hasPlugins()) {
-            log.error("start downloading");
             try {
                 manager.load();
                 setPlugins();
