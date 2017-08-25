@@ -2,6 +2,7 @@ package org.jmeterplugins.repository;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.lang.reflect.Constructor;
 import java.util.*;
 
 import kg.apc.cmdtools.AbstractCMDTool;
@@ -12,11 +13,27 @@ import org.apache.log.Logger;
 import org.apache.log.Priority;
 import org.jmeterplugins.repository.plugins.PluginSuggester;
 
+import static org.jmeterplugins.repository.logging.LoggingHooker.isJMeter32orLater;
+
 public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback<String> {
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     public PluginManagerCMD() {
         setJMeterHome();
+        if (isJMeter32orLater()) {
+            configureCMDLogging();
+        }
+    }
+
+    private void configureCMDLogging() {
+        try {
+            Class cls = Class.forName("org.jmeterplugins.repository.logging.LoggingConfigurator");
+            Constructor constructor = cls.getConstructor();
+            constructor.newInstance();
+        } catch (Throwable ex) {
+            System.out.println("Fail to configure logging " + ex.getMessage());
+            ex.printStackTrace(System.out);
+        }
     }
 
     private void setJMeterHome() {

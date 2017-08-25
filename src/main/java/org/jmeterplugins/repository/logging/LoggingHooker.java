@@ -30,9 +30,9 @@ public class LoggingHooker {
         }
     }
 
-    public boolean isJMeter32orLater() {
+    public static boolean isJMeter32orLater() {
         try {
-            Class<?> cls = this.getClass().getClassLoader().loadClass("org.apache.jmeter.gui.logging.GuiLogEventBus");
+            Class<?> cls = LoggingHooker.class.getClassLoader().loadClass("org.apache.jmeter.gui.logging.GuiLogEventBus");
             if (cls != null) {
                 return true;
             }
