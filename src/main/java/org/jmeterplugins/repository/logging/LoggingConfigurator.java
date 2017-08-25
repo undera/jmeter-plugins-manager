@@ -22,10 +22,6 @@ import java.io.Serializable;
 public class LoggingConfigurator {
 
 
-    public static void main(String[] args) {
-        new LoggingConfigurator();
-
-    }
 
     public LoggingConfigurator() {
         configure();
@@ -54,18 +50,5 @@ public class LoggingConfigurator {
         rootLogger.setLevel(Level.INFO);
         rootLogger.addAppender(consoleAppender, Level.INFO, null);
         rootLogger.addAppender(fileAppender, Level.INFO, null);
-    }
-
-    @Plugin(name = "Logger", category = "Core", elementType = "appender", printObject = true)
-    public static class SimpleConsoleAppender extends AbstractAppender {
-
-        protected SimpleConsoleAppender(String name, Filter filter, Layout<? extends Serializable> layout) {
-            super(name, filter, layout);
-        }
-
-        @Override
-        public void append(LogEvent event) {
-            System.out.println(getName() + " : " + new String(getLayout().toByteArray(event)));
-        }
     }
 }
