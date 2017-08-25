@@ -4,24 +4,15 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.junit.Test;
 
-import java.io.File;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 public class LoggingConfiguratorTest {
 
     @Test
     public void testFlow() throws Exception {
-        File logFile = new File("PluginManagerCMD.log");
-        if (logFile.exists()) {
-            logFile.delete();
-        }
-
-        new LoggingConfigurator();
+        LoggingConfigurator configurator = new LoggingConfigurator();
         Logger log = LoggingManager.getLoggerForClass();
         log.info("Hi, logger");
-
-        assertTrue(logFile.exists());
-        logFile.delete();
+        assertNotNull(configurator);
     }
 }
