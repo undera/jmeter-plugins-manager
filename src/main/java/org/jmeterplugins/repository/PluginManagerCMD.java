@@ -167,7 +167,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
     @Override
     protected void showHelp(PrintStream printStream) {
         printStream.println("Options for tool 'PluginManagerCMD': <command> <paramstr> "
-                + " where <command> is one of: help, status, available, upgrades, install, install-all-except, uninstall.");
+                + " where <command> is one of: help, status, available, upgrades, install, install-all-except, install-for-jmx, uninstall.");
     }
 
     @Override
