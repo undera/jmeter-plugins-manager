@@ -108,8 +108,9 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         PluginManager mgr = getPluginsManager();
         PluginSuggester suggester = new PluginSuggester(mgr);
         final Set<Plugin> pluginsToInstall = new HashSet<>();
-        if (jmxFilesIterator.hasNext()) {
-            pluginsToInstall.addAll(suggester.analyzeTestPlan(jmxFilesIterator.next().toString()));
+        Set<String> jmxFiles = parseParams(jmxFilesIterator.next().toString()).keySet();
+        for (String jmxPath : jmxFiles) {
+            pluginsToInstall.addAll(suggester.analyzeTestPlan(jmxPath));
         }
 
         mgr.togglePlugins(pluginsToInstall, true);
