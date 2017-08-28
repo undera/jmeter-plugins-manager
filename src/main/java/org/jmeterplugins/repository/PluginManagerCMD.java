@@ -104,12 +104,14 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         if (!jmxFilesIterator.hasNext()) {
             throw new IllegalArgumentException("No jmx files specified");
         }
-
+        String files = jmxFilesIterator.next().toString();
+        
         PluginManager mgr = getPluginsManager();
         PluginSuggester suggester = new PluginSuggester(mgr);
         final Set<Plugin> pluginsToInstall = new HashSet<>();
-        if (jmxFilesIterator.hasNext()) {
-            pluginsToInstall.addAll(suggester.analyzeTestPlan(jmxFilesIterator.next().toString()));
+        Set<String> jmxFiles = parseParams(files).keySet();
+        for (String jmxPath : jmxFiles) {
+            pluginsToInstall.addAll(suggester.analyzeTestPlan(jmxPath));
         }
 
         mgr.togglePlugins(pluginsToInstall, true);
@@ -166,7 +168,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
     @Override
     protected void showHelp(PrintStream printStream) {
         printStream.println("Options for tool 'PluginManagerCMD': <command> <paramstr> "
-                + " where <command> is one of: help, status, available, upgrades, install, install-all-except, uninstall.");
+                + " where <command> is one of: help, status, available, upgrades, install, install-all-except, install-for-jmx, uninstall.");
     }
 
     @Override
