@@ -255,6 +255,19 @@ public class Plugin {
 
         String version = getCandidateVersion();
 
+        String location = getDownloadUrl(version);
+
+        JARSource.DownloadResult dwn = jarSource.getJAR(id, location, notify);
+        tempName = dwn.getTmpFile();
+        File f = new File(JMeterEngine.class.getProtectionDomain().getCodeSource().getLocation().getFile());
+        destName = URLDecoder.decode(f.getParent(), "UTF-8") + File.separator + dwn.getFilename();
+    }
+
+    /**
+     * @param version
+     * @return
+     */
+    public String getDownloadUrl(String version) {
         String location;
         if (isVersionFrozenToJMeter()) {
             String downloadUrl = versions.getJSONObject("").getString("downloadUrl");
@@ -265,11 +278,7 @@ public class Plugin {
             }
             location = versions.getJSONObject(version).getString("downloadUrl");
         }
-
-        JARSource.DownloadResult dwn = jarSource.getJAR(id, location, notify);
-        tempName = dwn.getTmpFile();
-        File f = new File(JMeterEngine.class.getProtectionDomain().getCodeSource().getLocation().getFile());
-        destName = URLDecoder.decode(f.getParent(), "UTF-8") + File.separator + dwn.getFilename();
+        return location;
     }
 
     public String getName() {

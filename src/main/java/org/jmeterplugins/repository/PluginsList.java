@@ -1,6 +1,7 @@
 package org.jmeterplugins.repository;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -20,13 +21,26 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.jmeterplugins.repository.util.PlaceholderTextField;
@@ -182,12 +196,33 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
 
     private String getDescriptionHTML(Plugin plugin) {
         String txt = "<h1>" + plugin.getName() + "</h1>";
+
         if (plugin.isUpgradable()) {
             txt += "<p><font color='orange'>This plugin can be upgraded to version " + plugin.getMaxVersion() + "</font></p>";
         }
         if (!plugin.getVendor().isEmpty()) {
             txt += "<p>Vendor: <i>" + plugin.getVendor() + "</i></p>";
         }
+        String downloadUrl = plugin.getDownloadUrl(plugin.getCandidateVersion());
+        int indexOfFP = downloadUrl.indexOf("filepath=");
+        if(indexOfFP>0) {
+            String artifactUrl = downloadUrl.substring(indexOfFP+"filepath=".length());
+            String[]  parts = artifactUrl.split("/");
+            String lastVersionId = parts[parts.length-2];
+            String artifactId = parts[parts.length-3];
+            StringBuilder groupId = new StringBuilder();
+            for(int i=0;i<parts.length-3;i++) {
+                groupId.append(parts[i]).append(".");
+            }
+            
+            if(!StringUtils.isEmpty(groupId)) {
+                txt += "<p>Maven Information: groupId:<i>" + groupId.substring(0, groupId.length()-1) + "</i>"+
+                        ", artifactId:<i>" + artifactId + "</i>"+
+                        ", version:<i>" + lastVersionId + "</i>"+
+                        "</p>";
+            }
+        }
+        
         if (!plugin.getDescription().isEmpty()) {
             txt += "<p>" + plugin.getDescription() + "</p>";
         }
@@ -209,7 +244,6 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         if (!deps.isEmpty()) {
             txt += "<pre>Dependencies: " + Arrays.toString(deps.toArray(new String[0])) + "</pre>";
         }
-
         Map<String, String> libs = plugin.getLibs(plugin.getCandidateVersion());
         if (!libs.isEmpty()) {
             txt += "<pre>Libraries: " + Arrays.toString(libs.keySet().toArray(new String[0])) + "</pre>";
