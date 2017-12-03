@@ -77,4 +77,12 @@ public class PluginTest {
         p = Plugin.fromJSON(JSONObject.fromObject(str, new JsonConfig()));
         assertNull(p.getVersionChanges("0.1"));
     }
+
+    @Test
+    public void testAllData() {
+        String str = "{\"id\": \"id\", \"markerClass\": \"class\", \"name\": \"name\", \"description\": \"description\"," +
+                " \"helpUrl\": 0, \"vendor\": 0, \"installerClass\": \"test\"}";
+        Plugin p = Plugin.fromJSON(JSONObject.fromObject(str, new JsonConfig()));
+        assertEquals("idnamedescriptionclass", p.getSearchIndexString());
+    }
 }

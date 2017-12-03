@@ -122,6 +122,7 @@ public class SafeDeleter {
                 try {
                     Files.move(src.toPath(), dst.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 } catch (Exception e) {
+                    System.err.println("Cannot move: " + src);
                     e.printStackTrace(System.err);
                 }
             }

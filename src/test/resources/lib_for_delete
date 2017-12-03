@@ -56,7 +56,7 @@
           "cmdrunner" : "lib1.jar",
           "bsf>=0.8" : "lib3-0.8.jar",
           "commons-codec" : "lib4.jar",
-          "commons-io=0.8" : "lib5-0.8.jar",
+          "commons-io>=0.8" : "lib5-0.8.jar",
           "commons-jexl" : "lib6.jar"
         }
       }

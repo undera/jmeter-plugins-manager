@@ -48,6 +48,9 @@ public class PluginManagerTest {
         }
     }
 
+    /**
+     * If Failed check, with what repo initialized STATIC pmgr.... it must be "/testVirtualPlugin.json"
+     */
     @Test
     public void testStatus() throws IOException {
         String res = PluginManager.getAllPluginsStatus();
@@ -55,6 +58,9 @@ public class PluginManagerTest {
         assertEquals(expected, res);
     }
 
+    /**
+     * If Failed check, with what repo initialized STATIC pmgr.... it must be "/testVirtualPlugin.json"
+     */
     @Test
     public void testStatusSingle() throws IOException {
         assertEquals("0.0.0-STOCK", PluginManager.getPluginStatus("jpgc-dep2"));
@@ -70,7 +76,7 @@ public class PluginManagerTest {
         ifile.setReadOnly();
         mgr.load();
         try {
-            mgr.applyChanges(new LoggingCallback());
+            mgr.applyChanges(new LoggingCallback(), true, null);
             fail();
         } catch (RuntimeException e) {
             String prefix = "Have no write access for JMeter directories, not possible to use Plugins Manager:";
@@ -105,7 +111,7 @@ public class PluginManagerTest {
                     @Override
                     public void notify(String progress) {
                     }
-                });
+                }, true, null);
                 fail();
             } catch (IllegalArgumentException ex) {
                 assertTrue(ex.getMessage().contains("Version 9999 not found for plugin"));
@@ -119,7 +125,7 @@ public class PluginManagerTest {
                     @Override
                     public void notify(String progress) {
                     }
-                });
+                }, true, null);
                 fail();
             } catch (DownloadException ex) {
                 assertTrue(ex.getMessage().contains("Failed to download library"));
@@ -133,7 +139,7 @@ public class PluginManagerTest {
                     @Override
                     public void notify(String progress) {
                     }
-                });
+                }, true, null);
                 fail();
             } catch (DownloadException ex) {
                 assertTrue(ex.getMessage().contains("Failed to download plugin"));
@@ -190,5 +196,12 @@ public class PluginManagerTest {
         assertEquals("java", PluginManager.removeJARVersion("java-1.7"));
         assertEquals("testapi", PluginManager.removeJARVersion("test-api"));
         assertEquals("commonsjexl", PluginManager.removeJARVersion("commons-jexl-1.1"));
+    }
+
+    @Test
+    public void testBuildMap() throws Throwable {
+        PluginManager mgr=new PluginManager();
+        mgr.load();
+        mgr.logPluginComponents();
     }
 }

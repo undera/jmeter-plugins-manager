@@ -7,11 +7,14 @@ import org.junit.Test;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
+import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class PluginsListTest {
 
@@ -44,12 +47,28 @@ public class PluginsListTest {
         assertFalse(pluginsList.getList().isEnabled());
         assertFalse(pluginsList.getVersion().isEnabled());
         assertFalse(pluginsList.getList().getModel().getElementAt(0).isEnabled());
+
+        JTextField searchField = pluginsList.searchField;
+        ListModel model = pluginsList.getList().getModel();
+        searchField.setText("not found plugin");
+        KeyEvent keyEvent = new KeyEvent(pluginsList.searchField, KeyEvent.KEY_RELEASED, 20, 1, KeyEvent.VK_Z, 'z');
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().redispatchEvent(searchField, keyEvent);
+        searchField.dispatchEvent(keyEvent);
+        assertEquals(0, pluginsList.getList().getModel().getSize());
+        assertFalse(model == pluginsList.getList().getModel());
+
+        searchField.setText("");
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().redispatchEvent(searchField, keyEvent);
+        searchField.dispatchEvent(keyEvent);
+        assertEquals(1, pluginsList.getList().getModel().getSize());
+        assertEquals(model, pluginsList.getList().getModel());
     }
 
 
     public static class PluginsListExt extends PluginsList {
         public PluginsListExt(Set<Plugin> plugins, ChangeListener checkboxNotifier, GenericCallback<Object> dialogRefresh) {
-            super(plugins, checkboxNotifier, dialogRefresh);
+            super(dialogRefresh);
+            setPlugins(plugins, checkboxNotifier);
         }
 
         public JList<PluginCheckbox> getList() {
