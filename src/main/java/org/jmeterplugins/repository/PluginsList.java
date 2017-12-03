@@ -203,23 +203,25 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         if (!plugin.getVendor().isEmpty()) {
             txt += "<p>Vendor: <i>" + plugin.getVendor() + "</i></p>";
         }
-        String downloadUrl = plugin.getDownloadUrl(plugin.getCandidateVersion());
-        int indexOfFP = downloadUrl.indexOf("filepath=");
-        if(indexOfFP>0) {
-            String artifactUrl = downloadUrl.substring(indexOfFP+"filepath=".length());
-            String[]  parts = artifactUrl.split("/");
-            String lastVersionId = parts[parts.length-2];
-            String artifactId = parts[parts.length-3];
-            StringBuilder groupId = new StringBuilder();
-            for(int i=0;i<parts.length-3;i++) {
-                groupId.append(parts[i]).append(".");
-            }
-            
-            if(!StringUtils.isEmpty(groupId)) {
-                txt += "<p>Maven Information: groupId:<i>" + groupId.substring(0, groupId.length()-1) + "</i>"+
-                        ", artifactId:<i>" + artifactId + "</i>"+
-                        ", version:<i>" + lastVersionId + "</i>"+
-                        "</p>";
+        if(plugin.getCandidateVersion() != null) {
+            String downloadUrl = plugin.getDownloadUrl(plugin.getCandidateVersion());
+            int indexOfFP = downloadUrl.indexOf("filepath=");
+            if(indexOfFP>0) {
+                String artifactUrl = downloadUrl.substring(indexOfFP+"filepath=".length());
+                String[]  parts = artifactUrl.split("/");
+                String lastVersionId = parts[parts.length-2];
+                String artifactId = parts[parts.length-3];
+                StringBuilder groupId = new StringBuilder();
+                for(int i=0;i<parts.length-3;i++) {
+                    groupId.append(parts[i]).append(".");
+                }
+                
+                if(!StringUtils.isEmpty(groupId)) {
+                    txt += "<p>Maven Information: groupId:<i>" + groupId.substring(0, groupId.length()-1) + "</i>"+
+                            ", artifactId:<i>" + artifactId + "</i>"+
+                            ", version:<i>" + lastVersionId + "</i>"+
+                            "</p>";
+                }
             }
         }
         
