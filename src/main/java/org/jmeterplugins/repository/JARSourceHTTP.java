@@ -283,6 +283,8 @@ public class JARSourceHTTP extends JARSource {
         HttpContext context = new BasicHttpContext();
         HttpResponse response = execute(httpget, context);
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+            log.error("Error downloading url:"+url+" got response code:"+response.getStatusLine().getStatusCode());
+            EntityUtils.consumeQuietly(response.getEntity());
             throw new IOException(response.getStatusLine().toString());
         }
 
