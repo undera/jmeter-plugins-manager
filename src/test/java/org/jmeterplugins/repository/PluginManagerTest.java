@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URL;
 
 import static org.junit.Assert.*;
@@ -23,6 +24,14 @@ public class PluginManagerTest {
         TestJMeterUtils.createJmeterEnv();
         URL url = PluginManagerTest.class.getResource("/testVirtualPlugin.json");
         JMeterUtils.setProperty("jpgc.repo.address", url.getFile());
+        //reset static pmgr
+        try {
+            Field staticManager = PluginManager.class.getDeclaredField("staticManager");
+            staticManager.setAccessible(true);
+            staticManager.set(null, new PluginManager());
+        } catch (Throwable ex) {
+            fail("Failed to reset static pmgr");
+        }
     }
 
     @AfterClass
