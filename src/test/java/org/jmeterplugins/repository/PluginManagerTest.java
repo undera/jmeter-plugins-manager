@@ -17,6 +17,7 @@ import java.net.URL;
 import static org.junit.Assert.*;
 
 public class PluginManagerTest {
+
     @BeforeClass
     public static void setup() {
         TestJMeterUtils.createJmeterEnv();
