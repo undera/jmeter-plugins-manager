@@ -194,7 +194,7 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         }
     }
 
-    private String getDescriptionHTML(Plugin plugin) {
+    String getDescriptionHTML(Plugin plugin) {
         String txt = "<h1>" + plugin.getName() + "</h1>";
 
         if (plugin.isUpgradable()) {
