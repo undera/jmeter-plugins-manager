@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,7 +22,6 @@ import org.apache.jmeter.engine.JMeterEngine;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
-
 public class Plugin {
     private static final Logger log = LoggingManager.getLoggerForClass();
     private static final Pattern dependsParser = Pattern.compile("([^=<>]+)([=<>]+[0-9.]+)?");
@@ -42,7 +40,9 @@ public class Plugin {
     protected String vendor;
     protected String candidateVersion;
     protected String installerClass = null;
+    protected List<String> componentClasses;
     protected boolean canUninstall = true;
+    private String searchIndexString;
 
     public Plugin(String aId) {
         id = aId;
@@ -52,6 +52,18 @@ public class Plugin {
         Plugin inst = new Plugin(elm.getString("id"));
         if (!(elm.get("markerClass") instanceof JSONNull)) {
             inst.markerClass = elm.getString("markerClass");
+        }
+        inst.componentClasses = new ArrayList<>();
+        if (inst.markerClass != null) {
+            inst.componentClasses.add(inst.markerClass);
+        }
+        if (elm.containsKey("componentClasses")) {
+            JSONArray componentsJSON = elm.getJSONArray("componentClasses");
+            if (componentsJSON.size() > 0) {
+                for (int i = 0; i < componentsJSON.size(); i++) {
+                    inst.componentClasses.add(componentsJSON.getString(i));
+                }
+            }
         }
         if (elm.get("versions") instanceof JSONObject) {
             inst.versions = elm.getJSONObject("versions");
@@ -243,6 +255,19 @@ public class Plugin {
 
         String version = getCandidateVersion();
 
+        String location = getDownloadUrl(version);
+
+        JARSource.DownloadResult dwn = jarSource.getJAR(id, location, notify);
+        tempName = dwn.getTmpFile();
+        File f = new File(JMeterEngine.class.getProtectionDomain().getCodeSource().getLocation().getFile());
+        destName = URLDecoder.decode(f.getParent(), "UTF-8") + File.separator + dwn.getFilename();
+    }
+
+    /**
+     * @param version
+     * @return
+     */
+    public String getDownloadUrl(String version) {
         String location;
         if (isVersionFrozenToJMeter()) {
             String downloadUrl = versions.getJSONObject("").getString("downloadUrl");
@@ -253,11 +278,7 @@ public class Plugin {
             }
             location = versions.getJSONObject(version).getString("downloadUrl");
         }
-
-        JARSource.DownloadResult dwn = jarSource.getJAR(id, location, notify);
-        tempName = dwn.getTmpFile();
-        File f = new File(JMeterEngine.class.getProtectionDomain().getCodeSource().getLocation().getFile());
-        destName = URLDecoder.decode(f.getParent(), "UTF-8") + File.separator + dwn.getFilename();
+        return location;
     }
 
     public String getName() {
@@ -339,6 +360,16 @@ public class Plugin {
         return depends;
     }
 
+    public Map<String, String> getRequiredLibs(String verStr) {
+        Map<String, String> libs = getLibs(verStr);
+        Map<String, String> requiredLibs = new HashMap<>();
+        for (String libName : libs.keySet()) {
+            if (libName.contains(">=")) {
+                requiredLibs.put(libName, libs.get(libName));
+            }
+        }
+        return requiredLibs;
+    }
 
     public String getVersionChanges(String versionStr) {
         JSONObject version = versions.getJSONObject(versionStr);
@@ -349,6 +380,15 @@ public class Plugin {
 
     public String getInstallerClass() {
         return installerClass;
+    }
+
+    public boolean containsComponentClasses(Set<String> classes) {
+        for (String cls : componentClasses) {
+            if (classes.contains(cls)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private class VersionComparator implements java.util.Comparator<String> {
@@ -399,5 +439,20 @@ public class Plugin {
 
     public boolean isVirtual() {
         return markerClass == null;
+    }
+
+    public String getSearchIndexString() {
+        if (searchIndexString == null || searchIndexString.isEmpty()) {
+            StringBuilder builder = new StringBuilder();
+            builder.append(id);
+            builder.append(name);
+            builder.append(description);
+            for (String component : componentClasses) {
+                builder.append(component);
+            }
+            searchIndexString = builder.toString().toLowerCase();
+        }
+
+        return searchIndexString;
     }
 }

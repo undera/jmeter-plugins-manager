@@ -1,10 +1,14 @@
 package org.jmeterplugins.repository;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,32 +21,45 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import javax.imageio.ImageIO;
-import javax.swing.*;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.jmeterplugins.repository.util.PlaceholderTextField;
 
 public class PluginsList extends JPanel implements ListSelectionListener, HyperlinkListener {
-    /**
-     *
-     */
     private static final long serialVersionUID = 295116233618658217L;
 
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     private final JTextPane description = new JTextPane();
+    protected final PlaceholderTextField searchField = new PlaceholderTextField();
+    private final DefaultListModel<PluginCheckbox> searchResults = new DefaultListModel<>();
     protected JList<PluginCheckbox> list = new CheckBoxList<>(5);
     private DefaultListModel<PluginCheckbox> listModel = new DefaultListModel<>();
     protected final JComboBox<String> version = new JComboBox<>();
     private ItemListener itemListener = new VerChoiceChanged();
     private GenericCallback<Object> dialogRefresh;
 
-    public PluginsList(Set<Plugin> plugins, ChangeListener checkboxNotifier, GenericCallback<Object> dialogRefresh) {
+    public PluginsList(GenericCallback<Object> dialogRefresh) {
         super(new BorderLayout(5, 0));
         this.dialogRefresh = dialogRefresh;
 
@@ -54,14 +71,63 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         list.setBorder(PluginManagerDialog.SPACING);
         list.addListSelectionListener(this);
 
-        add(new JScrollPane(list), BorderLayout.WEST);
+        add(getPluginsListComponent(), BorderLayout.WEST);
         add(getDetailsPanel(), BorderLayout.CENTER);
 
+        list.setComponentPopupMenu(new ToggleAllPopupMenu());
+    }
+
+    private Component getPluginsListComponent() {
+        initSearchField();
+        JPanel topAndDown = new JPanel(new BorderLayout(5, 0));
+        topAndDown.add(searchField, BorderLayout.NORTH);
+        topAndDown.add(new JScrollPane(list));
+        return topAndDown;
+    }
+
+    private void initSearchField() {
+        searchField.setPlaceholder("Search...");
+        searchField.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                // NOOP.
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                // NOOP.
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                filterPluginsList();
+            }
+        });
+    }
+
+    private void filterPluginsList() {
+        final String filter = searchField.getText().toLowerCase();
+        if (!filter.isEmpty()) {
+            searchResults.clear();
+            for (int i = 0; i < listModel.size(); i++) {
+                PluginCheckbox pluginCheckbox = listModel.getElementAt(i);
+                Plugin plugin = pluginCheckbox.getPlugin();
+                final String data = plugin.getSearchIndexString();
+                if (data.contains(filter)) {
+                    searchResults.addElement(pluginCheckbox);
+                }
+            }
+            list.setModel(searchResults);
+        } else {
+            list.setModel(listModel);
+        }
+    }
+
+    public void setPlugins(Set<Plugin> plugins, ChangeListener checkboxNotifier) {
+        listModel.clear();
         for (Plugin plugin : plugins) {
             listModel.addElement(getCheckboxItem(plugin, checkboxNotifier));
         }
-
-        list.setComponentPopupMenu(new ToggleAllPopupMenu());
     }
 
     private JPanel getDetailsPanel() {
@@ -128,14 +194,37 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         }
     }
 
-    private String getDescriptionHTML(Plugin plugin) {
+    String getDescriptionHTML(Plugin plugin) {
         String txt = "<h1>" + plugin.getName() + "</h1>";
+
         if (plugin.isUpgradable()) {
             txt += "<p><font color='orange'>This plugin can be upgraded to version " + plugin.getMaxVersion() + "</font></p>";
         }
         if (!plugin.getVendor().isEmpty()) {
             txt += "<p>Vendor: <i>" + plugin.getVendor() + "</i></p>";
         }
+        if(plugin.getCandidateVersion() != null) {
+            String downloadUrl = plugin.getDownloadUrl(plugin.getCandidateVersion());
+            int indexOfFP = downloadUrl.indexOf("filepath=");
+            if(indexOfFP>0) {
+                String artifactUrl = downloadUrl.substring(indexOfFP+"filepath=".length());
+                String[]  parts = artifactUrl.split("/");
+                String lastVersionId = parts[parts.length-2];
+                String artifactId = parts[parts.length-3];
+                StringBuilder groupId = new StringBuilder();
+                for(int i=0;i<parts.length-3;i++) {
+                    groupId.append(parts[i]).append(".");
+                }
+                
+                if(!StringUtils.isEmpty(groupId)) {
+                    txt += "<p>Maven Information: groupId:<i>" + groupId.substring(0, groupId.length()-1) + "</i>"+
+                            ", artifactId:<i>" + artifactId + "</i>"+
+                            ", version:<i>" + lastVersionId + "</i>"+
+                            "</p>";
+                }
+            }
+        }
+        
         if (!plugin.getDescription().isEmpty()) {
             txt += "<p>" + plugin.getDescription() + "</p>";
         }
@@ -157,7 +246,6 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         if (!deps.isEmpty()) {
             txt += "<pre>Dependencies: " + Arrays.toString(deps.toArray(new String[0])) + "</pre>";
         }
-
         Map<String, String> libs = plugin.getLibs(plugin.getCandidateVersion());
         if (!libs.isEmpty()) {
             txt += "<pre>Libraries: " + Arrays.toString(libs.keySet().toArray(new String[0])) + "</pre>";
@@ -220,7 +308,10 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
                 }
 
                 URL url = new URL(plugin.getScreenshot());
-                cache.put(url, ImageIO.read(url));
+                BufferedImage image = ImageIO.read(url);
+                if (image != null) {
+                    cache.put(url, image);
+                }
             } catch (IOException e) {
                 log.warn("Cannot cached image " + plugin.getScreenshot());
             }

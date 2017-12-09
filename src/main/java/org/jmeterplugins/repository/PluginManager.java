@@ -1,29 +1,48 @@
 package org.jmeterplugins.repository;
 
 
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+import org.apache.jmeter.assertions.Assertion;
+import org.apache.jmeter.config.ConfigElement;
+import org.apache.jmeter.control.Controller;
+import org.apache.jmeter.engine.JMeterEngine;
+import org.apache.jmeter.gui.JMeterGUIComponent;
+import org.apache.jmeter.processor.PostProcessor;
+import org.apache.jmeter.processor.PreProcessor;
+import org.apache.jmeter.samplers.SampleListener;
+import org.apache.jmeter.samplers.Sampler;
+import org.apache.jmeter.testbeans.TestBean;
+import org.apache.jmeter.timers.Timer;
+import org.apache.jmeter.util.JMeterUtils;
+import org.apache.jorphan.logging.LoggingManager;
+import org.apache.jorphan.reflect.ClassFinder;
+import org.apache.log.Logger;
+import org.jmeterplugins.repository.exception.DownloadException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.AccessDeniedException;
-import java.util.*;
-
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.jmeter.engine.JMeterEngine;
-import org.apache.jmeter.util.JMeterUtils;
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
-import org.jmeterplugins.repository.exception.DownloadException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class PluginManager {
     private static final Logger log = LoggingManager.getLoggerForClass();
     private static PluginManager staticManager = new PluginManager();
     private final JARSource jarSource;
     protected Map<Plugin, Boolean> allPlugins = new HashMap<>();
-    private boolean doRestart = true;
 
     public PluginManager() {
         String sysProp = System.getProperty("jpgc.repo.address", "https://jmeter-plugins.org/repo/");
@@ -36,10 +55,14 @@ public class PluginManager {
         }
     }
 
-    public void load() throws Throwable {
+    public boolean hasPlugins() {
+        return allPlugins.size() > 0;
+    }
+
+    public synchronized void load() throws Throwable {
         detectJARConflicts();
 
-        if (allPlugins.size() > 0) {
+        if (hasPlugins()) {
             return;
         }
 
@@ -108,13 +131,14 @@ public class PluginManager {
         }
     }
 
-    public void startModifications(Set<Plugin> delPlugins, Set<Plugin> installPlugins, Map<String, String> installLibs, Set<String> libDeletions) throws IOException {
+    public void startModifications(Set<Plugin> delPlugins, Set<Plugin> installPlugins, Map<String, String> installLibs,
+                                   Set<String> libDeletions, boolean doRestart, LinkedList<String> additionalJMeterOptions) throws IOException {
         ChangesMaker maker = new ChangesMaker(allPlugins);
         File moveFile = maker.getMovementsFile(delPlugins, installPlugins, installLibs, libDeletions);
         File installFile = maker.getInstallFile(installPlugins);
         File restartFile;
         if (doRestart) {
-            restartFile = maker.getRestartFile();
+            restartFile = maker.getRestartFile(additionalJMeterOptions);
         } else {
             restartFile = null;
         }
@@ -123,7 +147,7 @@ public class PluginManager {
         builder.start();
     }
 
-    public void applyChanges(GenericCallback<String> statusChanged) {
+    public void applyChanges(GenericCallback<String> statusChanged, boolean doRestart, LinkedList<String> additionalJMeterOptions) {
         try {
             checkRW();
         } catch (Throwable e) {
@@ -157,6 +181,7 @@ public class PluginManager {
             }
         }
 
+        log.info("Restarting JMeter...");
         statusChanged.notify("Restarting JMeter...");
 
         Set<String> libDeletions = new HashSet<>();
@@ -164,15 +189,17 @@ public class PluginManager {
             libDeletions.add(Plugin.getLibInstallPath(lib));
         }
 
-        modifierHook(resolver.getDeletions(), additions, libInstalls, libDeletions);
+        modifierHook(resolver.getDeletions(), additions, libInstalls, libDeletions, doRestart, additionalJMeterOptions);
     }
 
-    private void modifierHook(final Set<Plugin> deletions, final Set<Plugin> additions, final Map<String, String> libInstalls, final Set<String> libDeletions) {
+    private void modifierHook(final Set<Plugin> deletions, final Set<Plugin> additions, final Map<String, String> libInstalls,
+                              final Set<String> libDeletions, final boolean doRestart, final LinkedList<String> additionalJMeterOptions) {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 try {
-                    startModifications(deletions, additions, libInstalls, libDeletions);
+                    log.info("Starting JMeter Plugins modifications");
+                    startModifications(deletions, additions, libInstalls, libDeletions, doRestart, additionalJMeterOptions);
                 } catch (Exception e) {
                     log.warn("Failed to run plugin cleaner job", e);
                 }
@@ -194,29 +221,39 @@ public class PluginManager {
     public String getChangesAsText() {
         DependencyResolver resolver = new DependencyResolver(allPlugins);
 
-        String text = "";
+        StringBuilder text = new StringBuilder();
 
         for (Plugin pl : resolver.getDeletions()) {
-            text += "Uninstall plugin: " + pl + " " + pl.getInstalledVersion() + "\n";
+            text.append("Uninstall plugin: ").append(pl).append(" ").append(pl.getInstalledVersion()).append("\n");
         }
 
         for (String pl : resolver.getLibDeletions()) {
-            text += "Uninstall library: " + pl + "\n";
+            text.append("Uninstall library: ").append(pl).append("\n");
         }
 
         for (String pl : resolver.getLibAdditions().keySet()) {
-            text += "Install library: " + pl + "\n";
+            text.append("Install library: ").append(pl).append("\n");
         }
 
         for (Plugin pl : resolver.getAdditions()) {
-            text += "Install plugin: " + pl + " " + pl.getCandidateVersion() + "\n";
+            text.append("Install plugin: ").append(pl).append(" ").append(pl.getCandidateVersion()).append("\n");
         }
 
-        return text;
+        return text.toString();
     }
 
     public Set<Plugin> getInstalledPlugins() {
         Set<Plugin> result = new TreeSet<>(new PluginComparator());
+        for (Plugin plugin : allPlugins.keySet()) {
+            if (plugin.isInstalled()) {
+                result.add(plugin);
+            }
+        }
+        return result;
+    }
+
+    public static Set<Plugin> getInstalledPlugins(Map<Plugin, Boolean> allPlugins) {
+        Set<Plugin> result = new HashSet<>();
         for (Plugin plugin : allPlugins.keySet()) {
             if (plugin.isInstalled()) {
                 result.add(plugin);
@@ -245,6 +282,11 @@ public class PluginManager {
         return result;
     }
 
+    public void togglePlugins(Set<Plugin> pluginsToInstall, boolean isInstall) {
+        for (Plugin plugin : pluginsToInstall) {
+            toggleInstalled(plugin, isInstall);
+        }
+    }
 
     public void toggleInstalled(Plugin plugin, boolean cbState) {
         if (!cbState && !plugin.canUninstall()) {
@@ -270,10 +312,6 @@ public class PluginManager {
             }
         }
         throw new IllegalArgumentException("Plugin not found in repo: " + key);
-    }
-
-    public void setDoRestart(boolean doRestart) {
-        this.doRestart = doRestart;
     }
 
     private class PluginComparator implements java.util.Comparator<Plugin> {
@@ -366,6 +404,9 @@ public class PluginManager {
                 "There is nothing to update.";
     }
 
+
+
+
     public static void detectJARConflicts() {
         String[] paths = System.getProperty("java.class.path").split(File.pathSeparator);
         final Map<String, String> jarNames = new HashMap<>();
@@ -381,21 +422,47 @@ public class PluginManager {
             }
             name = removeJARVersion(name);
             if (jarNames.containsKey(name)) {
-                log.warn("Found JAR conflict: " + path +  " and " + jarNames.get(name));
+                log.warn("Found JAR conflict: " + path + " and " + jarNames.get(name));
             }
             jarNames.put(name, path);
         }
     }
 
     protected static String removeJARVersion(String path) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
         String data[] = path.split("-");
         for (int i = 0; i < data.length; i++) {
             String ch = data[i];
             if (!ch.isEmpty() && (!Character.isDigit(ch.charAt(0)) || (i < data.length - 1))) {
-                result  += ch;
+                result.append(ch);
             }
         }
-        return  result;
+        return result.toString();
+    }
+
+    public void logPluginComponents() {
+        StringBuilder report = new StringBuilder("Plugin Components:\n");
+        for (Plugin plugin : getInstalledPlugins()) {
+            try {
+                Class[] superClasses = {
+                        Sampler.class,
+                        Controller.class,
+                        Timer.class,
+                        ConfigElement.class,
+                        PreProcessor.class,
+                        PostProcessor.class,
+                        Assertion.class,
+                        SampleListener.class,
+                        JMeterGUIComponent.class,
+                        TestBean.class
+                };
+                String[] searchPaths = {plugin.installedPath};
+                List<String> list = ClassFinder.findClassesThatExtend(searchPaths, superClasses);
+                report.append(plugin.id).append("\n").append("\"componentClasses\":").append(JSONSerializer.toJSON(list.toArray()).toString()).append(",\n");
+            } catch (Throwable e) {
+                log.error("Failed to get classes", e);
+            }
+        }
+        log.info(report.toString());
     }
 }

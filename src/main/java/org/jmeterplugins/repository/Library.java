@@ -75,4 +75,12 @@ public class Library {
     public String getFullName() {
         return name + ">=" + version;
     }
+
+    public static String getVersionFromFullName(String fullName) {
+        return fullName.substring(fullName.indexOf(">=") + 2);
+    }
+
+    public static String getNameFromFullName(String fullName) {
+        return fullName.substring(0, fullName.indexOf(">="));
+    }
 }

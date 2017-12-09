@@ -1,10 +1,13 @@
 package org.jmeterplugins.repository;
 
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -50,10 +53,13 @@ import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.apache.jmeter.JMeter;
+import org.apache.jmeter.gui.GuiPackage;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.jmeterplugins.repository.http.HttpRetryStrategy;
+
+import java.util.zip.GZIPInputStream;
 
 
 public class JARSourceHTTP extends JARSource {
@@ -61,7 +67,7 @@ public class JARSourceHTTP extends JARSource {
     private static final int RETRY_COUNT = 1;
     private final String[] addresses;
     protected AbstractHttpClient httpClient = new DefaultHttpClient();
-    private int timeout = 1000; // don't delay JMeter startup for more than 1 second
+    private int timeout = Integer.parseInt(JMeterUtils.getPropDefault("jpgc.repo.timeout", "30000"));
     private final ServiceUnavailableRetryStrategy retryStrategy = new HttpRetryStrategy(RETRY_COUNT, 5000);
 
     public JARSourceHTTP(String jmProp) {
@@ -108,6 +114,7 @@ public class JARSourceHTTP extends JARSource {
 
         HttpRequestBase get = new HttpGet(uri);
         HttpParams requestParams = get.getParams();
+        get.setHeader("Accept-Encoding", "gzip");
         requestParams.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, timeout);
         requestParams.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, timeout);
 
@@ -120,7 +127,8 @@ public class JARSourceHTTP extends JARSource {
             if (bytes == null) {
                 bytes = "null".getBytes();
             }
-            String response = new String(bytes);
+
+            String response = isGZIPResponse(result) ? convertGZIPToString(bytes) : new String(bytes);
             int statusCode = result.getStatusLine().getStatusCode();
             if (statusCode >= 300) {
                 log.warn("Response with code " + result + ": " + response);
@@ -137,6 +145,25 @@ public class JARSourceHTTP extends JARSource {
                 log.warn("Exception in finalizing request", e);
             }
         }
+    }
+
+    private boolean isGZIPResponse(HttpResponse result) {
+        Header encoding = result.getFirstHeader("Content-Encoding");
+        return encoding != null && "gzip".equals(encoding.getValue().toLowerCase());
+    }
+
+    private String convertGZIPToString(byte[] bytes) throws IOException {
+        GZIPInputStream gzipInputStream = new GZIPInputStream(new ByteArrayInputStream(bytes));
+        InputStreamReader reader = new InputStreamReader(gzipInputStream);
+        BufferedReader in = new BufferedReader(reader);
+
+        final StringBuilder buffer = new StringBuilder();
+        String line;
+        while ((line = in.readLine()) != null) {
+            buffer.append(line);
+        }
+
+        return buffer.toString();
     }
 
     protected JSONArray getRepositories(String path) throws IOException {
@@ -195,7 +222,11 @@ public class JARSourceHTTP extends JARSource {
             log.warn("Failed to get network addresses", e);
         }
 
-        return getPlatformName() + '-' + DigestUtils.md5Hex(str);
+        return getPlatformName() + '-' + DigestUtils.md5Hex(str) + '-' + getGuiMode();
+    }
+
+    private String getGuiMode() {
+        return (GuiPackage.getInstance() == null) ? "nongui" : "gui";
     }
 
     protected String getPlatformName() {
@@ -252,6 +283,8 @@ public class JARSourceHTTP extends JARSource {
         HttpContext context = new BasicHttpContext();
         HttpResponse response = execute(httpget, context);
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+            log.error("Error downloading url:"+url+" got response code:"+response.getStatusLine().getStatusCode());
+            EntityUtils.consumeQuietly(response.getEntity());
             throw new IOException(response.getStatusLine().toString());
         }
 

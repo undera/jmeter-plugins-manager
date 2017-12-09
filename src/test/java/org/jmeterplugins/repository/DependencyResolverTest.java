@@ -14,7 +14,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class DependencyResolverTest {
     @Test
@@ -237,6 +241,97 @@ public class DependencyResolverTest {
     }
 
     @Test
+    public void testResolveDowngradeWithNPE() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/self_npe.json");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+            plugin.installedPath = "";
+            plugin.installedVersion = "0.14";
+            plugin.candidateVersion = "0.13";
+
+            map.put(plugin, true);
+        }
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Map<String, String> libs = resolver.getLibAdditions();
+
+        assertEquals(1, libs.size());
+        assertNotNull(libs.get("cmdbeginner"));
+
+        Set<Plugin> pluginsAdd = resolver.getAdditions();
+        assertEquals(1, pluginsAdd.size());
+        assertEquals("jpgc-plugins-manager", pluginsAdd.toArray(new Plugin[1])[0].getID());
+
+        Set<Plugin> pluginsDelete = resolver.getDeletions();
+        assertEquals(1, pluginsDelete.size());
+        assertEquals("jpgc-plugins-manager", pluginsDelete.toArray(new Plugin[1])[0].getID());
+    }
+
+    @Test
+    public void testResolveMissingLib() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/self_npe.json");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+            plugin.installedPath = "";
+            plugin.installedVersion = "0.14";
+
+            map.put(plugin, true);
+        }
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Map<String, String> libs = resolver.getLibAdditions();
+
+        assertEquals(1, libs.size());
+        assertNotNull(libs.get("cmdbeginner"));
+
+        Set<Plugin> pluginsAdd = resolver.getAdditions();
+        assertEquals(1, pluginsAdd.size());
+        assertEquals("jpgc-plugins-manager", pluginsAdd.toArray(new Plugin[1])[0].getID());
+
+        Set<Plugin> pluginsDelete = resolver.getDeletions();
+        assertEquals(1, pluginsDelete.size());
+        assertEquals("jpgc-plugins-manager", pluginsDelete.toArray(new Plugin[1])[0].getID());
+    }
+
+    @Test
+    public void testResolveLibIfLibBroken() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/broken.json");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+            plugin.installedPath = "";
+            plugin.installedVersion = "0.1";
+
+            map.put(plugin, true);
+        }
+
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Set<String> libs = resolver.getLibDeletions();
+
+        assertEquals(1, libs.size());
+        assertTrue(libs.contains("bsf"));
+
+        Map<String, String> libAdditions = resolver.getLibAdditions();
+        assertEquals(1, libAdditions.size());
+        assertEquals("lib-99.8.jar", libAdditions.get("bsf"));
+    }
+
+    @Test
     public void testUpdateLibWithPlugin() throws Exception {
         URL url = PluginManagerTest.class.getResource("/lib_update.json");
         JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
@@ -264,5 +359,31 @@ public class DependencyResolverTest {
         assertEquals(2, libsAdditions.size());
         assertEquals("cmdrunner-9999.8.jar", libsAdditions.get("cmdrunner"));
         assertEquals("commons-codec-999.5.jar", libsAdditions.get("commons-codec"));
+    }
+
+    @Test
+    public void testUpdateWhenInstall() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/installed.json");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+
+            map.put(plugin, true);
+        }
+
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Set<String> libsDeletions = resolver.getLibDeletions();
+
+        assertEquals(1, libsDeletions.size());
+        assertTrue(libsDeletions.contains("commons-codec"));
+
+        Map<String, String> libsAdditions = resolver.getLibAdditions();
+        assertEquals(1, libsAdditions.size());
+        assertEquals("commons-codec-99.99.jar", libsAdditions.get("commons-codec"));
     }
 }

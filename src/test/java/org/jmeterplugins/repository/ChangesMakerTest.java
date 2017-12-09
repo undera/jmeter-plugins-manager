@@ -6,8 +6,14 @@ import org.junit.Test;
 
 import java.io.File;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -21,7 +27,18 @@ public class ChangesMakerTest {
 
     @Test
     public void getRestartFile() throws Exception {
+        Map<Plugin, Boolean> map = new HashMap<>();
+        ChangesMaker maker = new ChangesMaker(map);
 
+        LinkedList<String> options = new LinkedList<>();
+        options.add("-t");
+        options.add("testPlanFile");
+
+        File file = maker.getRestartFile(options);
+        List<String> lines = Files.readAllLines(Paths.get(file.toURI()), Charset.defaultCharset());
+        String fileContent = Arrays.toString(lines.toArray());
+
+        assertTrue(fileContent, fileContent.contains("ApacheJMeter.jar, -t, testPlanFile"));
     }
 
     @Test

@@ -48,6 +48,16 @@ public class PluginManagerCMDTest {
     }
 
     @Test
+    public void processParams_install_all() throws Exception {
+        PluginManagerCMD cmd = new PluginManagerCMD();
+        LinkedList<String> params = new LinkedList<>();
+        params.add("install-all-except");
+        cmd.processParams(params.listIterator());
+        params.add("jpgc-dep1,jpgc-dep2=2.0");
+        cmd.processParams(params.listIterator());
+    }
+
+    @Test
     public void processParams_install_invalid() throws Exception {
         PluginManagerCMD cmd = new PluginManagerCMD();
         LinkedList<String> params = new LinkedList<>();
@@ -114,6 +124,18 @@ public class PluginManagerCMDTest {
         PluginManagerCMD cmd = new PluginManagerCMD();
         LinkedList<String> params = new LinkedList<>();
         params.add("upgrades");
+        int code = cmd.processParams(params.listIterator());
+        assertEquals(0, code);
+    }
+
+    @Test
+    public void testInstallPluginsForJMX() throws Exception {
+        JMeterUtils.getJMeterProperties().remove("jpgc.repo.address");
+        String path = getClass().getResource("/testplan.xml").getPath();
+        PluginManagerCMD cmd = new PluginManagerCMD();
+        LinkedList<String> params = new LinkedList<>();
+        params.add("install-for-jmx");
+        params.add(path);
         int code = cmd.processParams(params.listIterator());
         assertEquals(0, code);
     }
