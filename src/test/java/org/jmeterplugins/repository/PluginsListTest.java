@@ -24,7 +24,7 @@ import net.sf.json.JsonConfig;
 public class PluginsListTest {
 
     private static final String EXPECTED_DESC_MAVEN = 
-            "Maven Information: groupId:<i>kg.apc</i>, artifactId:<i>jmeter-plugins-webdriver</i>, version:<i>0.3</i>";
+            "Maven groupId: <i>kg.apc</i>, artifactId: <i>jmeter-plugins-webdriver</i>, version: <i>0.3</i>";
     private static final String EXPECTED_DESC_CHANGES = 
             "What's new in version 0.3: fix verified exception1";
     @Test
