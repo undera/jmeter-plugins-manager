@@ -1,49 +1,22 @@
 package org.jmeterplugins.repository;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.jorphan.logging.LoggingManager;
+import org.apache.log.Logger;
+import org.jmeterplugins.repository.util.PlaceholderTextField;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.event.*;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.Hashtable;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.imageio.ImageIO;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
-import org.jmeterplugins.repository.util.PlaceholderTextField;
 
 public class PluginsList extends JPanel implements ListSelectionListener, HyperlinkListener {
     private static final long serialVersionUID = 295116233618658217L;
@@ -203,28 +176,6 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         if (!plugin.getVendor().isEmpty()) {
             txt += "<p>Vendor: <i>" + plugin.getVendor() + "</i></p>";
         }
-        if(plugin.getCandidateVersion() != null) {
-            String downloadUrl = plugin.getDownloadUrl(plugin.getCandidateVersion());
-            int indexOfFP = downloadUrl.indexOf("filepath=");
-            if(indexOfFP>0) {
-                String artifactUrl = downloadUrl.substring(indexOfFP+"filepath=".length());
-                String[]  parts = artifactUrl.split("/");
-                String lastVersionId = parts[parts.length-2];
-                String artifactId = parts[parts.length-3];
-                StringBuilder groupId = new StringBuilder();
-                for(int i=0;i<parts.length-3;i++) {
-                    groupId.append(parts[i]).append(".");
-                }
-                
-                if(!StringUtils.isEmpty(groupId)) {
-                    txt += "<p>Maven Information: groupId:<i>" + groupId.substring(0, groupId.length()-1) + "</i>"+
-                            ", artifactId:<i>" + artifactId + "</i>"+
-                            ", version:<i>" + lastVersionId + "</i>"+
-                            "</p>";
-                }
-            }
-        }
-        
         if (!plugin.getDescription().isEmpty()) {
             txt += "<p>" + plugin.getDescription() + "</p>";
         }
@@ -235,6 +186,7 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         if (null != changes) {
             txt += "<p>What's new in version " + plugin.getCandidateVersion() + ": " + changes + "</p>";
         }
+        txt += getMavenInfo(plugin);
         if (!plugin.getScreenshot().isEmpty()) {
             txt += "<p><img src='" + plugin.getScreenshot() + "'/></p>";
         }
@@ -252,6 +204,32 @@ public class PluginsList extends JPanel implements ListSelectionListener, Hyperl
         }
 
         return txt + "<br/>";
+    }
+
+    private String getMavenInfo(Plugin plugin) {
+        String txt = "";
+        if (plugin.getCandidateVersion() != null) {
+            String downloadUrl = plugin.getDownloadUrl(plugin.getCandidateVersion());
+            int indexOfFP = downloadUrl.indexOf("filepath=");
+            if (indexOfFP > 0) {
+                String artifactUrl = downloadUrl.substring(indexOfFP + "filepath=".length());
+                String[] parts = artifactUrl.split("/");
+                String lastVersionId = parts[parts.length - 2];
+                String artifactId = parts[parts.length - 3];
+                StringBuilder groupId = new StringBuilder();
+                for (int i = 0; i < parts.length - 3; i++) {
+                    groupId.append(parts[i]).append(".");
+                }
+
+                if (!StringUtils.isEmpty(groupId)) {
+                    txt += "<p>Maven groupId: <i>" + groupId.substring(0, groupId.length() - 1) + "</i>" +
+                            ", artifactId: <i>" + artifactId + "</i>" +
+                            ", version: <i>" + lastVersionId + "</i>" +
+                            "</p>";
+                }
+            }
+        }
+        return txt;
     }
 
     @Override
