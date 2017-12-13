@@ -55,7 +55,7 @@ public class SafeDeleter {
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("\t");
                 if (parts.length != 2) {
-                    System.err.println("Invalid line: " + line);
+                    System.out.println("Invalid line: " + line);
                     continue;
                 }
 
@@ -76,7 +76,7 @@ public class SafeDeleter {
                 try {
                     p.waitFor();
                 } catch (InterruptedException e) {
-                    e.printStackTrace(System.err);
+                    e.printStackTrace(System.out);
                 }
             }
             System.out.println("Done running installers");
@@ -101,29 +101,31 @@ public class SafeDeleter {
         }
     }
 
-    private static void moveFiles(File file) throws IOException, InterruptedException {
-        try (FileReader fr = new FileReader(file);
+    private static void moveFiles(File list) throws IOException, InterruptedException {
+        try (FileReader fr = new FileReader(list);
              BufferedReader br = new BufferedReader(fr)) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split("\t");
                 if (parts.length != 2) {
-                    System.err.println("Invalid line: " + line);
+                    System.out.println("Invalid line: " + line);
                     continue;
                 }
 
                 File src = new File(parts[0]);
                 File dst = new File(parts[1]);
-                if (!src.exists()) {
-                    System.err.println("Cannot move, file not exists: " + src);
-                }
 
                 System.out.println("Moving " + src + " to " + dst);
+
+                if (!src.exists()) {
+                    System.out.println("Cannot move, file not exists: " + src);
+                }
+
                 try {
                     Files.move(src.toPath(), dst.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 } catch (Exception e) {
-                    System.err.println("Cannot move: " + src);
-                    e.printStackTrace(System.err);
+                    System.out.println("Cannot move " + src + " because of " + e.toString());
+                    e.printStackTrace(System.out);
                 }
             }
             System.out.println("Done moving files");
