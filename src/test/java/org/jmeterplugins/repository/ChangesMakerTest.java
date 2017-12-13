@@ -9,13 +9,7 @@ import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.assertTrue;
 
@@ -46,16 +40,24 @@ public class ChangesMakerTest {
         Map<Plugin, Boolean> map = new HashMap<>();
         ChangesMaker obj = new ChangesMaker(map);
         Set<Plugin> plugins = new HashSet<>();
-        PluginMock p = new PluginMock();
+        PluginMock p = new PluginMock("test", "test");
         p.setInstallerClass("test");
         plugins.add(p);
         File res = obj.getInstallFile(plugins);
         assertTrue(res.length() > 0);
+
+        File res2 = obj.getMovementsFile(plugins, plugins, new HashMap<String, String>(), new HashSet<String>());
+        assertTrue(res2.length() > 0);
+
     }
 
     @Test
     public void getMovementsFile() throws Exception {
-        // NOOP
+        Map<Plugin, Boolean> map = new HashMap<>();
+        ChangesMaker obj = new ChangesMaker(map);
+        File file = File.createTempFile("tmp", "");
+        file.deleteOnExit();
+        obj.getProcessBuilder(file, file, file);
     }
 
 }
