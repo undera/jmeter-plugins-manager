@@ -1,5 +1,10 @@
 package org.jmeterplugins.repository;
 
+import org.apache.jmeter.util.JMeterUtils;
+import org.apache.jorphan.logging.LoggingManager;
+import org.apache.jorphan.util.JOrphanUtils;
+import org.apache.log.Logger;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -11,11 +16,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.jmeter.util.JMeterUtils;
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.jorphan.util.JOrphanUtils;
-import org.apache.log.Logger;
+import java.nio.file.Files;
 
 public class ChangesMaker {
     private static final Logger log = LoggingManager.getLoggerForClass();
@@ -27,16 +28,10 @@ public class ChangesMaker {
 
 
     public ProcessBuilder getProcessBuilder(File moveFile, File installFile, File restartFile) throws IOException {
-        String jarPath = PluginManager.class.getProtectionDomain().getCodeSource().getLocation().getFile();
-        if (!jarPath.endsWith(".jar")) {
-            log.warn("Suspicious JAR path detected: " + jarPath);
-        }
-        final File currentJar = new File(jarPath);
-
         final ArrayList<String> command = new ArrayList<>();
         command.add(SafeDeleter.getJVM());
         command.add("-classpath");
-        command.add(URLDecoder.decode(currentJar.getPath(), "UTF-8"));
+        command.add(URLDecoder.decode(getTempPmgrJAR().getPath(), "UTF-8"));
         command.add(SafeDeleter.class.getCanonicalName());
         command.add("--move-list");
         command.add(moveFile.getAbsolutePath());
@@ -54,6 +49,19 @@ public class ChangesMaker {
         builder.redirectError(cleanerLog);
         builder.redirectOutput(cleanerLog);
         return builder;
+    }
+
+    private File getTempPmgrJAR() throws IOException {
+        String jarPath = PluginManager.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        if (!jarPath.endsWith(".jar")) {
+            log.warn("Suspicious JAR path detected: " + jarPath);
+        }
+
+        File origJAR = new File(jarPath);
+        File tempJAR = File.createTempFile(origJAR.getName(), ".jar");
+        tempJAR.delete();
+        Files.copy(origJAR.toPath(), tempJAR.toPath());
+        return tempJAR;
     }
 
 
@@ -89,7 +97,7 @@ public class ChangesMaker {
 
     public File getInstallFile(Set<Plugin> plugins) throws IOException {
         File file = File.createTempFile("jpgc-installers-", ".list");
-        try (PrintWriter out = new PrintWriter(file);) {
+        try (PrintWriter out = new PrintWriter(file)) {
             for (Plugin plugin : plugins) {
                 String cls = plugin.getInstallerClass();
                 if (cls != null) {
@@ -104,7 +112,7 @@ public class ChangesMaker {
 
     public File getMovementsFile(Set<Plugin> deletes, Set<Plugin> installs, Map<String, String> installLibs, Set<String> libDeletions) throws IOException {
         final File file = File.createTempFile("jpgc-jar-changes", ".list");
-        try (PrintWriter out = new PrintWriter(file);) {
+        try (PrintWriter out = new PrintWriter(file)) {
 
             if (!deletes.isEmpty() || !libDeletions.isEmpty()) {
                 File delDir = File.createTempFile("jpgc-deleted-jars-", "");
