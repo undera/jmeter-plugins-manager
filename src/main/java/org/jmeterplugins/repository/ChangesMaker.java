@@ -52,7 +52,7 @@ public class ChangesMaker {
     }
 
     private File getTempPmgrJAR() throws IOException {
-        String jarPath = PluginManager.class.getProtectionDomain().getCodeSource().getLocation().getFile();
+        String jarPath = URLDecoder.decode(PluginManager.class.getProtectionDomain().getCodeSource().getLocation().getFile(), "UTF-8");
         if (!jarPath.endsWith(".jar")) {
             log.warn("Suspicious JAR path detected: " + jarPath);
         }
