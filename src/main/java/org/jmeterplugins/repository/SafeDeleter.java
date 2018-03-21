@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -113,8 +112,8 @@ public class SafeDeleter {
                     continue;
                 }
 
-                File src = new File(URLDecoder.decode(parts[0], "UTF-8"));
-                File dst = new File(URLDecoder.decode(parts[1], "UTF-8"));
+                File src = new File(parts[0]);
+                File dst = new File(parts[1]);
 
                 System.out.println("Moving " + src + " to " + dst);
 
