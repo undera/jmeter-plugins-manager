@@ -3,6 +3,7 @@ package org.jmeterplugins.repository;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -104,7 +105,15 @@ public class Plugin {
     }
 
     private void detectInstalledPlugin() {
-        installedPath = getJARPath(markerClass);
+        String path = getJARPath(markerClass);
+        if (path != null) {
+            try {
+                installedPath = URLDecoder.decode(path, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                log.warn("Failed decode plugin installed Path ", e);
+                installedPath = path;
+            }
+        }
         if (installedPath != null) {
             installedVersion = getVersionFromPath(installedPath);
             if (installedVersion.equals(VER_STOCK) && isVersionFrozenToJMeter()) {
