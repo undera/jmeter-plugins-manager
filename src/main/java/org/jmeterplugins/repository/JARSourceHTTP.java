@@ -66,7 +66,7 @@ public class JARSourceHTTP extends JARSource {
     private static final Logger log = LoggingManager.getLoggerForClass();
     private static final int RETRY_COUNT = 1;
     private final String[] addresses;
-    protected AbstractHttpClient httpClient = new DefaultHttpClient();
+    protected AbstractHttpClient httpClient;
     private int timeout = Integer.parseInt(JMeterUtils.getPropDefault("jpgc.repo.timeout", "30000"));
     private final ServiceUnavailableRetryStrategy retryStrategy = new HttpRetryStrategy(RETRY_COUNT, 5000);
 
@@ -296,7 +296,7 @@ public class JARSourceHTTP extends JARSource {
 
         try (InputStream inputStream = entity.getContent();
              OutputStream fos = new FileOutputStream(tempFile);
-             BufferedOutputStream bos = new BufferedOutputStream(fos);) {
+             BufferedOutputStream bos = new BufferedOutputStream(fos)) {
 
             copyLarge(inputStream, bos, new GenericCallback<Long>() {
                 @Override
@@ -335,6 +335,7 @@ public class JARSourceHTTP extends JARSource {
             try {
                 post = new HttpPost(uri);
                 post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+                post.setHeader("Accept-Encoding", "gzip");
                 HttpEntity body = new StringEntity("stats=" + URLEncoder.encode(Arrays.toString(stats.toArray(new String[0])), "UTF-8"));
                 post.setEntity(body);
                 HttpParams requestParams = post.getParams();
