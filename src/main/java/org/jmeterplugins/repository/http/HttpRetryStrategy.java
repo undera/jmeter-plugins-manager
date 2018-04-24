@@ -37,7 +37,11 @@ public class HttpRetryStrategy implements ServiceUnavailableRetryStrategy {
 
     public boolean retryRequest(final HttpResponse response, int executionCount, final HttpContext context) {
         return executionCount <= maxRetries &&
-                response.getStatusLine().getStatusCode() != HttpStatus.SC_OK;
+                !isSuccessStatusCode(response.getStatusLine().getStatusCode());
+    }
+
+    private boolean isSuccessStatusCode(int code) {
+        return code >= 200 && code < 300;
     }
 
     public long getRetryInterval() {
