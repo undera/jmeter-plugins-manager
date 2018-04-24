@@ -356,7 +356,7 @@ public class Plugin {
 
     public Map<String, String> getLibs(String verStr) {
         Map<String, String> depends = new HashMap<>();
-        JSONObject version = versions.getJSONObject(verStr);
+        JSONObject version = versions.getJSONObject(isVersionFrozenToJMeter() ? "" : verStr);
         if (version.containsKey("libs")) {
             JSONObject list = version.getJSONObject("libs");
             for (Object o : list.keySet()) {
