@@ -17,7 +17,7 @@ public class HttpRetryStrategyTest {
         assertFalse(strategy.retryRequest(response, 1, null));
 
         strategy = new HttpRetryStrategy(2, 3333);
-        response = new BasicHttpResponse(new BasicStatusLine(new ProtocolVersion("HTTP",1,1), 201, ""));
+        response = new BasicHttpResponse(new BasicStatusLine(new ProtocolVersion("HTTP",1,1), 301, ""));
         assertTrue(strategy.retryRequest(response, 1, null));
         assertFalse(strategy.retryRequest(response, 4, null));
 
