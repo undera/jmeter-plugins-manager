@@ -14,7 +14,7 @@ import org.jmeterplugins.repository.PluginManager;
 import org.jmeterplugins.repository.plugins.PluginSuggester;
 
 
-@Plugin(name = "Logger", category = "Core", elementType = "appender", printObject = true)
+//@Plugin(name = "Logger", category = "Core", elementType = "appender", printObject = true)
 public class LoggerAppender extends AbstractAppender {
 
     protected PluginSuggester suggester;
