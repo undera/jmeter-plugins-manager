@@ -42,6 +42,7 @@ public class PluginManager {
     private static final Logger log = LoggingManager.getLoggerForClass();
     private static PluginManager staticManager = new PluginManager();
     private final JARSource jarSource;
+    private boolean isSendRepoStats = true;
     protected Map<Plugin, Boolean> allPlugins = new HashMap<>();
 
     public PluginManager() {
@@ -97,7 +98,7 @@ public class PluginManager {
             }
         }
 
-        if (JMeterUtils.getPropDefault("jpgc.repo.sendstats", "true").equals("true")) {
+        if (isSendRepoStats && JMeterUtils.getPropDefault("jpgc.repo.sendstats", "true").equals("true")) {
             try {
                 jarSource.reportStats(getUsageStats());
             } catch (Exception e) {
@@ -464,5 +465,13 @@ public class PluginManager {
             }
         }
         log.info(report.toString());
+    }
+
+    public boolean isSendRepoStats() {
+        return isSendRepoStats;
+    }
+
+    public void setSendRepoStats(boolean sendRepoStats) {
+        isSendRepoStats = sendRepoStats;
     }
 }

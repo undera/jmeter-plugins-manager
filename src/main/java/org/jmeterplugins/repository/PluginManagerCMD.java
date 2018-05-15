@@ -41,6 +41,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
             File self = new File(PluginManagerCMD.class.getProtectionDomain().getCodeSource().getLocation().getFile());
             String home = self.getParentFile().getParentFile().getParent();
             JMeterUtils.setJMeterHome(home);
+            JMeterUtils.loadJMeterProperties(JMeterUtils.getJMeterBinDir() + File.separator + "jmeter.properties");
         }
     }
 
@@ -93,8 +94,9 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         return 0;
     }
 
-    private PluginManager getPluginsManager() throws Throwable {
+    private PluginManager getPluginsManager(boolean isSendRepoStats) throws Throwable {
         PluginManager mgr = new PluginManager();
+        mgr.setSendRepoStats(isSendRepoStats);
         mgr.setTimeout(30000); // TODO: add property?
         mgr.load();
         return mgr;
@@ -106,7 +108,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         }
         String files = jmxFilesIterator.next().toString();
         
-        PluginManager mgr = getPluginsManager();
+        PluginManager mgr = getPluginsManager(false);
         PluginSuggester suggester = new PluginSuggester(mgr);
         final Set<Plugin> pluginsToInstall = new HashSet<>();
         Set<String> jmxFiles = parseParams(files).keySet();
@@ -124,7 +126,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
             exceptedPlugins = parseParams(exclusions.next().toString()).keySet();
         }
 
-        PluginManager mgr = getPluginsManager();
+        PluginManager mgr = getPluginsManager(true);
         for (Plugin plugin : mgr.getAvailablePlugins()) {
             if (!exceptedPlugins.contains(plugin.getID())) {
                 mgr.toggleInstalled(plugin, install);
@@ -139,7 +141,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         }
 
         Map<String, String> params = parseParams(listIterator.next().toString());
-        PluginManager mgr = getPluginsManager();
+        PluginManager mgr = getPluginsManager(true);
 
         for (Map.Entry<String, String> pluginSpec : params.entrySet()) {
             Plugin plugin = mgr.getPluginByID(pluginSpec.getKey());

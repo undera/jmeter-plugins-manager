@@ -214,4 +214,12 @@ public class PluginManagerTest {
         mgr.load();
         mgr.logPluginComponents();
     }
+
+    @Test
+    public void testPmgrSendRepoStats() throws Exception {
+        PluginManager pmgr = new PluginManager();
+        assertTrue(pmgr.isSendRepoStats());
+        pmgr.setSendRepoStats(false);
+        assertFalse(pmgr.isSendRepoStats());
+    }
 }
