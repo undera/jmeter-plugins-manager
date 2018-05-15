@@ -41,6 +41,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
             File self = new File(PluginManagerCMD.class.getProtectionDomain().getCodeSource().getLocation().getFile());
             String home = self.getParentFile().getParentFile().getParent();
             JMeterUtils.setJMeterHome(home);
+            JMeterUtils.loadJMeterProperties(JMeterUtils.getJMeterBinDir() + File.separator + "jmeter.properties");
         }
     }
 
@@ -101,6 +102,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
     }
 
     protected void installPluginsForJmx(ListIterator jmxFilesIterator) throws Throwable {
+        JMeterUtils.setProperty("jpgc.repo.sendstats", "false");
         if (!jmxFilesIterator.hasNext()) {
             throw new IllegalArgumentException("No jmx files specified");
         }
@@ -116,6 +118,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
 
         mgr.togglePlugins(pluginsToInstall, true);
         mgr.applyChanges(this, false, null);
+        JMeterUtils.setProperty("jpgc.repo.sendstats", "true");
     }
 
     protected void installAll(ListIterator exclusions, boolean install) throws Throwable {
