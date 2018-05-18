@@ -13,6 +13,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 public class PluginsRepo implements Serializable {
+    private static final long serialVersionUID = 1L;
     private static final Logger log = LoggingManager.getLoggerForClass();
 
     private final String repoJSON;
@@ -25,6 +26,10 @@ public class PluginsRepo implements Serializable {
 
     public boolean isActual() {
         return expirationTime > System.currentTimeMillis();
+    }
+
+    public long getExpirationTime() {
+        return expirationTime;
     }
 
     public String getRepoJSON() {
