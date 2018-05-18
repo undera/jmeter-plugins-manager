@@ -210,7 +210,7 @@ public class JARSourceHTTP extends JARSource {
     }
 
     private String generateFileName(String uri) {
-        return System.getProperty("user.name") + DigestUtils.md5Hex(uri);
+        return DigestUtils.md5Hex(System.getProperty("user.name") + uri);
     }
 
     private long parseCacheControlHeader(Header header) {
