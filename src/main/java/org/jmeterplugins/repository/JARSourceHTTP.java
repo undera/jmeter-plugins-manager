@@ -16,9 +16,12 @@ import java.net.SocketException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import net.sf.json.JSON;
@@ -30,6 +33,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.http.Header;
+import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -57,6 +61,8 @@ import org.apache.jmeter.gui.GuiPackage;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
+import org.jmeterplugins.repository.cache.PluginsRepo;
+import org.jmeterplugins.repository.cache.SerializeUtils;
 import org.jmeterplugins.repository.http.HttpRetryStrategy;
 
 import java.util.zip.GZIPInputStream;
@@ -65,14 +71,32 @@ import java.util.zip.GZIPInputStream;
 public class JARSourceHTTP extends JARSource {
     private static final Logger log = LoggingManager.getLoggerForClass();
     private static final int RETRY_COUNT = 1;
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+    private static final long CACHE_MAX_AGE = 60 * 60 * 1000;
     private final String[] addresses;
     protected AbstractHttpClient httpClient;
     private int timeout = Integer.parseInt(JMeterUtils.getPropDefault("jpgc.repo.timeout", "30000"));
     private final ServiceUnavailableRetryStrategy retryStrategy = new HttpRetryStrategy(RETRY_COUNT, 5000);
 
+    private File cacheDir;
+
     public JARSourceHTTP(String jmProp) {
         this.addresses = jmProp.split("[;]");
         httpClient = getHTTPClient();
+        cacheDir = getCacheDir();
+    }
+
+    private File getCacheDir() {
+        String tmpDirPath = System.getProperty("java.io.tmpdir");
+        File cacheFolder = new File(tmpDirPath, "pmgr_cache");
+        if (!cacheFolder.isDirectory()) {
+            cacheFolder.delete();
+        }
+
+        if (!cacheFolder.exists()) {
+            cacheFolder.mkdirs();
+        }
+        return cacheFolder;
     }
 
     private AbstractHttpClient getHTTPClient() {
@@ -109,6 +133,11 @@ public class JARSourceHTTP extends JARSource {
     }
 
     protected JSON getJSON(String uri) throws IOException {
+        PluginsRepo repo = getRepoCache(uri);
+        if (repo != null && repo.isActual()) {
+            log.info("Found cached repo");
+            return JSONSerializer.toJSON(repo.getRepoJSON(), new JsonConfig());
+        }
 
         log.debug("Requesting " + uri);
 
@@ -136,6 +165,8 @@ public class JARSourceHTTP extends JARSource {
             } else {
                 log.debug("Response with code " + result + ": " + response);
             }
+
+            cacheRepo(response, result, uri);
             return JSONSerializer.toJSON(response, new JsonConfig());
         } finally {
             get.abort();
@@ -144,6 +175,79 @@ public class JARSourceHTTP extends JARSource {
             } catch (IOException | IllegalStateException e) {
                 log.warn("Exception in finalizing request", e);
             }
+        }
+    }
+
+    private PluginsRepo getRepoCache(String uri) {
+        File file = generateCacheFile(uri);
+        if (!file.exists()) {
+            return null;
+        }
+
+        return SerializeUtils.deserialize(file);
+    }
+
+    private void cacheRepo(String repoJSON, HttpResponse response, String uri) {
+        // default cache expire is 1 hour since now
+        long maxAge = CACHE_MAX_AGE;
+        long date = System.currentTimeMillis();
+
+        Header[] allHeaders = response.getAllHeaders();
+        for (Header header : allHeaders) {
+            if ("date".equals(header.getName().toLowerCase())) {
+                date = parseDateHeader(header);
+            } else if ("cache-control".equals(header.getName().toLowerCase())) {
+                maxAge = parseCacheControlHeader(header);
+            }
+        }
+
+        long expirationTime = date + maxAge;
+        PluginsRepo repo = new PluginsRepo(repoJSON, expirationTime);
+        SerializeUtils.serialize(repo, generateCacheFile(uri));
+    }
+
+    private File generateCacheFile(String uri) {
+        return new File(cacheDir, generateFileName(uri));
+    }
+
+    private String generateFileName(String uri) {
+        StringBuilder buffer = new StringBuilder();
+        int len = Math.min(uri.length(), 100);
+        for (int i = 0; i < len; i++) {
+            char ch = uri.charAt(i);
+            if (Character.isLetterOrDigit(ch) || ch == '.') {
+                buffer.append(ch);
+            } else {
+                buffer.append('-');
+            }
+        }
+        return buffer.toString();
+    }
+
+    private long parseCacheControlHeader(Header header) {
+        HeaderElement[] elements = header.getElements();
+        for (HeaderElement el : elements) {
+            if ("max-age".equals(el.getName().toLowerCase())) {
+                String value = el.getValue();
+                try {
+                    int i = Integer.parseInt(value);
+                    return i * 1000; // because max-age store in seconds
+                } catch (NumberFormatException e) {
+                    log.warn("Cannot parse 'max-age' value", e);
+                    return CACHE_MAX_AGE;
+                }
+            }
+        }
+        return CACHE_MAX_AGE;
+    }
+
+    private long parseDateHeader(Header header) {
+        try {
+            Date d = dateFormat.parse(header.getValue());
+            return d.getTime();
+        } catch (ParseException e) {
+            log.warn("Cannot parse date header", e);
+            return System.currentTimeMillis();
         }
     }
 
