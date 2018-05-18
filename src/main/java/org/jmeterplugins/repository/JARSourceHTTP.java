@@ -62,7 +62,6 @@ import org.apache.jmeter.util.JMeterUtils;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.jmeterplugins.repository.cache.PluginsRepo;
-import org.jmeterplugins.repository.cache.SerializeUtils;
 import org.jmeterplugins.repository.http.HttpRetryStrategy;
 
 import java.util.zip.GZIPInputStream;
@@ -139,7 +138,7 @@ public class JARSourceHTTP extends JARSource {
             return JSONSerializer.toJSON(repo.getRepoJSON(), new JsonConfig());
         }
 
-        log.debug("Requesting " + uri);
+        log.info("Requesting " + uri);
 
         HttpRequestBase get = new HttpGet(uri);
         HttpParams requestParams = get.getParams();
@@ -184,7 +183,7 @@ public class JARSourceHTTP extends JARSource {
             return null;
         }
 
-        return SerializeUtils.deserialize(file);
+        return PluginsRepo.fromFile(file);
     }
 
     private void cacheRepo(String repoJSON, HttpResponse response, String uri) {
@@ -203,7 +202,7 @@ public class JARSourceHTTP extends JARSource {
 
         long expirationTime = date + maxAge;
         PluginsRepo repo = new PluginsRepo(repoJSON, expirationTime);
-        SerializeUtils.serialize(repo, generateCacheFile(uri));
+        repo.saveToFile(generateCacheFile(uri));
     }
 
     private File generateCacheFile(String uri) {
@@ -211,17 +210,7 @@ public class JARSourceHTTP extends JARSource {
     }
 
     private String generateFileName(String uri) {
-        StringBuilder buffer = new StringBuilder();
-        int len = Math.min(uri.length(), 100);
-        for (int i = 0; i < len; i++) {
-            char ch = uri.charAt(i);
-            if (Character.isLetterOrDigit(ch) || ch == '.') {
-                buffer.append(ch);
-            } else {
-                buffer.append('-');
-            }
-        }
-        return buffer.toString();
+        return System.getProperty("user.name") + DigestUtils.md5Hex(uri);
     }
 
     private long parseCacheControlHeader(Header header) {
