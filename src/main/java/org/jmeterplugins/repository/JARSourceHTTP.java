@@ -418,35 +418,44 @@ public class JARSourceHTTP extends JARSource {
     }
 
     @Override
-    public void reportStats(String[] usageStats) throws IOException {
-        ArrayList<String> stats = new ArrayList<>();
-        stats.add(getInstallID());
-        Collections.addAll(stats, usageStats);
+    public void reportStats(final String[] usageStats) throws IOException {
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                ArrayList<String> stats = new ArrayList<>();
+                stats.add(getInstallID());
+                Collections.addAll(stats, usageStats);
 
-        for (String uri : addresses) {
-            HttpPost post = null;
-            try {
-                post = new HttpPost(uri);
-                post.setHeader("Content-Type", "application/x-www-form-urlencoded");
-                post.setHeader("Accept-Encoding", "gzip");
-                HttpEntity body = new StringEntity("stats=" + URLEncoder.encode(Arrays.toString(stats.toArray(new String[0])), "UTF-8"));
-                post.setEntity(body);
-                HttpParams requestParams = post.getParams();
-                requestParams.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 3000);
-                requestParams.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 1000);
-
-                log.debug("Requesting " + uri);
-                execute(post);
-            } finally {
-                if (post != null) {
+                for (String uri : addresses) {
+                    HttpPost post = null;
                     try {
-                        post.abort();
-                    } catch (Exception e) {
-                        log.warn("Failure while aborting POST", e);
+                        post = new HttpPost(uri);
+                        post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+                        post.setHeader("Accept-Encoding", "gzip");
+                        HttpEntity body = new StringEntity("stats=" + URLEncoder.encode(Arrays.toString(stats.toArray(new String[0])), "UTF-8"));
+                        post.setEntity(body);
+                        HttpParams requestParams = post.getParams();
+                        requestParams.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 3000);
+                        requestParams.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 1000);
+
+                        log.debug("Requesting " + uri);
+                        execute(post);
+                    } catch (IOException ex) {
+                        log.warn("Failed to send repo stats", ex);
+                    } finally {
+                        if (post != null) {
+                            try {
+                                post.abort();
+                            } catch (Exception e) {
+                                log.warn("Failure while aborting POST", e);
+                            }
+                        }
                     }
                 }
             }
-        }
+        };
+        thread.setDaemon(true);
+        thread.start();
     }
 
     private static long copyLarge(InputStream input, OutputStream output, GenericCallback<Long> progressCallback) throws IOException {
