@@ -21,6 +21,7 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.jorphan.reflect.ClassFinder;
 import org.apache.log.Logger;
 import org.jmeterplugins.repository.exception.DownloadException;
+import org.jmeterplugins.repository.http.StatsReporter;
 
 import java.io.File;
 import java.io.IOException;
@@ -100,7 +101,8 @@ public class PluginManager {
 
         if (isSendRepoStats && JMeterUtils.getPropDefault("jpgc.repo.sendstats", "true").equals("true")) {
             try {
-                jarSource.reportStats(getUsageStats());
+                StatsReporter reporter = new StatsReporter(jarSource, getUsageStats());
+                reporter.start();
             } catch (Exception e) {
                 log.debug("Failed to report usage stats", e);
             }
