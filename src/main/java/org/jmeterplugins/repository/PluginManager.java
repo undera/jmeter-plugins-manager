@@ -184,8 +184,10 @@ public class PluginManager {
             }
         }
 
-        log.info("Restarting JMeter...");
-        statusChanged.notify("Restarting JMeter...");
+        if (doRestart) {
+            log.info("Restarting JMeter...");
+            statusChanged.notify("Restarting JMeter...");
+        }
 
         Set<String> libDeletions = new HashSet<>();
         for (String lib : resolver.getLibDeletions()) {
@@ -197,17 +199,22 @@ public class PluginManager {
 
     private void modifierHook(final Set<Plugin> deletions, final Set<Plugin> additions, final Map<String, String> libInstalls,
                               final Set<String> libDeletions, final boolean doRestart, final LinkedList<String> additionalJMeterOptions) {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                try {
-                    log.info("Starting JMeter Plugins modifications");
-                    startModifications(deletions, additions, libInstalls, libDeletions, doRestart, additionalJMeterOptions);
-                } catch (Exception e) {
-                    log.warn("Failed to run plugin cleaner job", e);
+        if (deletions.isEmpty() && additions.isEmpty() && libInstalls.isEmpty() && libDeletions.isEmpty()) {
+            log.info("Finishing without changes");
+        } else {
+            log.info("Plugins manager will apply some modifications");
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        log.info("Starting JMeter Plugins modifications");
+                        startModifications(deletions, additions, libInstalls, libDeletions, doRestart, additionalJMeterOptions);
+                    } catch (Exception e) {
+                        log.warn("Failed to run plugin cleaner job", e);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     protected String[] getUsageStats() {
