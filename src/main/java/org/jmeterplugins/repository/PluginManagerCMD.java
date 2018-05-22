@@ -2,7 +2,9 @@ package org.jmeterplugins.repository;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
+import java.net.URLDecoder;
 import java.util.*;
 
 import kg.apc.cmdtools.AbstractCMDTool;
@@ -40,6 +42,13 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         if (JMeterUtils.getJMeterHome() == null || JMeterUtils.getJMeterHome().isEmpty()) {
             File self = new File(PluginManagerCMD.class.getProtectionDomain().getCodeSource().getLocation().getFile());
             String home = self.getParentFile().getParentFile().getParent();
+            try {
+                home = URLDecoder.decode(home, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                System.out.println("Failed decode JMeter home path: " + home);
+                e.printStackTrace(System.out);
+            }
+            log.debug("Set JMeter home: " + home);
             JMeterUtils.setJMeterHome(home);
             JMeterUtils.loadJMeterProperties(JMeterUtils.getJMeterBinDir() + File.separator + "jmeter.properties");
         }
