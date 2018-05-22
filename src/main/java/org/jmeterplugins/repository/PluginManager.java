@@ -202,7 +202,7 @@ public class PluginManager {
         if (deletions.isEmpty() && additions.isEmpty() && libInstalls.isEmpty() && libDeletions.isEmpty()) {
             log.info("Finishing without changes");
         } else {
-
+            log.info("Plugins manager will apply some modifications");
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 @Override
                 public void run() {
