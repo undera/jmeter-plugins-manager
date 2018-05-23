@@ -6,7 +6,8 @@
 
     <groupId>kg.apc</groupId>
     <artifactId>jmeter-plugins-manager</artifactId>
-    <version>0.20</version>
+    <version>1.0</version>
+    <packaging>jar</packaging>
 
     <name>JMeter Plugins Manager</name>
     <description>UI-based plugins management</description>
@@ -106,7 +107,7 @@
         <dependency>
             <groupId>kg.apc</groupId>
             <artifactId>cmdrunner</artifactId>
-            <version>2.0</version>
+            <version>2.2</version>
         </dependency>
     </dependencies>
     <build>
