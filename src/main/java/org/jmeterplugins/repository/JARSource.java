@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import net.sf.json.JSON;
 
-abstract public class JARSource {
+abstract public class JARSource implements Cloneable {
     public abstract JSON getRepo() throws IOException;
 
     public abstract void reportStats(String[] usageStats) throws IOException;
@@ -29,5 +29,10 @@ abstract public class JARSource {
         public String getFilename() {
             return filename;
         }
+    }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 }

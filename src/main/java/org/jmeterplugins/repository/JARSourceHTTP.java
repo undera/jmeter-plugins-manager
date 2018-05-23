@@ -85,6 +85,14 @@ public class JARSourceHTTP extends JARSource {
         cacheDir = getCacheDir();
     }
 
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        JARSourceHTTP clone = (JARSourceHTTP) super.clone();
+        log.debug("Clone HTTP client");
+        clone.httpClient = getHTTPClient();
+        return clone;
+    }
+
     private File getCacheDir() {
         String tmpDirPath = System.getProperty("java.io.tmpdir");
         File cacheFolder = new File(tmpDirPath, "pmgr_cache");
