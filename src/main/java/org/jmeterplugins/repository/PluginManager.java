@@ -102,6 +102,7 @@ public class PluginManager {
         if (isSendRepoStats && JMeterUtils.getPropDefault("jpgc.repo.sendstats", "true").equals("true")) {
             try {
                 StatsReporter reporter = new StatsReporter(jarSource, getUsageStats());
+                log.debug("Start sending repo stats");
                 reporter.start();
             } catch (Exception e) {
                 log.debug("Failed to report usage stats", e);

@@ -12,8 +12,8 @@ public class StatsReporter extends Thread {
     private final JARSource jarSource;
     private final String[] usageStats;
 
-    public StatsReporter(JARSource jarSource, String[] usageStats) {
-        this.jarSource = jarSource;
+    public StatsReporter(JARSource jarSource, String[] usageStats) throws CloneNotSupportedException {
+        this.jarSource = (JARSource) jarSource.clone();
         this.usageStats = usageStats;
         setDaemon(true);
     }
@@ -22,8 +22,13 @@ public class StatsReporter extends Thread {
     public void run() {
         try {
             jarSource.reportStats(usageStats);
+            log.debug("Finished send repo stats");
         } catch (IOException e) {
             log.warn("Failed to send repo stats", e);
         }
+    }
+
+    protected JARSource getJarSource() {
+        return jarSource;
     }
 }
