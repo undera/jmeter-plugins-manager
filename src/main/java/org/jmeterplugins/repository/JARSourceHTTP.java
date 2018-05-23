@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -70,7 +71,7 @@ import java.util.zip.GZIPInputStream;
 public class JARSourceHTTP extends JARSource {
     private static final Logger log = LoggingManager.getLoggerForClass();
     private static final int RETRY_COUNT = 1;
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
     private static final long CACHE_MAX_AGE = 60 * 60 * 1000;
     private final String[] addresses;
     protected AbstractHttpClient httpClient;
