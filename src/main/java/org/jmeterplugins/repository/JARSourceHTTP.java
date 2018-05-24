@@ -199,6 +199,7 @@ public class JARSourceHTTP extends JARSource {
         // default cache expire is 1 hour since now
         long maxAge = CACHE_MAX_AGE;
         long date = System.currentTimeMillis();
+        long lastModified = System.currentTimeMillis();
 
         Header[] allHeaders = response.getAllHeaders();
         for (Header header : allHeaders) {
@@ -206,11 +207,13 @@ public class JARSourceHTTP extends JARSource {
                 date = parseDateHeader(header);
             } else if ("cache-control".equals(header.getName().toLowerCase())) {
                 maxAge = parseCacheControlHeader(header);
+            } else if ("last-modified".equals(header.getName().toLowerCase())) {
+                lastModified = parseDateHeader(header);
             }
         }
 
         long expirationTime = date + maxAge;
-        PluginsRepo repo = new PluginsRepo(repoJSON, expirationTime);
+        PluginsRepo repo = new PluginsRepo(repoJSON, expirationTime, lastModified);
         repo.saveToFile(generateCacheFile(uri));
     }
 

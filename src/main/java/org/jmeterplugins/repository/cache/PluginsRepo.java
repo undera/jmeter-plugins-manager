@@ -18,10 +18,12 @@ public class PluginsRepo implements Serializable {
 
     private final String repoJSON;
     private final long expirationTime;
+    private final long lastModified;
 
-    public PluginsRepo(String repoJSON, long expirationTime) {
+    public PluginsRepo(String repoJSON, long expirationTime, long lastModified) {
         this.repoJSON = repoJSON;
         this.expirationTime = expirationTime;
+        this.lastModified = lastModified;
     }
 
     public boolean isActual() {

@@ -24,10 +24,10 @@ public class PluginsRepoTest {
     @Test
     public void testFlow2() throws Exception {
         long l = System.currentTimeMillis();
-        PluginsRepo repo = new PluginsRepo("", l + 10000);
+        PluginsRepo repo = new PluginsRepo("", l + 10000, l);
         assertTrue(repo.isActual());
 
-        repo = new PluginsRepo("", l - 10000);
+        repo = new PluginsRepo("", l - 10000, l);
         assertFalse(repo.isActual());
     }
 }
