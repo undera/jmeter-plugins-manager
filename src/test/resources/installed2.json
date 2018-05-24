@@ -1,0 +1,20 @@
+[
+  {
+    "id": "jpgc-plugin1",
+    "name": "Dependency plugin1",
+    "description": "<ul><li>Average Response Time</li><li>Active Threads</li><li>Successful/Failed Transactions</li></ul>",
+    "screenshotUrl": "https://jmeter-plugins.org/img/wiki/response_times_over_time.png",
+    "helpUrl": "https://jmeter-plugins.org/wiki/ResponseTimesOverTime/",
+    "vendor": "JMeter-Plugins.org",
+    "markerClass": "org.jmeterplugins.repository.PluginManagerTest",
+    "versions": {
+      "0.0.0-STOCK": {
+        "downloadUrl": "dummy.jar",
+        "libs": {
+          "commons-codec" : "commons-codec-0.4.jar",
+          "q1w2e3>=2.2" : "q1w2e3-2.2.jar"
+        }
+      }
+    }
+  }
+]
