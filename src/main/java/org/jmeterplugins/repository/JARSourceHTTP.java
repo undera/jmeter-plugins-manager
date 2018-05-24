@@ -216,9 +216,7 @@ public class JARSourceHTTP extends JARSource {
     }
 
     private String generateFileName(String uri) {
-        String data = System.getProperty("user.name") + uri;
-        log.debug("Hash source: " + data);
-        return DigestUtils.md5Hex(data);
+        return DigestUtils.md5Hex(System.getProperty("user.name") + uri);
     }
 
     private long parseCacheControlHeader(Header header) {
