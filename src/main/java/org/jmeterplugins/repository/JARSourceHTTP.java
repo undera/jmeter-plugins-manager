@@ -141,12 +141,6 @@ public class JARSourceHTTP extends JARSource {
     }
 
     protected JSON getJSON(String uri) throws IOException {
-        PluginsRepo repo = getRepoCache(uri);
-        if (repo != null && repo.isActual()) {
-            log.info("Found cached repo");
-            return JSONSerializer.toJSON(repo.getRepoJSON(), new JsonConfig());
-        }
-
         log.info("Requesting " + uri);
 
         HttpRequestBase get = new HttpGet(uri);
@@ -274,7 +268,13 @@ public class JARSourceHTTP extends JARSource {
     protected JSONArray getRepositories(String path) throws IOException {
         final List<JSON> repositories = new ArrayList<>(addresses.length);
         for (String address : addresses) {
-            repositories.add(getJSON(address + path));
+            PluginsRepo repo = getRepoCache(address);
+            if (repo != null && repo.isActual()) {
+                log.info("Found cached repo");
+                repositories.add(JSONSerializer.toJSON(repo.getRepoJSON(), new JsonConfig()));
+            } else {
+                repositories.add(getJSON(address + path));
+            }
         }
 
         final JSONArray result = new JSONArray();
