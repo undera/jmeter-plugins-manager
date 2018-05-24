@@ -92,6 +92,7 @@ public class StatsReporterTest {
     public void testFlow3() throws Exception {
         JARSourceHTTPExt jarSource = new JARSourceHTTPExt("repoStats");
         jarSource.getRepo();
+        Thread.sleep(500);
         final String[] stats = {"aaaa"};
         jarSource.reportStats(stats);
     }
