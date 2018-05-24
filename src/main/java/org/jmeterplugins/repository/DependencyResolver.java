@@ -169,16 +169,16 @@ public class DependencyResolver {
         for (Plugin plugin : additions) {
             Map<String, String> libs = plugin.getLibs(plugin.getCandidateVersion());
             for (String lib : libs.keySet()) {
-                resolveLibForPlugin(plugin, lib, libs.get(lib));
+                resolveLibForPlugin(plugin, lib, libs.get(lib), true);
             }
         }
         resolveLibsVersionsConflicts();
     }
 
-    private void resolveLibForPlugin(Plugin plugin, String lib, String link) {
+    private void resolveLibForPlugin(Plugin plugin, String lib, String link, boolean useFullName) {
         String installedPath = Plugin.getLibInstallPath(getLibName(lib));
         if (installedPath == null) {
-            libAdditions.put(getLibrary(lib, "").getName(), link);
+            libAdditions.put(useFullName ? lib : getLibName(lib), link);
         } else {
             resolveUpdateLib(plugin, getLibrary(lib, ""), lib);
         }
@@ -339,7 +339,7 @@ public class DependencyResolver {
         for (Plugin plugin : installedPlugins) {
             Map<String, String> requiredLibs = plugin.getLibs(plugin.getInstalledVersion());
             for (String lib : requiredLibs.keySet()) {
-                resolveLibForPlugin(plugin, lib, requiredLibs.get(lib));
+                resolveLibForPlugin(plugin, lib, requiredLibs.get(lib), false);
             }
         }
     }
