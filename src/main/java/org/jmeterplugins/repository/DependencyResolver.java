@@ -178,7 +178,7 @@ public class DependencyResolver {
     private void resolveLibForPlugin(Plugin plugin, String lib, String link) {
         String installedPath = Plugin.getLibInstallPath(getLibName(lib));
         if (installedPath == null) {
-            libAdditions.put(lib, link);
+            libAdditions.put(getLibrary(lib, "").getName(), link);
         } else {
             resolveUpdateLib(plugin, getLibrary(lib, ""), lib);
         }

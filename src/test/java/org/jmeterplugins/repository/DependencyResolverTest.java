@@ -386,4 +386,25 @@ public class DependencyResolverTest {
         assertEquals(1, libsAdditions.size());
         assertEquals("commons-codec-99.99.jar", libsAdditions.get("commons-codec"));
     }
+
+    @Test
+    public void testInstallNewLibWithMinVersion() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/installed2.json");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+
+            map.put(plugin, Boolean.TRUE);
+        }
+
+
+        DependencyResolver resolver = new DependencyResolver(map);
+        Map<String, String> libAdditions = resolver.getLibAdditions();
+        assertEquals(1, libAdditions.size());
+        assertTrue(libAdditions.containsKey("q1w2e3"));
+        assertEquals("q1w2e3-2.2.jar", libAdditions.get("q1w2e3"));
+    }
 }
