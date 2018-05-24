@@ -31,7 +31,7 @@ public class PluginsRepo implements Serializable {
     }
 
     public boolean isActual(long lastModified) {
-        return isActual() && lastModified == this.lastModified;
+        return isActual() && lastModified > this.lastModified;
     }
 
     public long getExpirationTime() {
