@@ -71,7 +71,7 @@ import java.util.zip.GZIPInputStream;
 public class JARSourceHTTP extends JARSource {
     private static final Logger log = LoggingManager.getLoggerForClass();
     private static final int RETRY_COUNT = 1;
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
     private static final long CACHE_MAX_AGE = 60 * 60 * 1000;
     private final String[] addresses;
     protected AbstractHttpClient httpClient;
@@ -216,7 +216,9 @@ public class JARSourceHTTP extends JARSource {
     }
 
     private String generateFileName(String uri) {
-        return DigestUtils.md5Hex(System.getProperty("user.name") + uri);
+        String data = System.getProperty("user.name") + uri;
+        log.debug("Hash source: " + data);
+        return DigestUtils.md5Hex(data);
     }
 
     private long parseCacheControlHeader(Header header) {
@@ -268,7 +270,7 @@ public class JARSourceHTTP extends JARSource {
     protected JSONArray getRepositories(String path) throws IOException {
         final List<JSON> repositories = new ArrayList<>(addresses.length);
         for (String address : addresses) {
-            PluginsRepo repo = getRepoCache(address);
+            PluginsRepo repo = getRepoCache(address + path);
             if (repo != null && repo.isActual()) {
                 log.info("Found cached repo");
                 repositories.add(JSONSerializer.toJSON(repo.getRepoJSON(), new JsonConfig()));
@@ -310,10 +312,10 @@ public class JARSourceHTTP extends JARSource {
      * @return unique ID for installation
      */
     public String getInstallID() {
-        String str = "";
-        str += getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
+        StringBuilder str = new StringBuilder();
+        str.append(getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
         try {
-            str += "\t" + InetAddress.getLocalHost().getHostName();
+            str.append("\t").append(InetAddress.getLocalHost().getHostName());
         } catch (UnknownHostException e) {
             log.warn("Cannot get local host name", e);
         }
@@ -321,13 +323,13 @@ public class JARSourceHTTP extends JARSource {
         try {
             Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
             for (NetworkInterface netint : Collections.list(ifs)) {
-                str += "\t" + Arrays.toString(netint.getHardwareAddress());
+                str.append("\t").append(Arrays.toString(netint.getHardwareAddress()));
             }
         } catch (SocketException e) {
             log.warn("Failed to get network addresses", e);
         }
 
-        return getPlatformName() + '-' + DigestUtils.md5Hex(str) + '-' + getGuiMode();
+        return getPlatformName() + '-' + DigestUtils.md5Hex(str.toString()) + '-' + getGuiMode();
     }
 
     private String getGuiMode() {
@@ -449,7 +451,7 @@ public class JARSourceHTTP extends JARSource {
 
                 log.debug("Requesting " + uri);
                 HttpResponse res = execute(post);
-                checkCacheValidity(uri, res);
+                checkCacheValidity(uri + "?installID=" + getInstallID(), res);
             } finally {
                 if (post != null) {
                     try {
