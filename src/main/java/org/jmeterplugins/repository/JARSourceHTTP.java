@@ -464,15 +464,15 @@ public class JARSourceHTTP extends JARSource {
 
     private void checkCacheValidity(String uri, HttpResponse res) {
         PluginsRepo repo = getRepoCache(uri);
-        Header hdr = res.getFirstHeader("last-modified");
-        long lastModified = System.currentTimeMillis();
-        if (hdr != null) {
-            lastModified = parseDateHeader(hdr);
-        }
-        if (repo != null && repo.isActual(lastModified)) {
-            File fname = generateCacheFile(uri);
-            log.info("Cache file is not valid anymore, will drop it: " + fname.getAbsolutePath());
-            fname.deleteOnExit();
+        if (repo != null) {
+            Header hdr = res.getFirstHeader("last-modified");
+            if (hdr != null) {
+                if (!repo.isActual(parseDateHeader(hdr))) {
+                    File fname = generateCacheFile(uri);
+                    log.info("Cache file is not valid anymore, will drop it: " + fname.getAbsolutePath());
+                    fname.deleteOnExit();
+                }
+            }
         }
     }
 
