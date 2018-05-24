@@ -25,9 +25,9 @@ public class PluginsRepoTest {
     public void testFlow2() throws Exception {
         long l = System.currentTimeMillis();
         PluginsRepo repo = new PluginsRepo("", l + 10000, l);
-        assertTrue(repo.isActual());
+        assertTrue(repo.isActual(lastModified));
 
         repo = new PluginsRepo("", l - 10000, l);
-        assertFalse(repo.isActual());
+        assertFalse(repo.isActual(lastModified));
     }
 }

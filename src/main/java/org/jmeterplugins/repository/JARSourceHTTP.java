@@ -269,7 +269,7 @@ public class JARSourceHTTP extends JARSource {
         final List<JSON> repositories = new ArrayList<>(addresses.length);
         for (String address : addresses) {
             PluginsRepo repo = getRepoCache(address);
-            if (repo != null && repo.isActual()) {
+            if (repo != null && repo.isActual(lastModified)) {
                 log.info("Found cached repo");
                 repositories.add(JSONSerializer.toJSON(repo.getRepoJSON(), new JsonConfig()));
             } else {
@@ -343,7 +343,7 @@ public class JARSourceHTTP extends JARSource {
             return "bamboo";
         } else if (containsEnvironment("TEAMCITY_VERSION")) {
             return "teamcity";
-        } else if (containsEnvironment("DOCKER_HOST")){
+        } else if (containsEnvironment("DOCKER_HOST")) {
             return "docker";
         } else if (containsEnvironmentPrefix("AWS_")) {
             return "amazon";
@@ -388,7 +388,7 @@ public class JARSourceHTTP extends JARSource {
         HttpContext context = new BasicHttpContext();
         HttpResponse response = execute(httpget, context);
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-            log.error("Error downloading url:"+url+" got response code:"+response.getStatusLine().getStatusCode());
+            log.error("Error downloading url:" + url + " got response code:" + response.getStatusLine().getStatusCode());
             EntityUtils.consumeQuietly(response.getEntity());
             throw new IOException(response.getStatusLine().toString());
         }
@@ -448,7 +448,8 @@ public class JARSourceHTTP extends JARSource {
                 requestParams.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 1000);
 
                 log.debug("Requesting " + uri);
-                execute(post);
+                HttpResponse res = execute(post);
+                checkCacheValidity(uri, res);
             } finally {
                 if (post != null) {
                     try {
@@ -458,6 +459,20 @@ public class JARSourceHTTP extends JARSource {
                     }
                 }
             }
+        }
+    }
+
+    private void checkCacheValidity(String uri, HttpResponse res) {
+        PluginsRepo repo = getRepoCache(uri);
+        Header hdr = res.getFirstHeader("last-modified");
+        long lastModified = System.currentTimeMillis();
+        if (hdr != null) {
+            lastModified = parseDateHeader(hdr);
+        }
+        if (repo != null && repo.isActual(lastModified)) {
+            File fname = generateCacheFile(uri);
+            log.info("Cache file is not valid anymore, will drop it: " + fname.getAbsolutePath());
+            fname.deleteOnExit();
         }
     }
 
@@ -480,7 +495,7 @@ public class JARSourceHTTP extends JARSource {
     }
 
     public HttpResponse execute(HttpUriRequest request, HttpContext context) throws IOException {
-        for (int c = 1;; c++) {
+        for (int c = 1; ; c++) {
             HttpResponse response = httpClient.execute(request, context);
             try {
                 if (retryStrategy.retryRequest(response, c, context)) {

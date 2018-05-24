@@ -30,6 +30,10 @@ public class PluginsRepo implements Serializable {
         return expirationTime > System.currentTimeMillis();
     }
 
+    public boolean isActual(long lastModified) {
+        return isActual() && lastModified == this.lastModified;
+    }
+
     public long getExpirationTime() {
         return expirationTime;
     }
