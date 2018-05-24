@@ -269,7 +269,7 @@ public class JARSourceHTTP extends JARSource {
         final List<JSON> repositories = new ArrayList<>(addresses.length);
         for (String address : addresses) {
             PluginsRepo repo = getRepoCache(address);
-            if (repo != null && repo.isActual(lastModified)) {
+            if (repo != null && repo.isActual()) {
                 log.info("Found cached repo");
                 repositories.add(JSONSerializer.toJSON(repo.getRepoJSON(), new JsonConfig()));
             } else {
