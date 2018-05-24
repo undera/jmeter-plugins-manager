@@ -1,20 +1,25 @@
 package org.jmeterplugins.repository.http;
 
 import kg.apc.emulators.TestJMeterUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.AbstractHttpClient;
+import org.apache.http.message.BasicHttpResponse;
+import org.apache.http.message.BasicStatusLine;
+import org.apache.http.protocol.HttpContext;
 import org.jmeterplugins.repository.JARSourceEmul;
 import org.jmeterplugins.repository.JARSourceFilesystem;
 import org.jmeterplugins.repository.JARSourceHTTP;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class StatsReporterTest {
     @BeforeClass
@@ -27,7 +32,7 @@ public class StatsReporterTest {
         final String[] stats = {"aaaa"};
         JARSourceEmul emul = new JARSourceEmul() {
             @Override
-            public void reportStats(String[] usageStats) throws IOException {
+            public void reportStats(String[] usageStats) {
                 assertArrayEquals(stats, usageStats);
             }
         };
@@ -43,11 +48,11 @@ public class StatsReporterTest {
         final String[] stats = {"aaaa"};
         StatsReporter reporter = new StatsReporter(jarSource, stats);
         assertNotNull(reporter.getJarSource());
-        assertFalse(jarSource == reporter.getJarSource());
+        assertNotSame(jarSource, reporter.getJarSource());
 
         assertTrue(reporter.getJarSource() instanceof JARSourceHTTPExt);
         JARSourceHTTPExt actual = (JARSourceHTTPExt) reporter.getJarSource();
-        assertFalse(jarSource.getHttpClient() == actual.getHttpClient());
+        assertNotSame(jarSource.getHttpClient(), actual.getHttpClient());
 
     }
 
@@ -59,6 +64,19 @@ public class StatsReporterTest {
         public AbstractHttpClient getHttpClient() {
             return httpClient;
         }
+
+        @Override
+        public HttpResponse execute(HttpUriRequest request, HttpContext context) {
+            ProtocolVersion http = new ProtocolVersion("HTTP", 1, 1);
+            BasicStatusLine accepted = new BasicStatusLine(http, 200, "OK");
+            BasicHttpResponse basicHttpResponse = new BasicHttpResponse(accepted);
+            basicHttpResponse.addHeader("Last-Modified", JARSourceHTTP.dateFormat.format(System.currentTimeMillis() - 1000));
+            BasicHttpEntity entity = new BasicHttpEntity();
+            InputStream is=new ByteArrayInputStream("[]".getBytes());
+            entity.setContent(is);
+            basicHttpResponse.setEntity(entity);
+            return basicHttpResponse;
+        }
     }
 
     @Test
@@ -67,7 +85,15 @@ public class StatsReporterTest {
         final String[] stats = {"aaaa"};
         StatsReporter reporter = new StatsReporter(filesystem, stats);
         assertNotNull(reporter.getJarSource());
-        assertFalse(filesystem == reporter.getJarSource());
+        assertNotSame(filesystem, reporter.getJarSource());
     }
 
+    @Test
+    public void testFlow3() throws Exception {
+        JARSourceHTTPExt jarSource = new JARSourceHTTPExt("repoStats");
+        jarSource.getRepo();
+        Thread.sleep(500);
+        final String[] stats = {"aaaa"};
+        jarSource.reportStats(stats);
+    }
 }

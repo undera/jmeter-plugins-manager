@@ -71,7 +71,7 @@ import java.util.zip.GZIPInputStream;
 public class JARSourceHTTP extends JARSource {
     private static final Logger log = LoggingManager.getLoggerForClass();
     private static final int RETRY_COUNT = 1;
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
     private static final long CACHE_MAX_AGE = 60 * 60 * 1000;
     private final String[] addresses;
     protected AbstractHttpClient httpClient;
@@ -141,12 +141,6 @@ public class JARSourceHTTP extends JARSource {
     }
 
     protected JSON getJSON(String uri) throws IOException {
-        PluginsRepo repo = getRepoCache(uri);
-        if (repo != null && repo.isActual()) {
-            log.info("Found cached repo");
-            return JSONSerializer.toJSON(repo.getRepoJSON(), new JsonConfig());
-        }
-
         log.info("Requesting " + uri);
 
         HttpRequestBase get = new HttpGet(uri);
@@ -199,6 +193,7 @@ public class JARSourceHTTP extends JARSource {
         // default cache expire is 1 hour since now
         long maxAge = CACHE_MAX_AGE;
         long date = System.currentTimeMillis();
+        long lastModified = System.currentTimeMillis();
 
         Header[] allHeaders = response.getAllHeaders();
         for (Header header : allHeaders) {
@@ -206,11 +201,13 @@ public class JARSourceHTTP extends JARSource {
                 date = parseDateHeader(header);
             } else if ("cache-control".equals(header.getName().toLowerCase())) {
                 maxAge = parseCacheControlHeader(header);
+            } else if ("last-modified".equals(header.getName().toLowerCase())) {
+                lastModified = parseDateHeader(header);
             }
         }
 
         long expirationTime = date + maxAge;
-        PluginsRepo repo = new PluginsRepo(repoJSON, expirationTime);
+        PluginsRepo repo = new PluginsRepo(repoJSON, expirationTime, lastModified);
         repo.saveToFile(generateCacheFile(uri));
     }
 
@@ -271,7 +268,13 @@ public class JARSourceHTTP extends JARSource {
     protected JSONArray getRepositories(String path) throws IOException {
         final List<JSON> repositories = new ArrayList<>(addresses.length);
         for (String address : addresses) {
-            repositories.add(getJSON(address + path));
+            PluginsRepo repo = getRepoCache(address + path);
+            if (repo != null && repo.isActual()) {
+                log.info("Found cached repo");
+                repositories.add(JSONSerializer.toJSON(repo.getRepoJSON(), new JsonConfig()));
+            } else {
+                repositories.add(getJSON(address + path));
+            }
         }
 
         final JSONArray result = new JSONArray();
@@ -307,10 +310,10 @@ public class JARSourceHTTP extends JARSource {
      * @return unique ID for installation
      */
     public String getInstallID() {
-        String str = "";
-        str += getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
+        StringBuilder str = new StringBuilder();
+        str.append(getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
         try {
-            str += "\t" + InetAddress.getLocalHost().getHostName();
+            str.append("\t").append(InetAddress.getLocalHost().getHostName());
         } catch (UnknownHostException e) {
             log.warn("Cannot get local host name", e);
         }
@@ -318,13 +321,13 @@ public class JARSourceHTTP extends JARSource {
         try {
             Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
             for (NetworkInterface netint : Collections.list(ifs)) {
-                str += "\t" + Arrays.toString(netint.getHardwareAddress());
+                str.append("\t").append(Arrays.toString(netint.getHardwareAddress()));
             }
         } catch (SocketException e) {
             log.warn("Failed to get network addresses", e);
         }
 
-        return getPlatformName() + '-' + DigestUtils.md5Hex(str) + '-' + getGuiMode();
+        return getPlatformName() + '-' + DigestUtils.md5Hex(str.toString()) + '-' + getGuiMode();
     }
 
     private String getGuiMode() {
@@ -340,7 +343,7 @@ public class JARSourceHTTP extends JARSource {
             return "bamboo";
         } else if (containsEnvironment("TEAMCITY_VERSION")) {
             return "teamcity";
-        } else if (containsEnvironment("DOCKER_HOST")){
+        } else if (containsEnvironment("DOCKER_HOST")) {
             return "docker";
         } else if (containsEnvironmentPrefix("AWS_")) {
             return "amazon";
@@ -385,7 +388,7 @@ public class JARSourceHTTP extends JARSource {
         HttpContext context = new BasicHttpContext();
         HttpResponse response = execute(httpget, context);
         if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-            log.error("Error downloading url:"+url+" got response code:"+response.getStatusLine().getStatusCode());
+            log.error("Error downloading url:" + url + " got response code:" + response.getStatusLine().getStatusCode());
             EntityUtils.consumeQuietly(response.getEntity());
             throw new IOException(response.getStatusLine().toString());
         }
@@ -445,7 +448,8 @@ public class JARSourceHTTP extends JARSource {
                 requestParams.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 1000);
 
                 log.debug("Requesting " + uri);
-                execute(post);
+                HttpResponse res = execute(post);
+                checkCacheValidity(uri + "?installID=" + getInstallID(), res);
             } finally {
                 if (post != null) {
                     try {
@@ -453,6 +457,20 @@ public class JARSourceHTTP extends JARSource {
                     } catch (Exception e) {
                         log.warn("Failure while aborting POST", e);
                     }
+                }
+            }
+        }
+    }
+
+    private void checkCacheValidity(String uri, HttpResponse res) {
+        PluginsRepo repo = getRepoCache(uri);
+        if (repo != null) {
+            Header hdr = res.getFirstHeader("last-modified");
+            if (hdr != null) {
+                if (!repo.isActual(parseDateHeader(hdr))) {
+                    File fname = generateCacheFile(uri);
+                    log.info("Cache file is not valid anymore, will drop it: " + fname.getAbsolutePath());
+                    fname.deleteOnExit();
                 }
             }
         }
@@ -477,7 +495,7 @@ public class JARSourceHTTP extends JARSource {
     }
 
     public HttpResponse execute(HttpUriRequest request, HttpContext context) throws IOException {
-        for (int c = 1;; c++) {
+        for (int c = 1; ; c++) {
             HttpResponse response = httpClient.execute(request, context);
             try {
                 if (retryStrategy.retryRequest(response, c, context)) {

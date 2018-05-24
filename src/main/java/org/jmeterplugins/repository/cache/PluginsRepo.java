@@ -18,14 +18,20 @@ public class PluginsRepo implements Serializable {
 
     private final String repoJSON;
     private final long expirationTime;
+    private final long lastModified;
 
-    public PluginsRepo(String repoJSON, long expirationTime) {
+    public PluginsRepo(String repoJSON, long expirationTime, long lastModified) {
         this.repoJSON = repoJSON;
         this.expirationTime = expirationTime;
+        this.lastModified = lastModified;
     }
 
     public boolean isActual() {
         return expirationTime > System.currentTimeMillis();
+    }
+
+    public boolean isActual(long lastModified) {
+        return isActual() && lastModified <= this.lastModified;
     }
 
     public long getExpirationTime() {
@@ -37,6 +43,7 @@ public class PluginsRepo implements Serializable {
     }
 
     public void saveToFile(File file) {
+        log.debug("Saving repo to file: "+file.getAbsolutePath());
         // Serialization
         try {
             FileUtils.touch(file);
@@ -57,6 +64,7 @@ public class PluginsRepo implements Serializable {
     }
 
     public static PluginsRepo fromFile(File file) {
+        log.debug("Loading repo from file: "+file.getAbsolutePath());
         // Deserialization
         try {
             // Reading the object from a file
