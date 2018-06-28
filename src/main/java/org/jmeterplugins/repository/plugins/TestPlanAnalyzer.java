@@ -14,6 +14,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
+import java.io.*;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,7 +22,7 @@ import java.util.Set;
 public class TestPlanAnalyzer {
 
     private static final Logger log = LoggingManager.getLoggerForClass();
-
+    private static final byte[] XML_HEADER = "<?xml version=\"1.1".getBytes();
 
     /**
      * @param path fo jmx file with test plan
@@ -51,11 +52,47 @@ public class TestPlanAnalyzer {
         }
     }
 
+    private static byte[] readBytesFromFile(String filePath) {
+        FileInputStream fileInputStream = null;
+        byte[] bytesArray = null;
+
+        try {
+            File file = new File(filePath);
+            bytesArray = new byte[(int) file.length()];
+
+            //read file into bytes[]
+            fileInputStream = new FileInputStream(file);
+            fileInputStream.read(bytesArray);
+        } catch (IOException e) {
+            log.warn("Failed read jmx file", e);
+        } finally {
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    log.warn("Failed close jmx file input stream", e);
+                }
+            }
+        }
+
+        return bytesArray;
+    }
+
+    private byte[] overrideXmlVersion(byte[] bytes) {
+        if (bytes != null && bytes.length > XML_HEADER.length) {
+            System.arraycopy(XML_HEADER, 0, bytes, 0, XML_HEADER.length);
+        }
+        return bytes;
+    }
+
+
+
     private NodeList getNodeListWithClassNames(String path) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(path);
+            byte[] bytes = overrideXmlVersion(readBytesFromFile(path));
+            Document doc = (bytes == null) ? builder.parse(path) : builder.parse(new ByteArrayInputStream(bytes));
             XPathFactory xPathfactory = XPathFactory.newInstance();
             XPath xpath = xPathfactory.newXPath();
             XPathExpression expr = xpath.compile("//*[@guiclass|@testclass]");

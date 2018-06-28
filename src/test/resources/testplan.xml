@@ -26,7 +26,7 @@
                 <stringProp name="ThreadGroup.delay"></stringProp>
             </ThreadGroup>
             <hashTree>
-                <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler" enabled="true">
+                <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler &#x12;" enabled="true">
                     <boolProp name="displayJMeterProperties">false</boolProp>
                     <boolProp name="displayJMeterVariables">true</boolProp>
                     <boolProp name="displaySystemProperties">false</boolProp>
