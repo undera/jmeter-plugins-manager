@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 public class DependencyResolver {
     private static final Logger log = LoggingManager.getLoggerForClass();
-    private static final Pattern libNameParser = Pattern.compile("([^=<>]+)([=<>]+[0-9.]+)?");
+    private static final Pattern libNameParser = Pattern.compile("([^=<>]+)([=<>]+[0-9.a-zA-Z]+)?");
     public static final String JAVA_CLASS_PATH = "java.class.path";
     protected final Set<Plugin> deletions = new HashSet<>();
     protected final Set<Plugin> additions = new HashSet<>();

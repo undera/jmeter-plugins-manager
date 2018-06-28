@@ -407,4 +407,23 @@ public class DependencyResolverTest {
         assertTrue(libAdditions.containsKey("q1w2e3"));
         assertEquals("q1w2e3-2.2.jar", libAdditions.get("q1w2e3"));
     }
+
+    @Test
+    public void testLibsWithSymbolNames() throws Exception {
+        URL url = PluginManagerTest.class.getResource("/http2_libs.json");
+        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+
+        Map<Plugin, Boolean> map = new HashMap<>();
+        for (Object obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+            plugin.detectInstalled(new HashSet<Plugin>());
+            map.put(plugin, true);
+        }
+
+
+        DependencyResolver resolver = new DependencyResolver(map);
+
+        Map<String, String> libs = resolver.getLibAdditions();
+        assertEquals(8, libs.size());
+    }
 }
