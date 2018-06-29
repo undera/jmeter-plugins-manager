@@ -39,4 +39,11 @@ public class LibraryTest {
         lib2.setVersion("1.1.v2");
         assertEquals(-1, Library.versionComparator.compare(lib1, lib2));
     }
+
+    @Test
+    public void testStaticMethods() throws Exception {
+        String fullName = "lib>=2.2";
+        assertEquals("lib", Library.getNameFromFullName(fullName));
+        assertEquals("2.2", Library.getVersionFromFullName(fullName));
+    }
 }
