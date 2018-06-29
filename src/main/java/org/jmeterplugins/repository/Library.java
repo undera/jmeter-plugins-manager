@@ -1,8 +1,12 @@
 package org.jmeterplugins.repository;
 
+import org.apache.jorphan.logging.LoggingManager;
+import org.apache.log.Logger;
+
 import java.util.Comparator;
 
 public class Library {
+    private static final Logger log = LoggingManager.getLoggerForClass();
 
     protected String name;
     protected String version;
@@ -18,7 +22,12 @@ public class Library {
             int length = (versions1.length > versions2.length) ? versions2.length : versions1.length;
 
             for (int i = 0; i < length; i++) {
-                code = Integer.compare(Integer.parseInt(versions1[i]), Integer.parseInt(versions2[i]));
+                try {
+                    code = Integer.compare(Integer.parseInt(versions1[i]), Integer.parseInt(versions2[i]));
+                } catch (NumberFormatException e) {
+                    log.debug("Cannot parse library version", e);
+                    code = versions1[i].compareTo(versions2[i]);
+                }
                 if (code != 0) {
                     break;
                 }

@@ -187,7 +187,7 @@ public class Plugin {
     }
 
     public static String getVersionFromPath(String installedPath) {
-        Pattern p = Pattern.compile("-([\\.0-9]+(-[\\w]+)?).jar");
+        Pattern p = Pattern.compile("-([\\.0-9a-zA-Z]+(-[\\w]+)?).jar");
         Matcher m = p.matcher(installedPath);
         if (m.find()) {
             return m.group(1);

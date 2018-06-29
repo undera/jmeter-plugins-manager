@@ -15,6 +15,7 @@ public class PluginTest {
         assertEquals("0.1", Plugin.getVersionFromPath("/tmp/plugins-manager-0.1.jar"));
         assertEquals("0.1-BETA", Plugin.getVersionFromPath("/tmp/plugins-manager-0.1-BETA.jar"));
         assertEquals("0.1-SNAPSHOT", Plugin.getVersionFromPath("/tmp/plugins-manager-0.1-SNAPSHOT.jar"));
+        assertEquals("0.1.v20182206", Plugin.getVersionFromPath("/tmp/plugins-manager-0.1.v20182206.jar"));
     }
 
     @Test
