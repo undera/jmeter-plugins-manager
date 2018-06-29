@@ -34,5 +34,9 @@ public class LibraryTest {
 
         lib2.setVersion("1.1");
         assertEquals(0, Library.versionComparator.compare(lib1, lib2));
+
+        lib1.setVersion("1.1.v1");
+        lib2.setVersion("1.1.v2");
+        assertEquals(-1, Library.versionComparator.compare(lib1, lib2));
     }
 }
