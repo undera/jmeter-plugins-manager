@@ -395,7 +395,7 @@ public class JARSourceHTTP extends JARSource {
 
         HttpEntity entity = response.getEntity();
 
-        File tempFile = File.createTempFile(id, ".jar");
+        File tempFile = File.createTempFile(id.replaceAll("[^a-zA-Z0-9\\._]+", "_"), ".jar");
 
         final long size = entity.getContentLength();
 
