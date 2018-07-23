@@ -22,7 +22,7 @@ import java.util.Set;
 public class TestPlanAnalyzer {
 
     private static final Logger log = LoggingManager.getLoggerForClass();
-    private static final byte[] XML_HEADER = "<?xml version=\"1.1".getBytes();
+    private static final byte[] XML_HEADER = "<?xml version=\"1.1\"".getBytes();
 
     /**
      * @param path fo jmx file with test plan
