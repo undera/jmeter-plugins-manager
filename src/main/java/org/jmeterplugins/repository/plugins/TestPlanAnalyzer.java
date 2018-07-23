@@ -88,7 +88,7 @@ public class TestPlanAnalyzer {
             if (index != -1) {
                 System.arraycopy(XML_VERSION, 0, bytes, index, XML_VERSION.length);
             } else {
-                log.debug("Does not found XML version in test plan");
+                log.debug("Did not find XML version in test plan");
             }
         }
         return bytes;
