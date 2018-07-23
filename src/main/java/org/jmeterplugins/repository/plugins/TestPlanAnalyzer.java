@@ -22,7 +22,7 @@ import java.util.Set;
 public class TestPlanAnalyzer {
 
     private static final Logger log = LoggingManager.getLoggerForClass();
-    private static final byte[] XML_HEADER = "<?xml version=\"1.1".getBytes();
+    private static final byte[] XML_VERSION = "version=\"1.1\"".getBytes();
 
     /**
      * @param path fo jmx file with test plan
@@ -79,8 +79,17 @@ public class TestPlanAnalyzer {
     }
 
     private byte[] overrideXmlVersion(byte[] bytes) {
-        if (bytes != null && bytes.length > XML_HEADER.length) {
-            System.arraycopy(XML_HEADER, 0, bytes, 0, XML_HEADER.length);
+        final int headerLength = 100;
+        if (bytes != null && bytes.length > headerLength) {
+            final byte[] line = new byte[headerLength];
+            System.arraycopy(bytes, 0, line, 0, headerLength);
+            String header = new String(line);
+            int index = header.indexOf("version=");
+            if (index != -1) {
+                System.arraycopy(XML_VERSION, 0, bytes, index, XML_VERSION.length);
+            } else {
+                log.debug("Did not find XML version in test plan");
+            }
         }
         return bytes;
     }
