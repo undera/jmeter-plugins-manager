@@ -83,8 +83,13 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
     }
 
     private JButton getToolbarButton() {
-        JButton button = new JButton(getIcon22Px(mgr.hasAnyUpdates()));
-        button.setToolTipText("Plugins Manager (has upgrades)");
+        boolean hasAnyUpdates = mgr.hasAnyUpdates();
+        JButton button = new JButton(getIcon22Px(hasAnyUpdates));
+        if (hasAnyUpdates) {
+            button.setToolTipText("Plugins Manager (has upgrades)");
+        } else {
+            button.setToolTipText("Plugins Manager");
+        }
         button.addActionListener(this);
         return button;
     }
