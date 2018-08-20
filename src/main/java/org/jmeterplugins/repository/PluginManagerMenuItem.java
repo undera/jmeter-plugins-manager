@@ -48,9 +48,13 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
                     log.info("Plugins Manager has upgrades: " + Arrays.toString(mgr.getUpgradablePlugins().toArray()));
                 }
 
-                setIcon(getPluginsIcon(mgr.hasAnyUpdates()));
-                toolbarButton.setIcon(getIcon22Px(mgr.hasAnyUpdates()));
-
+                boolean hasAnyUpdates = mgr.hasAnyUpdates();
+                setIcon(getPluginsIcon(hasAnyUpdates));
+                toolbarButton.setIcon(getIcon22Px(hasAnyUpdates));
+                toolbarButton.setToolTipText(hasAnyUpdates ?
+                        "Plugins Manager (has upgrades)" :
+                        "Plugins Manager"
+                );
             }
         }.start();
     }
@@ -83,8 +87,12 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
     }
 
     private JButton getToolbarButton() {
-        JButton button = new JButton(getIcon22Px(mgr.hasAnyUpdates()));
-        button.setToolTipText("Plugins Manager (has upgrades)");
+        boolean hasAnyUpdates = mgr.hasAnyUpdates();
+        JButton button = new JButton(getIcon22Px(hasAnyUpdates));
+        button.setToolTipText(hasAnyUpdates ?
+                "Plugins Manager (has upgrades)" :
+                "Plugins Manager"
+        );
         button.addActionListener(this);
         return button;
     }
