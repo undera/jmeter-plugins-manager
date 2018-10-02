@@ -196,7 +196,7 @@ public class Plugin {
     }
 
     public static String getJARPath(String className) {
-        Class cls;
+        Class<?> cls;
         try {
             log.debug("Trying: " + className);
             cls = Thread.currentThread().getContextClassLoader().loadClass(className);

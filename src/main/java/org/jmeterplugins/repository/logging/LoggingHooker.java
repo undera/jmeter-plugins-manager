@@ -21,8 +21,8 @@ public class LoggingHooker {
                 Logger logger = LoggingManager.getLoggerFor("jmeter.save.SaveService");
                 logger.setLogTargets(new LogTarget[]{new LoggerPanelWrapping(mgr)});
             } else {
-                Class cls = Class.forName("org.jmeterplugins.repository.logging.LoggerAppender");
-                Constructor constructor = cls.getConstructor(String.class, PluginManager.class);
+                Class<?> cls = Class.forName("org.jmeterplugins.repository.logging.LoggerAppender");
+                Constructor<?> constructor = cls.getConstructor(String.class, PluginManager.class);
                 constructor.newInstance("pmgr-logging-appender", mgr);
             }
         } catch (Throwable ex) {
