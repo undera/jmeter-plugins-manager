@@ -135,11 +135,11 @@ public class PluginManager {
         }
     }
 
-    public void startModifications(Set<Plugin> delPlugins, Set<Plugin> installPlugins, Map<String, String> installLibs,
+    public void startModifications(Set<Plugin> delPlugins, Set<Plugin> installPlugins, Set<Library.InstallationInfo> installLibs,
                                    Set<String> libDeletions, boolean doRestart, LinkedList<String> additionalJMeterOptions) throws IOException {
         ChangesMaker maker = new ChangesMaker(allPlugins);
         File moveFile = maker.getMovementsFile(delPlugins, installPlugins, installLibs, libDeletions);
-        File installFile = maker.getInstallFile(installPlugins);
+        File installFile = maker.getInstallFile(installPlugins, installLibs);
         File restartFile;
         if (doRestart) {
             restartFile = maker.getRestartFile(additionalJMeterOptions);
@@ -160,12 +160,12 @@ public class PluginManager {
 
         DependencyResolver resolver = new DependencyResolver(allPlugins);
         Set<Plugin> additions = resolver.getAdditions();
-        Map<String, String> libInstalls = new HashMap<>();
+        Set<Library.InstallationInfo> libInstalls = new HashSet<>();
 
         for (Map.Entry<String, String> entry : resolver.getLibAdditions().entrySet()) {
             try {
                 JARSource.DownloadResult dwn = jarSource.getJAR(entry.getKey(), entry.getValue(), statusChanged);
-                libInstalls.put(dwn.getTmpFile(), dwn.getFilename());
+                libInstalls.add(new Library.InstallationInfo(entry.getKey(), dwn.getTmpFile(), dwn.getFilename()));
             } catch (Throwable e) {
                 String msg = "Failed to download " + entry.getKey();
                 log.error(msg, e);
@@ -198,7 +198,7 @@ public class PluginManager {
         modifierHook(resolver.getDeletions(), additions, libInstalls, libDeletions, doRestart, additionalJMeterOptions);
     }
 
-    private void modifierHook(final Set<Plugin> deletions, final Set<Plugin> additions, final Map<String, String> libInstalls,
+    private void modifierHook(final Set<Plugin> deletions, final Set<Plugin> additions, final Set<Library.InstallationInfo> libInstalls,
                               final Set<String> libDeletions, final boolean doRestart, final LinkedList<String> additionalJMeterOptions) {
         if (deletions.isEmpty() && additions.isEmpty() && libInstalls.isEmpty() && libDeletions.isEmpty()) {
             log.info("Finishing without changes");
