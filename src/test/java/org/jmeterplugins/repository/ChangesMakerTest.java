@@ -43,10 +43,10 @@ public class ChangesMakerTest {
         PluginMock p = new PluginMock("test", "test");
         p.setInstallerClass("test");
         plugins.add(p);
-        File res = obj.getInstallFile(plugins);
+        File res = obj.getInstallFile(plugins, new HashSet<Library.InstallationInfo>());
         assertTrue(res.length() > 0);
 
-        File res2 = obj.getMovementsFile(plugins, plugins, new HashMap<String, String>(), new HashSet<String>());
+        File res2 = obj.getMovementsFile(plugins, plugins, new HashSet<Library.InstallationInfo>(), new HashSet<String>());
         assertTrue(res2.length() > 0);
 
     }
