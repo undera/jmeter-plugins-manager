@@ -123,11 +123,10 @@ public class ChangesMaker {
                         log.error("Library '" + lib + "' will not be installed!");
                     }
                     cp.append(plugin.getDestName());
-
+                    // add class for run
                     cp.append('\t');
                     cp.append(cls);
                     cp.append('\n');
-                    System.out.println(cp.toString());
                     out.print(cp.toString());
                 }
             }
