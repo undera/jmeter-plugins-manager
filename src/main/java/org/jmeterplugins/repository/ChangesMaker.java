@@ -8,6 +8,7 @@ import org.apache.log.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.URLDecoder;
@@ -95,22 +96,59 @@ public class ChangesMaker {
         return cmd.toString();
     }
 
-    public File getInstallFile(Set<Plugin> plugins) throws IOException {
+    public File getInstallFile(Set<Plugin> plugins, Set<Library.InstallationInfo> installLibs) throws IOException {
         File file = File.createTempFile("jpgc-installers-", ".list");
         try (PrintWriter out = new PrintWriter(file)) {
             for (Plugin plugin : plugins) {
                 String cls = plugin.getInstallerClass();
                 if (cls != null) {
                     log.debug("Plugin " + plugin + " has installer: " + cls);
-                    out.print(plugin.getDestName() + "\t" + cls + "\n");
+                    StringBuilder cp = new StringBuilder();
+                    Map<String, String> libs = plugin.getLibs(plugin.getCandidateVersion());
+                    for (String lib : libs.keySet()) {
+                        Library.InstallationInfo libInfo = getLibForInstallLibs(lib, installLibs);
+                        if (libInfo != null) {
+                            cp.append(generateLibPath(libInfo.getDestinationFileName()));
+                            cp.append(File.pathSeparator);
+                            continue;
+                        }
+
+                        String installedPath = Plugin.getLibInstallPath(lib);
+                        if (installedPath != null) {
+                            cp.append(generateLibPath(installedPath));
+                            cp.append(File.pathSeparator);
+                            continue;
+                        }
+
+                        log.error("Library '" + lib + "' will not be installed!");
+                    }
+                    cp.append(plugin.getDestName());
+                    // add class for run
+                    cp.append('\t');
+                    cp.append(cls);
+                    cp.append('\n');
+                    out.print(cp.toString());
                 }
             }
             return file;
         }
     }
 
+    protected Library.InstallationInfo getLibForInstallLibs(String lib, Set<Library.InstallationInfo> installLibs) {
+        for (Library.InstallationInfo info : installLibs) {
+            if (info.getName().equals(lib)) {
+                return info;
+            }
+        }
+        return null;
+    }
 
-    public File getMovementsFile(Set<Plugin> deletes, Set<Plugin> installs, Map<String, String> installLibs, Set<String> libDeletions) throws IOException {
+    protected String generateLibPath(String libName) throws UnsupportedEncodingException {
+        String libPath = new File(JOrphanUtils.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParent();
+        return URLDecoder.decode(libPath, "UTF-8") + File.separator + libName;
+    }
+
+    public File getMovementsFile(Set<Plugin> deletes, Set<Plugin> installs, Set<Library.InstallationInfo> installLibs, Set<String> libDeletions) throws IOException {
         final File file = File.createTempFile("jpgc-jar-changes", ".list");
         try (PrintWriter out = new PrintWriter(file)) {
 
@@ -141,9 +179,8 @@ public class ChangesMaker {
                 }
             }
 
-            String libPath = new File(JOrphanUtils.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParent();
-            for (Map.Entry<String, String> lib : installLibs.entrySet()) {
-                out.print(lib.getKey() + "\t" + URLDecoder.decode(libPath, "UTF-8") + File.separator + lib.getValue() + "\n");
+            for (Library.InstallationInfo libInfo : installLibs) {
+                out.print(libInfo.getTmpPath() + "\t" + generateLibPath(libInfo.getDestinationFileName()) + "\n");
             }
 
             for (Plugin plugin : installs) {
