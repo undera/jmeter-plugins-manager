@@ -210,7 +210,7 @@ public class PluginManagerTest {
 
     @Test
     public void testBuildMap() throws Throwable {
-        PluginManager mgr=new PluginManager();
+        PluginManager mgr = new PluginManager();
         mgr.load();
         mgr.logPluginComponents();
     }
