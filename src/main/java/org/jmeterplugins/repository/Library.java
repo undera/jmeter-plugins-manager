@@ -92,4 +92,28 @@ public class Library {
     public static String getNameFromFullName(String fullName) {
         return fullName.substring(0, fullName.indexOf(">="));
     }
+
+    public static class InstallationInfo {
+        private final String name;
+        private final String tmpPath;
+        private final String destinationFileName;
+
+        public InstallationInfo(String name, String tmpPath, String destinationFileName) {
+            this.name = name;
+            this.tmpPath = tmpPath;
+            this.destinationFileName = destinationFileName;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getTmpPath() {
+            return tmpPath;
+        }
+
+        public String getDestinationFileName() {
+            return destinationFileName;
+        }
+    }
 }

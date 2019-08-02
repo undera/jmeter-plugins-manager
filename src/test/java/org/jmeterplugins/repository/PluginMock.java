@@ -58,4 +58,8 @@ public class PluginMock extends Plugin {
     public void setInstallerClass(String installerClass) {
         this.installerClass = installerClass;
     }
+
+    public void setDestName(String destName) {
+        this.destName = destName;
+    }
 }
