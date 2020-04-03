@@ -28,13 +28,20 @@ public class CheckBoxList<T extends JCheckBox> extends JList<T> {
 
                                  if (index != -1) {
                                      JCheckBox checkbox = getModel().getElementAt(index);
-                                     Icon i = UIManager.getIcon("CheckBox.icon");
-                                     if (e.getX() <= i.getIconWidth() + xOffset) {
-                                         if (checkbox.isEnabled()) {
+                                     Icon icon = UIManager.getIcon("CheckBox.icon");
+                                     if (icon != null) {
+	                                     if (e.getX() <= icon.getIconWidth() + xOffset) {
+	                                         if (checkbox.isEnabled()) {
+	                                             checkbox.setSelected(!checkbox.isSelected());
+	                                         }
+	                                     }
+	                                     repaint();
+                                     } else {
+                                    	 if (checkbox.isEnabled()) {
                                              checkbox.setSelected(!checkbox.isSelected());
                                          }
+                                    	 repaint();
                                      }
-                                     repaint();
                                  }
                              }
                          }
