@@ -12,9 +12,10 @@ import java.awt.event.ComponentListener;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -22,7 +23,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
-import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
@@ -33,12 +33,13 @@ import javax.swing.event.HyperlinkListener;
 import org.apache.jmeter.gui.GuiPackage;
 import org.apache.jmeter.gui.action.ActionNames;
 import org.apache.jmeter.gui.action.ActionRouter;
+import org.apache.jmeter.gui.util.EscapeDialog;
 import org.apache.jorphan.gui.ComponentUtil;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.jmeterplugins.repository.exception.DownloadException;
 
-public class PluginManagerDialog extends JDialog implements ActionListener, ComponentListener, HyperlinkListener {
+public class PluginManagerDialog extends EscapeDialog implements ActionListener, ComponentListener, HyperlinkListener {
     /**
      *
      */
