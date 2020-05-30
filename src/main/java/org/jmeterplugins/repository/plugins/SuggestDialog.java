@@ -1,7 +1,25 @@
 package org.jmeterplugins.repository.plugins;
 
+import static org.jmeterplugins.repository.PluginManagerDialog.SPACING;
+
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.LinkedList;
+import java.util.Set;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+
 import org.apache.jmeter.gui.action.ActionNames;
 import org.apache.jmeter.gui.action.ActionRouter;
+import org.apache.jmeter.gui.util.EscapeDialog;
 import org.apache.jorphan.gui.ComponentUtil;
 import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
@@ -10,16 +28,7 @@ import org.jmeterplugins.repository.Plugin;
 import org.jmeterplugins.repository.PluginManager;
 import org.jmeterplugins.repository.PluginManagerMenuItem;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.LinkedList;
-import java.util.Set;
-
-import static org.jmeterplugins.repository.PluginManagerDialog.SPACING;
-
-public class SuggestDialog extends JDialog implements GenericCallback<String> {
+public class SuggestDialog extends EscapeDialog implements GenericCallback<String> {
     private static final Logger log = LoggingManager.getLoggerForClass();
     private final PluginManager manager;
     private JLabel titleLabel = new JLabel("");
