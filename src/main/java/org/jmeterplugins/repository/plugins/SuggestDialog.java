@@ -25,8 +25,8 @@ import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.Logger;
 import org.jmeterplugins.repository.GenericCallback;
 import org.jmeterplugins.repository.Plugin;
+import org.jmeterplugins.repository.PluginIcon;
 import org.jmeterplugins.repository.PluginManager;
-import org.jmeterplugins.repository.PluginManagerMenuItem;
 
 public class SuggestDialog extends EscapeDialog implements GenericCallback<String> {
     private static final Logger log = LoggingManager.getLoggerForClass();
@@ -43,7 +43,7 @@ public class SuggestDialog extends EscapeDialog implements GenericCallback<Strin
 
     private void init(Set<Plugin> plugins, final String testPlan) {
         setLayout(new BorderLayout());
-        setIconImage(PluginManagerMenuItem.getPluginsIcon(manager.hasAnyUpdates()).getImage());
+        setIconImage(PluginIcon.getPluginFrameIcon(manager.hasAnyUpdates(),this));
         ComponentUtil.centerComponentInWindow(this);
 
         JPanel mainPanel = new JPanel(new BorderLayout(0, 0));
