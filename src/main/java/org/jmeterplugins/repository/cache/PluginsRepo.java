@@ -1,8 +1,8 @@
 package org.jmeterplugins.repository.cache;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -14,7 +14,7 @@ import java.io.Serializable;
 
 public class PluginsRepo implements Serializable {
     private static final long serialVersionUID = 1L;
-    private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Logger log = LoggerFactory.getLogger(PluginsRepo.class);
 
     private final String repoJSON;
     private final long expirationTime;
@@ -43,7 +43,7 @@ public class PluginsRepo implements Serializable {
     }
 
     public void saveToFile(File file) {
-        log.debug("Saving repo to file: "+file.getAbsolutePath());
+        log.debug("Saving repo to file: " + file.getAbsolutePath());
         // Serialization
         try {
             FileUtils.touch(file);
@@ -64,7 +64,7 @@ public class PluginsRepo implements Serializable {
     }
 
     public static PluginsRepo fromFile(File file) {
-        log.debug("Loading repo from file: "+file.getAbsolutePath());
+        log.debug("Loading repo from file: " + file.getAbsolutePath());
         // Deserialization
         try {
             // Reading the object from a file

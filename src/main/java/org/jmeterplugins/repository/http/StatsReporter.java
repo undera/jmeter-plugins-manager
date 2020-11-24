@@ -1,13 +1,13 @@
 package org.jmeterplugins.repository.http;
 
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
 import org.jmeterplugins.repository.JARSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class StatsReporter extends Thread {
-    private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Logger log = LoggerFactory.getLogger(StatsReporter.class);
 
     private final JARSource jarSource;
     private final String[] usageStats;

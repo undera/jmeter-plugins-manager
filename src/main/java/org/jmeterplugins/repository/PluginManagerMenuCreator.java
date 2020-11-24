@@ -1,13 +1,13 @@
 package org.jmeterplugins.repository;
 
-import javax.swing.JMenuItem;
-
 import org.apache.jmeter.gui.plugin.MenuCreator;
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
 
 public class PluginManagerMenuCreator implements MenuCreator {
-    private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Logger log = LoggerFactory.getLogger(PluginManagerMenuCreator.class);
 
     @Override
     public JMenuItem[] getMenuItemsAtLocation(MENU_LOCATION location) {

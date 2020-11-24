@@ -1,12 +1,12 @@
 package org.jmeterplugins.repository;
 
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 
 public class Library {
-    private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Logger log = LoggerFactory.getLogger(Library.class);
 
     protected String name;
     protected String version;
@@ -19,7 +19,7 @@ public class Library {
 
             final String[] versions1 = lib1.getVersion().split("[.]");
             final String[] versions2 = lib2.getVersion().split("[.]");
-            int length = (versions1.length > versions2.length) ? versions2.length : versions1.length;
+            int length = Math.min(versions1.length, versions2.length);
 
             for (int i = 0; i < length; i++) {
                 try {

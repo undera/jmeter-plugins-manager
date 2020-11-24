@@ -1,8 +1,8 @@
 package org.jmeterplugins.repository.plugins;
 
 import org.apache.jmeter.save.SaveService;
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -14,14 +14,17 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 public class TestPlanAnalyzer {
 
-    private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Logger log = LoggerFactory.getLogger(TestPlanAnalyzer.class);
     private static final byte[] XML_VERSION = "version=\"1.1\"".getBytes();
 
     /**
@@ -93,7 +96,6 @@ public class TestPlanAnalyzer {
         }
         return bytes;
     }
-
 
 
     private NodeList getNodeListWithClassNames(String path) {

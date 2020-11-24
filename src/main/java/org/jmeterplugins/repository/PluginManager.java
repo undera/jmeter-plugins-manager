@@ -17,11 +17,11 @@ import org.apache.jmeter.samplers.Sampler;
 import org.apache.jmeter.testbeans.TestBean;
 import org.apache.jmeter.timers.Timer;
 import org.apache.jmeter.util.JMeterUtils;
-import org.apache.jorphan.logging.LoggingManager;
 import org.apache.jorphan.reflect.ClassFinder;
-import org.apache.log.Logger;
 import org.jmeterplugins.repository.exception.DownloadException;
 import org.jmeterplugins.repository.http.StatsReporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +40,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class PluginManager {
-    private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Logger log = LoggerFactory.getLogger(PluginManager.class);
     private static PluginManager staticManager = new PluginManager();
     private final JARSource jarSource;
     private boolean isSendRepoStats = true;
@@ -414,8 +414,6 @@ public class PluginManager {
                 Arrays.toString(res.toArray()) :
                 "There is nothing to update.";
     }
-
-
 
 
     public static void detectJARConflicts() {

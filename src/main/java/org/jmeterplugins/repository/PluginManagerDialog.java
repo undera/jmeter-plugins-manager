@@ -1,10 +1,20 @@
 package org.jmeterplugins.repository;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
+import org.apache.jmeter.gui.GuiPackage;
+import org.apache.jmeter.gui.action.ActionNames;
+import org.apache.jmeter.gui.action.ActionRouter;
+import org.apache.jorphan.gui.ComponentUtil;
+import org.jmeterplugins.repository.exception.DownloadException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -12,38 +22,10 @@ import java.awt.event.ComponentListener;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextPane;
-import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
-import javax.swing.border.Border;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-
-import org.apache.jmeter.gui.GuiPackage;
-import org.apache.jmeter.gui.action.ActionNames;
-import org.apache.jmeter.gui.action.ActionRouter;
-import org.apache.jorphan.gui.ComponentUtil;
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
-import org.jmeterplugins.repository.exception.DownloadException;
 
 public class PluginManagerDialog extends JDialog implements ActionListener, ComponentListener, HyperlinkListener {
-    /**
-     *
-     */
     private static final long serialVersionUID = 888467568782611707L;
-    private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Logger log = LoggerFactory.getLogger(PluginManagerDialog.class);
     public static final Border SPACING = BorderFactory.createEmptyBorder(5, 5, 5, 5);
     private final PluginManager manager;
     private final JTextPane modifs = new JTextPane();
@@ -52,7 +34,7 @@ public class PluginManagerDialog extends JDialog implements ActionListener, Comp
     private final PluginsList available;
     private final PluginUpgradesList upgrades;
     private final JSplitPane topAndDown = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-    private JLabel statusLabel = new JLabel("");
+    private final JLabel statusLabel = new JLabel("");
     private JEditorPane failureLabel = new JEditorPane();
     private JScrollPane failureScrollPane = new JScrollPane(failureLabel);
     private final ChangeListener cbNotifier;

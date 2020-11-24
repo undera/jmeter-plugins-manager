@@ -1,24 +1,27 @@
 package org.jmeterplugins.repository;
 
+import kg.apc.cmdtools.AbstractCMDTool;
+import org.apache.jmeter.util.JMeterUtils;
+import org.jmeterplugins.repository.plugins.PluginSuggester;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.net.URLDecoder;
-import java.util.*;
-
-import kg.apc.cmdtools.AbstractCMDTool;
-
-import org.apache.jmeter.util.JMeterUtils;
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
-import org.apache.log.Priority;
-import org.jmeterplugins.repository.plugins.PluginSuggester;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 
 import static org.jmeterplugins.repository.logging.LoggingHooker.isJMeter32orLater;
 
 public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback<String> {
-    private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Logger log = LoggerFactory.getLogger(PluginManagerCMD.class);
 
     public PluginManagerCMD() {
         setJMeterHome();
@@ -56,7 +59,6 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
 
     @Override
     protected int processParams(ListIterator listIterator) throws UnsupportedOperationException, IllegalArgumentException {
-        LoggingManager.setPriority(Priority.INFO);
         if (!listIterator.hasNext()) {
             showHelp(System.out);
             throw new IllegalArgumentException("Command parameter is missing");
@@ -116,7 +118,7 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
             throw new IllegalArgumentException("No jmx files specified");
         }
         String files = jmxFilesIterator.next().toString();
-        
+
         PluginManager mgr = getPluginsManager(false);
         PluginSuggester suggester = new PluginSuggester(mgr);
         final Set<Plugin> pluginsToInstall = new HashSet<>();

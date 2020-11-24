@@ -1,14 +1,14 @@
 package org.jmeterplugins.repository.logging;
 
-import org.apache.jorphan.logging.LoggingManager;
 import org.apache.log.LogTarget;
-import org.apache.log.Logger;
 import org.jmeterplugins.repository.PluginManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 
 public class LoggingHooker {
-    private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(LoggingHooker.class);
     private final PluginManager mgr;
 
     public LoggingHooker(PluginManager mgr) {
@@ -18,8 +18,8 @@ public class LoggingHooker {
     public void hook() {
         try {
             if (!isJMeter32orLater()) {
-                Logger logger = LoggingManager.getLoggerFor("jmeter.save.SaveService");
-                logger.setLogTargets(new LogTarget[]{new LoggerPanelWrapping(mgr)});
+                Logger logger = LoggerFactory.getLogger("jmeter.save.SaveService");
+                // FIXME: what to do? logger.setLogTargets(new LogTarget[]{new LoggerPanelWrapping(mgr)});
             } else {
                 Class<?> cls = Class.forName("org.jmeterplugins.repository.logging.LoggerAppender");
                 Constructor<?> constructor = cls.getConstructor(String.class, PluginManager.class);

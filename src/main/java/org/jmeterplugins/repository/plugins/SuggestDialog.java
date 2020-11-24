@@ -3,12 +3,12 @@ package org.jmeterplugins.repository.plugins;
 import org.apache.jmeter.gui.action.ActionNames;
 import org.apache.jmeter.gui.action.ActionRouter;
 import org.apache.jorphan.gui.ComponentUtil;
-import org.apache.jorphan.logging.LoggingManager;
-import org.apache.log.Logger;
 import org.jmeterplugins.repository.GenericCallback;
 import org.jmeterplugins.repository.Plugin;
 import org.jmeterplugins.repository.PluginManager;
 import org.jmeterplugins.repository.PluginManagerMenuItem;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +20,7 @@ import java.util.Set;
 import static org.jmeterplugins.repository.PluginManagerDialog.SPACING;
 
 public class SuggestDialog extends JDialog implements GenericCallback<String> {
-    private static final Logger log = LoggingManager.getLoggerForClass();
+    private static final Logger log = LoggerFactory.getLogger(SuggestDialog.class);
     private final PluginManager manager;
     private JLabel titleLabel = new JLabel("");
     private JLabel statusLabel = new JLabel("");
