@@ -3,6 +3,9 @@ package org.jmeterplugins.repository;
 import org.apache.jmeter.gui.GuiPackage;
 import org.apache.jmeter.gui.MainFrame;
 import org.apache.jmeter.gui.util.JMeterToolBar;
+import org.apache.jmeter.util.JMeterUtils;
+import org.apache.jorphan.logging.LoggingManager;
+import org.apache.log.Logger;
 import org.jmeterplugins.repository.logging.LoggingHooker;
 import org.jmeterplugins.repository.util.ComponentFinder;
 import org.slf4j.Logger;
@@ -29,7 +32,7 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
         hooker.hook();
         final JButton toolbarButton = getToolbarButton();
         addToolbarIcon(toolbarButton);
-        setIcon(getPluginsIcon(false));
+        setIcon(PluginIcon.getPluginsIcon(false));
 
         new Thread("repo-downloader-thread") {
             @Override
@@ -46,8 +49,8 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
                 }
 
                 boolean hasAnyUpdates = mgr.hasAnyUpdates();
-                setIcon(getPluginsIcon(hasAnyUpdates));
-                toolbarButton.setIcon(getIcon22Px(hasAnyUpdates));
+                setIcon(PluginIcon.getPluginsIcon(hasAnyUpdates));
+                toolbarButton.setIcon(PluginIcon.getIcon22Px(hasAnyUpdates));
                 toolbarButton.setToolTipText(hasAnyUpdates ?
                         "Plugins Manager (has upgrades)" :
                         "Plugins Manager"
@@ -85,7 +88,7 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
 
     private JButton getToolbarButton() {
         boolean hasAnyUpdates = mgr.hasAnyUpdates();
-        JButton button = new JButton(getIcon22Px(hasAnyUpdates));
+        JButton button = new JButton(PluginIcon.getIcon22Px(hasAnyUpdates));
         button.setToolTipText(hasAnyUpdates ?
                 "Plugins Manager (has upgrades)" :
                 "Plugins Manager"
@@ -103,21 +106,5 @@ public class PluginManagerMenuItem extends JMenuItem implements ActionListener {
 
         dialog.pack();
         dialog.setVisible(true);
-    }
-
-    public static ImageIcon getIcon22Px(boolean hasUpdates) {
-        if (hasUpdates) {
-            return new ImageIcon(PluginManagerMenuItem.class.getResource("/org/jmeterplugins/logo22Update.png"));
-        } else {
-            return new ImageIcon(PluginManagerMenuItem.class.getResource("/org/jmeterplugins/logo22.png"));
-        }
-    }
-
-    public static ImageIcon getPluginsIcon(boolean hasUpdates) {
-        if (hasUpdates) {
-            return new ImageIcon(PluginManagerMenuItem.class.getResource("/org/jmeterplugins/logoUpdate.png"));
-        } else {
-            return new ImageIcon(PluginManagerMenuItem.class.getResource("/org/jmeterplugins/logo.png"));
-        }
     }
 }

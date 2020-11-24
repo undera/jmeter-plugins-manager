@@ -1,8 +1,8 @@
 package org.jmeterplugins.repository.cache;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.jorphan.logging.LoggingManager;
+import org.apache.log.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +11,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.jorphan.logging.LoggingManager;
+import org.apache.log.Logger;
 
 public class PluginsRepo implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -45,19 +49,11 @@ public class PluginsRepo implements Serializable {
     public void saveToFile(File file) {
         log.debug("Saving repo to file: " + file.getAbsolutePath());
         // Serialization
-        try {
+        try (FileOutputStream fout = new FileOutputStream(file);
+                ObjectOutputStream out = new ObjectOutputStream(fout)){
             FileUtils.touch(file);
-
-            //Saving of object in a file
-            FileOutputStream fout = new FileOutputStream(file);
-            ObjectOutputStream out = new ObjectOutputStream(fout);
-
             // Method for serialization of object
             out.writeObject(this);
-
-            out.close();
-            fout.close();
-
         } catch (IOException ex) {
             log.warn("Failed for serialize repo", ex);
         }
@@ -66,18 +62,11 @@ public class PluginsRepo implements Serializable {
     public static PluginsRepo fromFile(File file) {
         log.debug("Loading repo from file: " + file.getAbsolutePath());
         // Deserialization
-        try {
-            // Reading the object from a file
-            FileInputStream fis = new FileInputStream(file);
-            ObjectInputStream in = new ObjectInputStream(fis);
+        try (FileInputStream fis = new FileInputStream(file);
+                ObjectInputStream in = new ObjectInputStream(fis);) {
 
             // Method for deserialization of object
-            PluginsRepo repo = (PluginsRepo) in.readObject();
-
-            in.close();
-            fis.close();
-
-            return repo;
+            return(PluginsRepo) in.readObject();
         } catch (IOException | ClassNotFoundException ex) {
             log.warn("Failed for deserialize repo", ex);
             return null;

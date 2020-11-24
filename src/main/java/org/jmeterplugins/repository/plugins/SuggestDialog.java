@@ -1,14 +1,31 @@
 package org.jmeterplugins.repository.plugins;
 
+import static org.jmeterplugins.repository.PluginManagerDialog.SPACING;
+
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.LinkedList;
+import java.util.Set;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+
 import org.apache.jmeter.gui.action.ActionNames;
 import org.apache.jmeter.gui.action.ActionRouter;
+import org.apache.jmeter.gui.util.EscapeDialog;
 import org.apache.jorphan.gui.ComponentUtil;
 import org.jmeterplugins.repository.GenericCallback;
 import org.jmeterplugins.repository.Plugin;
+import org.jmeterplugins.repository.PluginIcon;
 import org.jmeterplugins.repository.PluginManager;
 import org.jmeterplugins.repository.PluginManagerMenuItem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,9 +34,7 @@ import java.awt.event.ActionListener;
 import java.util.LinkedList;
 import java.util.Set;
 
-import static org.jmeterplugins.repository.PluginManagerDialog.SPACING;
-
-public class SuggestDialog extends JDialog implements GenericCallback<String> {
+public class SuggestDialog extends EscapeDialog implements GenericCallback<String> {
     private static final Logger log = LoggerFactory.getLogger(SuggestDialog.class);
     private final PluginManager manager;
     private JLabel titleLabel = new JLabel("");
@@ -34,7 +49,7 @@ public class SuggestDialog extends JDialog implements GenericCallback<String> {
 
     private void init(Set<Plugin> plugins, final String testPlan) {
         setLayout(new BorderLayout());
-        setIconImage(PluginManagerMenuItem.getPluginsIcon(manager.hasAnyUpdates()).getImage());
+        setIconImage(PluginIcon.getPluginFrameIcon(manager.hasAnyUpdates(),this));
         ComponentUtil.centerComponentInWindow(this);
 
         JPanel mainPanel = new JPanel(new BorderLayout(0, 0));
