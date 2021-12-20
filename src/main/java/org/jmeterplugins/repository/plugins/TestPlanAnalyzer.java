@@ -10,6 +10,7 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
@@ -101,6 +102,11 @@ public class TestPlanAnalyzer {
     private NodeList getNodeListWithClassNames(String path) {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            factory.setXIncludeAware(false);
+            factory.setExpandEntityReferences(false);
+
             DocumentBuilder builder = factory.newDocumentBuilder();
             byte[] bytes = overrideXmlVersion(readBytesFromFile(path));
             Document doc = (bytes == null) ? builder.parse(path) : builder.parse(new ByteArrayInputStream(bytes));
@@ -108,6 +114,9 @@ public class TestPlanAnalyzer {
             XPath xpath = xPathfactory.newXPath();
             XPathExpression expr = xpath.compile("//*[@guiclass|@testclass]");
             return (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+        } catch (ParserConfigurationException pex) {
+            log.warn("Cannot set the required parser config", pex);
+            return null;
         } catch (Exception ex) {
             log.warn("Cannot parse file: " + path, ex);
             return null;
