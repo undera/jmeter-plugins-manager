@@ -1,7 +1,6 @@
 package org.jmeterplugins.repository;
 
 import org.apache.jmeter.util.JMeterUtils;
-import org.apache.jorphan.util.JOrphanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,11 +12,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.net.URLDecoder;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ChangesMaker {
     private static final Logger log = LoggerFactory.getLogger(ChangesMaker.class);
@@ -127,7 +122,7 @@ public class ChangesMaker {
                     cp.append('\t');
                     cp.append(cls);
                     cp.append('\n');
-                    out.print(cp.toString());
+                    out.print(cp);
                 }
             }
             return file;
@@ -144,7 +139,7 @@ public class ChangesMaker {
     }
 
     protected String generateLibPath(String libName) throws UnsupportedEncodingException {
-        String libPath = new File(JOrphanUtils.class.getProtectionDomain().getCodeSource().getLocation().getFile()).getParent();
+        String libPath = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile()).getParent();
         return URLDecoder.decode(libPath, "UTF-8") + File.separator + libName;
     }
 
