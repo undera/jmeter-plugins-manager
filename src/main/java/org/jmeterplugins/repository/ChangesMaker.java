@@ -139,8 +139,14 @@ public class ChangesMaker {
     }
 
     protected String generateLibPath(String libName) throws UnsupportedEncodingException {
-        String libPath = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile()).getParent();
-        return URLDecoder.decode(libPath, "UTF-8") + File.separator + libName;
+        String file = this.getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
+        File libPath = new File(file).getParentFile();
+        File libPathParent = libPath.getParentFile();
+        if (Files.isWritable(libPathParent.getAbsoluteFile().toPath())) {
+            return URLDecoder.decode(libPathParent.getAbsolutePath(), "UTF-8") + File.separator + libName;
+        }
+
+        return URLDecoder.decode(libPath.getAbsolutePath(), "UTF-8") + File.separator + libName;
     }
 
     public File getMovementsFile(Set<Plugin> deletes, Set<Plugin> installs, Set<Library.InstallationInfo> installLibs, Set<String> libDeletions) throws IOException {
