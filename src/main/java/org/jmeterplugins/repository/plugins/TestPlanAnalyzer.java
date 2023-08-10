@@ -43,6 +43,10 @@ public class TestPlanAnalyzer {
                 NamedNodeMap attributes = node.getAttributes();
                 checkAttributeAndAdd(attributes, "guiclass", nonExistentClasses);
                 checkAttributeAndAdd(attributes, "testclass", nonExistentClasses);
+
+                if (node.getNodeName().equals("BackendListener")) {
+                    addBackendListenerImplClass(node, nonExistentClasses);
+                }
             }
             return nonExistentClasses;
         }
@@ -53,6 +57,20 @@ public class TestPlanAnalyzer {
         Node node = attributes.getNamedItem(attributeName);
         if (node != null && !isClassExists(node.getTextContent())) {
             nonExistentClasses.add(node.getTextContent());
+        }
+    }
+
+    // BackendListener has implementation class stored in a stringProp with name="classname"
+    private void addBackendListenerImplClass(Node node, final Set<String> nonExistentClasses) {
+        NodeList children = node.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (child.getNodeName().equals("stringProp")) {
+               Node name = child.getAttributes().getNamedItem("name");
+               if (name != null && name.getTextContent().equals("classname") && !isClassExists(child.getTextContent())) {
+                   nonExistentClasses.add(child.getTextContent());
+                }
+            }
         }
     }
 
