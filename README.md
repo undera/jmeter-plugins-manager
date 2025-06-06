@@ -25,7 +25,7 @@ cd ${JMETER_HOME}/lib/ext && wget https://jmeter-plugins.org/get/ --output-docum
 ### Option 3 - automated, get a specific version
 
 ```
-JMETER_PLUGINS_MANAGER_VERSION="1.10"
+JMETER_PLUGINS_MANAGER_VERSION="1.11"
 cd ${JMETER_HOME}/lib/ext && wget https://repo1.maven.org/maven2/kg/apc/jmeter-plugins-manager/${JMETER_PLUGINS_MANAGER_VERSION}/jmeter-plugins-manager-${JMETER_PLUGINS_MANAGER_VERSION}.jar
 ```
 
