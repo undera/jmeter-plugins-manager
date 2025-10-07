@@ -11,12 +11,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.net.URLDecoder;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.jmeterplugins.repository.logging.LoggingHooker.isJMeter32orLater;
 
@@ -191,5 +186,13 @@ public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback
         } else {
             log.info(s);
         }
+    }
+
+    public static void main(String[] args) {
+        JMeterUtils.setJMeterHome(System.getenv("JMETER_HOME"));
+        JMeterUtils.loadJMeterProperties(JMeterUtils.getJMeterBinDir() + File.separator + "jmeter.properties");
+        PluginManagerCMD o=new PluginManagerCMD();
+        ListIterator<String> params = Arrays.asList(args).listIterator();
+        o.processParams(params);
     }
 }
