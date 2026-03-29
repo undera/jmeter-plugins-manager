@@ -409,7 +409,7 @@ public class DependencyResolverTest {
     }
 
     @Test
-    public void testCanUninstallRespectedOnUpgrade() throws Exception {
+    public void testCanUninstallAllowsUpgrade() throws Exception {
         Map<Plugin, Boolean> plugs = new HashMap<>();
         PluginMock core = new PluginMock("jmeter-core", "1.0");
         core.setCandidateVersion("2.0");
@@ -418,9 +418,9 @@ public class DependencyResolverTest {
 
         DependencyResolver obj = new DependencyResolver(plugs);
 
-        // canUninstall=false plugin should NOT appear in deletions even during upgrade
-        assertFalse("canUninstall=false plugin should not be in deletions",
-                obj.getDeletions().contains(core));
+        // Upgrades are allowed for canUninstall=false plugins (old version is replaced, not just deleted)
+        assertTrue(obj.getDeletions().contains(core));
+        assertTrue(obj.getAdditions().contains(core));
     }
 
     @Test
