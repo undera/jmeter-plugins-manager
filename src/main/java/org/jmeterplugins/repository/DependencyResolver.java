@@ -89,7 +89,7 @@ public class DependencyResolver {
     private void resolveFlags() {
         for (Map.Entry<Plugin, Boolean> entry : allPlugins.entrySet()) {
             if (entry.getKey().isInstalled()) {
-                if (!entry.getValue()) {
+                if (!entry.getValue() && entry.getKey().canUninstall()) {
                     deletions.add(entry.getKey());
                 }
             } else if (entry.getValue()) {
@@ -119,7 +119,7 @@ public class DependencyResolver {
             for (Plugin plugin : deletions) {
                 if (!additions.contains(plugin)) {
                     for (Plugin dep : getDependants(plugin)) {
-                        if (!deletions.contains(dep) && dep.isInstalled()) {
+                        if (!deletions.contains(dep) && dep.isInstalled() && dep.canUninstall()) {
                             log.debug("Add to deletions: " + dep);
                             deletions.add(dep);
                             hasModifications = true;

@@ -409,6 +409,54 @@ public class DependencyResolverTest {
     }
 
     @Test
+    public void testCanUninstallAllowsUpgrade() throws Exception {
+        Map<Plugin, Boolean> plugs = new HashMap<>();
+        PluginMock core = new PluginMock("jmeter-core", "1.0");
+        core.setCandidateVersion("2.0");
+        core.canUninstall = false;
+        plugs.put(core, true);
+
+        DependencyResolver obj = new DependencyResolver(plugs);
+
+        // Upgrades are allowed for canUninstall=false plugins (old version is replaced, not just deleted)
+        assertTrue(obj.getDeletions().contains(core));
+        assertTrue(obj.getAdditions().contains(core));
+    }
+
+    @Test
+    public void testCanUninstallRespectedOnFlag() throws Exception {
+        Map<Plugin, Boolean> plugs = new HashMap<>();
+        PluginMock core = new PluginMock("jmeter-core", "1.0");
+        core.canUninstall = false;
+        plugs.put(core, false); // user tries to uninstall
+
+        DependencyResolver obj = new DependencyResolver(plugs);
+
+        assertFalse("canUninstall=false plugin should not be in deletions",
+                obj.getDeletions().contains(core));
+    }
+
+    @Test
+    public void testCanUninstallRespectedOnDeleteByDependency() throws Exception {
+        Map<Plugin, Boolean> plugs = new HashMap<>();
+
+        PluginMock root = new PluginMock("root", "1.0");
+        plugs.put(root, false); // user uninstalls root
+
+        PluginMock core = new PluginMock("jmeter-core", "1.0");
+        core.canUninstall = false;
+        HashSet<String> deps = new HashSet<>();
+        deps.add(root.getID());
+        core.setDepends(deps);
+        plugs.put(core, true);
+
+        DependencyResolver obj = new DependencyResolver(plugs);
+
+        assertFalse("canUninstall=false plugin should not be cascade-deleted",
+                obj.getDeletions().contains(core));
+    }
+
+    @Test
     public void testLibsWithSymbolNames() throws Exception {
         URL url = PluginManagerTest.class.getResource("/http2_libs.json");
         JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
