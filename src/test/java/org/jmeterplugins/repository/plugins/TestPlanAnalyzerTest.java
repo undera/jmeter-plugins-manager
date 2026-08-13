@@ -16,6 +16,37 @@ public class TestPlanAnalyzerTest {
         JMeterTestEnv.createJMeterEnv();
     }
 
+    /**
+     * Present on the classpath, but cannot be initialised - the case that used to be reported
+     * as "class not found", which made the suggester offer plugins the user already had.
+     */
+    public static class FailsToInitialise {
+        static {
+            if (true) {
+                throw new IllegalStateException("boom");
+            }
+        }
+    }
+
+    @Test
+    public void testExistingClassIsNotReportedMissing() {
+        assertTrue(TestPlanAnalyzer.isClassExists("org.apache.jmeter.save.SaveService"));
+    }
+
+    @Test
+    public void testAbsentClassIsReportedMissing() {
+        assertFalse(TestPlanAnalyzer.isClassExists("no.such.plugin.Component"));
+    }
+
+    @Test
+    public void testUnloadableClassIsNotReportedMissing() {
+        String name = FailsToInitialise.class.getName();
+        // first touch raises ExceptionInInitializerError, later ones NoClassDefFoundError;
+        // neither means the class is absent, so neither may be reported as missing
+        assertTrue(TestPlanAnalyzer.isClassExists(name));
+        assertTrue(TestPlanAnalyzer.isClassExists(name));
+    }
+
     @Test
     public void test() throws Exception {
         String path = getClass().getResource("/testplan.xml").getPath();
