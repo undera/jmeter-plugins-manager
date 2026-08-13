@@ -122,6 +122,15 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.4</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <!-- PluginManagerDialogTest.displayGUI opens the real dialog and waits for
+                             a human to close it when a display is available. That is fine as a manual
+                             check, but it hangs `mvn test` on any developer machine while passing on
+                             CI, which is headless. Make local runs behave like CI. -->
+                        <java.awt.headless>true</java.awt.headless>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

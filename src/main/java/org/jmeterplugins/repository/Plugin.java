@@ -26,6 +26,9 @@ import java.util.regex.Pattern;
 public class Plugin {
     private static final Logger log = LoggerFactory.getLogger(Plugin.class);
     private static final Pattern dependsParser = Pattern.compile("([^=<>]+)([=<>]+[0-9.]+)?");
+    private static final Pattern versionInPath = Pattern.compile("-v?([\\.0-9a-zA-Z]+(-[\\w]+)?).jar");
+    private static String cachedClassPath;
+    private static String[] cachedClassPathEntries;
     public static final String VER_STOCK = "0.0.0-STOCK";
     protected JsonObject versions = new JsonObject();
     protected String id;
@@ -215,8 +218,7 @@ public class Plugin {
     }
 
     public static String getVersionFromPath(String installedPath) {
-        Pattern p = Pattern.compile("-v?([\\.0-9a-zA-Z]+(-[\\w]+)?).jar");
-        Matcher m = p.matcher(installedPath);
+        Matcher m = versionInPath.matcher(installedPath);
         if (m.find()) {
             return m.group(1);
         }
@@ -246,17 +248,27 @@ public class Plugin {
     }
 
     public static String getLibInstallPath(String lib) {
-        String[] cp = System.getProperty(DependencyResolver.JAVA_CLASS_PATH).split(File.pathSeparator);
-        String path = getLibPath(lib, cp);
-        if (path != null) return path;
-        return null;
+        return getLibPath(lib, getClassPathEntries());
+    }
+
+    /**
+     * The classpath does not change while we run, but this is called once per library per
+     * dependency resolution - and resolution reruns on every checkbox the user ticks.
+     */
+    private static synchronized String[] getClassPathEntries() {
+        String classPath = System.getProperty(DependencyResolver.JAVA_CLASS_PATH);
+        if (!classPath.equals(cachedClassPath)) {
+            cachedClassPath = classPath;
+            cachedClassPathEntries = classPath.split(File.pathSeparator);
+        }
+        return cachedClassPathEntries;
     }
 
     public static String getLibPath(String lib, String[] paths) {
+        // compiled once per lookup rather than once per classpath entry
+        Pattern p = Pattern.compile("\\W" + Pattern.quote(lib) + "-([0-9]+\\..+)\\.jar");
         for (String path : paths) {
-            Pattern p = Pattern.compile("\\W" + lib + "-([0-9]+\\..+).jar");
-            Matcher m = p.matcher(path);
-            if (m.find()) {
+            if (p.matcher(path).find()) {
                 log.debug("Found library " + lib + " at " + path);
                 return path;
             }
