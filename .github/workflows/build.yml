@@ -1,0 +1,76 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: JDK ${{ matrix.java }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: [ '8', '11', '17', '21' ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ matrix.java }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+
+      # runs the tests and builds the shaded package in one go
+      - name: Build
+        run: mvn -B --no-transfer-progress verify
+
+      - name: Check shaded jar
+        run: |
+          jar=$(ls target/jmeter-plugins-manager-*.jar | grep -v -E 'original|sources|javadoc' | head -1)
+          echo "Shaded artifact: $jar ($(stat -c%s "$jar") bytes)"
+          # gson must be present but only under its relocated name, so we never
+          # clash with whatever else lives in JMeter's lib/ext
+          unzip -l "$jar" | grep -q 'org/jmeterplugins/repository/shaded/gson/' \
+            || { echo "::error::relocated gson missing from shaded jar"; exit 1; }
+          if unzip -l "$jar" | grep -q ' com/google/gson/'; then
+            echo "::error::unrelocated com.google.gson leaked into shaded jar"; exit 1
+          fi
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-jdk${{ matrix.java }}
+          path: target/surefire-reports/
+          if-no-files-found: ignore
+
+      - name: Coverage summary
+        if: always() && matrix.java == '17'
+        run: |
+          csv=target/site/jacoco/jacoco.csv
+          if [ ! -f "$csv" ]; then
+            echo "No coverage report produced." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          awk 'BEGIN { FS = "," }
+            FNR > 1 { im += $4; ic += $5; bm += $6; bc += $7; lm += $8; lc += $9 }
+            END {
+              printf "## Coverage\n\n";
+              printf "| metric | covered | missed | %% |\n|---|---:|---:|---:|\n";
+              printf "| instructions | %d | %d | %.1f%% |\n", ic, im, 100*ic/(ic+im);
+              printf "| branches | %d | %d | %.1f%% |\n", bc, bm, (bc+bm) ? 100*bc/(bc+bm) : 0;
+              printf "| lines | %d | %d | %.1f%% |\n", lc, lm, 100*lc/(lc+lm);
+            }' "$csv" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: always() && matrix.java == '17'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+          if-no-files-found: ignore
