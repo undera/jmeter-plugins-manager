@@ -1,6 +1,5 @@
 package org.jmeterplugins.repository;
 
-import kg.apc.emulators.TestJMeterUtils;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.jmeter.engine.JMeterEngine;
@@ -10,9 +9,15 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.net.InetSocketAddress;
 import java.net.URL;
 
 import static org.junit.Assert.*;
@@ -21,7 +26,7 @@ public class PluginManagerTest {
 
     @BeforeClass
     public static void setup() {
-        TestJMeterUtils.createJmeterEnv();
+        JMeterTestEnv.createJMeterEnv();
         URL url = PluginManagerTest.class.getResource("/testVirtualPlugin.json");
         JMeterUtils.setProperty("jpgc.repo.address", url.getFile());
         //reset static pmgr
@@ -162,8 +167,22 @@ public class PluginManagerTest {
 
     @Test
     public void testRetryDownload() throws Throwable {
+        // a local stub, so this does not depend on a third-party host being up and truthful
+        HttpServer server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
+        server.createContext("/", new HttpHandler() {
+            @Override
+            public void handle(HttpExchange exchange) throws IOException {
+                byte[] body = "failed on purpose".getBytes();
+                exchange.sendResponseHeaders(500, body.length);
+                try (OutputStream out = exchange.getResponseBody()) {
+                    out.write(body);
+                }
+            }
+        });
+        server.start();
+
         String addr = JMeterUtils.getPropDefault("jpgc.repo.address", "https://jmeter-plugins.org/repo/");
-        JMeterUtils.setProperty("jpgc.repo.address", "http://httpstat.us/500");
+        JMeterUtils.setProperty("jpgc.repo.address", "http://localhost:" + server.getAddress().getPort() + "/");
         PluginManager mgr = new PluginManager();
         long start = System.currentTimeMillis();
         try {
@@ -174,7 +193,9 @@ public class PluginManagerTest {
 
         } finally {
             JMeterUtils.setProperty("jpgc.repo.address", addr);
+            server.stop(0);
         }
+        // one retry, 5s apart, before giving up
         assertTrue(5000 < (System.currentTimeMillis() - start));
     }
 

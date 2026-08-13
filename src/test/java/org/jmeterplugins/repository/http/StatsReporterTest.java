@@ -1,6 +1,6 @@
 package org.jmeterplugins.repository.http;
 
-import kg.apc.emulators.TestJMeterUtils;
+import org.jmeterplugins.repository.JMeterTestEnv;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
 public class StatsReporterTest {
     @BeforeClass
     public static void setup() {
-        TestJMeterUtils.createJmeterEnv();
+        JMeterTestEnv.createJMeterEnv();
     }
 
     @Test

@@ -1,6 +1,5 @@
 package org.jmeterplugins.repository;
 
-import kg.apc.emulators.TestJMeterUtils;
 import org.apache.jmeter.util.JMeterUtils;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -15,7 +14,7 @@ import static junit.framework.TestCase.fail;
 public class PluginManagerCMDTest {
     @BeforeClass
     public static void setup() {
-        TestJMeterUtils.createJmeterEnv();
+        JMeterTestEnv.createJMeterEnv();
         URL url = PluginManagerTest.class.getResource("/testVirtualPlugin.json");
         JMeterUtils.setProperty("jpgc.repo.address", url.getFile());
     }

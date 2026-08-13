@@ -8,7 +8,7 @@
 
 A prerequisite is to install `cmdrunner`:
 ```
-cd ${JMETER_HOME}/lib && wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.2.1/cmdrunner-2.2.1.jar
+cd ${JMETER_HOME}/lib && wget https://repo1.maven.org/maven2/kg/apc/cmdrunner/2.3/cmdrunner-2.3.jar
 ```
 
 ### Option 1 - manual, get the latest version

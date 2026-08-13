@@ -10,6 +10,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertTrue;
 
@@ -64,14 +65,16 @@ public class ChangesMakerTest {
         assertTrue(res.length() > 0);
 
         String installFirst = "some_path_to_jar1" + File.pathSeparator + "plugin1\ttest1";
-        String installSecond = "jmeter-plugins-emulators-0.2.jar" + File.pathSeparator + "plugin2\ttest2";
+        // the emulators lib is resolved off the classpath, so don't pin its version here
+        Pattern installSecond = Pattern.compile("jmeter-plugins-emulators-[\\w.\\-]+\\.jar"
+                + Pattern.quote(File.pathSeparator) + "plugin2\ttest2");
 
         List<String> lines = Files.readAllLines(Paths.get(res.toURI()), Charset.defaultCharset());
         String fileContent = Arrays.toString(lines.toArray());
         System.out.println(fileContent);
 
         assertTrue(fileContent, fileContent.contains(installFirst));
-        assertTrue(fileContent, fileContent.contains(installSecond));
+        assertTrue(fileContent, installSecond.matcher(fileContent).find());
 
         File res2 = obj.getMovementsFile(plugins, plugins, new HashSet<Library.InstallationInfo>(), new HashSet<String>());
         assertTrue(res2.length() > 0);

@@ -1,7 +1,7 @@
 package org.jmeterplugins.repository.logging;
 
 
-import kg.apc.emulators.TestJMeterUtils;
+import org.jmeterplugins.repository.JMeterTestEnv;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.impl.Log4jLogEvent;
@@ -20,7 +20,7 @@ public class LoggerAppenderTest {
 
     @BeforeClass
     public static void setup() {
-        TestJMeterUtils.createJmeterEnv();
+        JMeterTestEnv.createJMeterEnv();
         URL url = PluginManagerTest.class.getResource("/testVirtualPlugin.json");
         JMeterUtils.setProperty("jpgc.repo.address", url.getFile());
     }

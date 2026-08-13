@@ -1,6 +1,6 @@
 package org.jmeterplugins.repository.plugins;
 
-import kg.apc.emulators.TestJMeterUtils;
+import org.jmeterplugins.repository.JMeterTestEnv;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -13,7 +13,7 @@ public class TestPlanAnalyzerTest {
 
     @BeforeClass
     public static void setup() {
-        TestJMeterUtils.createJmeterEnv();
+        JMeterTestEnv.createJMeterEnv();
     }
 
     @Test

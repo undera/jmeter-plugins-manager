@@ -1,6 +1,5 @@
 package org.jmeterplugins.repository;
 
-import kg.apc.emulators.TestJMeterUtils;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.jmeter.util.JMeterUtils;
@@ -19,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 public class PluginManagerDialogTest {
     @BeforeClass
     public static void setup() {
-        TestJMeterUtils.createJmeterEnv();
+        JMeterTestEnv.createJMeterEnv();
     }
 
     @Test
