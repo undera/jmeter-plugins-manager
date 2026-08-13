@@ -1,7 +1,7 @@
 package org.jmeterplugins.repository;
 
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,7 +17,7 @@ public class PluginMock extends Plugin {
         super(id);
         installedVersion = iVer;
         installedPath = iVer;
-        versions = JSONObject.fromObject("{\"1.0\":null,\"0.1\":null,\"0.1.5\":null}", new JsonConfig());
+        versions = JsonParser.parseString("{\"1.0\":null,\"0.1\":null,\"0.1.5\":null}").getAsJsonObject();
         candidateVersion = getMaxVersion();
     }
 
@@ -47,7 +47,7 @@ public class PluginMock extends Plugin {
         this.libs = libs;
     }
 
-    public void setVersions(JSONObject a) {
+    public void setVersions(JsonObject a) {
         versions = a;
     }
 

@@ -1,8 +1,8 @@
 package org.jmeterplugins.repository;
 
 import kg.apc.emulators.TestJMeterUtils;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.jmeter.engine.JMeterEngine;
 import org.apache.jmeter.util.JMeterUtils;
 import org.jmeterplugins.repository.exception.DownloadException;
@@ -111,7 +111,7 @@ public class PluginManagerTest {
         try {
             JMeterUtils.setProperty("jpgc.repo.address", "http://httpstat.us/500");
 
-            Plugin p = Plugin.fromJSON(JSONObject.fromObject(str, new JsonConfig()));
+            Plugin p = Plugin.fromJSON(JsonParser.parseString(str).getAsJsonObject());
             PluginManager manager = new PluginManager();
             manager.allPlugins.put(p, true); // need to install
             p.setCandidateVersion("9999");

@@ -1,9 +1,8 @@
 package org.jmeterplugins.repository;
 
 
-import net.sf.json.JSON;
-import net.sf.json.JSONSerializer;
-import net.sf.json.JsonConfig;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +21,8 @@ public class JARSourceFilesystem extends JARSource {
     }
 
     @Override
-    public JSON getRepo() throws IOException {
-        return JSONSerializer.toJSON(FileUtils.readFileToString(jsonFile), new JsonConfig());
+    public JsonElement getRepo() throws IOException {
+        return JsonParser.parseString(FileUtils.readFileToString(jsonFile));
     }
 
     @Override

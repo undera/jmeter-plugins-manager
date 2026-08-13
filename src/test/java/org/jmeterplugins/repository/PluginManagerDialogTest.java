@@ -1,8 +1,8 @@
 package org.jmeterplugins.repository;
 
 import kg.apc.emulators.TestJMeterUtils;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.jmeter.util.JMeterUtils;
 import org.jmeterplugins.repository.exception.DownloadException;
 import org.junit.BeforeClass;

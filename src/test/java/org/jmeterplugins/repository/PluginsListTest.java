@@ -18,8 +18,8 @@ import javax.swing.event.ListSelectionEvent;
 
 import org.junit.Test;
 
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public class PluginsListTest {
 
@@ -36,7 +36,7 @@ public class PluginsListTest {
                 "\"0.2\" : { \"changes\": \"fix verified exception1\", \"downloadUrl\": \"https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-webdriver/0.3/jmeter-plugins-webdriver-0.2.jar\"}," +
                 "\"0.3\" : { \"changes\": \"fix verified exception1\", " +
                 "\"downloadUrl\": \"https://search.maven.org/remotecontent?filepath=kg/apc/jmeter-plugins-webdriver/0.3/jmeter-plugins-webdriver-0.3.jar\"} }}";
-        Plugin p = Plugin.fromJSON(JSONObject.fromObject(str, new JsonConfig()));
+        Plugin p = Plugin.fromJSON(JsonParser.parseString(str).getAsJsonObject());
 
         Set<Plugin> set = new HashSet<>();
         set.add(p);

@@ -1,9 +1,8 @@
 package org.jmeterplugins.repository;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
-import net.sf.json.JsonConfig;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
@@ -105,7 +104,7 @@ public class DependencyResolverTest {
         Map<Plugin, Boolean> plugs = new HashMap<>();
 
         PluginMock cause = new PluginMock("cause", Plugin.getJMeterVersion());
-        cause.setVersions(JSONObject.fromObject("{\"\":null}", new JsonConfig()));
+        cause.setVersions(JsonParser.parseString("{\"\":null}").getAsJsonObject());
         plugs.put(cause, true);
 
         PluginMock effect = new PluginMock("effect", null);
@@ -180,11 +179,11 @@ public class DependencyResolverTest {
     @Test
     public void testLibVersionManagement() throws Exception {
         URL url = PluginManagerTest.class.getResource("/lib_versions.json");
-        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+        JsonArray jsonArray = JsonParser.parseString(FileUtils.readFileToString(new File(url.getPath()))).getAsJsonArray();
 
         Map<Plugin, Boolean> map = new HashMap<>();
-        for (Object obj : jsonArray) {
-            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+        for (JsonElement obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON(obj.getAsJsonObject());
             plugin.detectInstalled(new HashSet<Plugin>());
             map.put(plugin, true);
         }
@@ -217,11 +216,11 @@ public class DependencyResolverTest {
     @Test
     public void testResolveLibBeforeDetete() throws Exception {
         URL url = PluginManagerTest.class.getResource("/lib_for_delete");
-        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+        JsonArray jsonArray = JsonParser.parseString(FileUtils.readFileToString(new File(url.getPath()))).getAsJsonArray();
 
         Map<Plugin, Boolean> map = new HashMap<>();
-        for (Object obj : jsonArray) {
-            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+        for (JsonElement obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON(obj.getAsJsonObject());
             plugin.detectInstalled(new HashSet<Plugin>());
             plugin.installedPath = "";
             plugin.installedVersion = "0.1";
@@ -243,11 +242,11 @@ public class DependencyResolverTest {
     @Test
     public void testResolveDowngradeWithNPE() throws Exception {
         URL url = PluginManagerTest.class.getResource("/self_npe.json");
-        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+        JsonArray jsonArray = JsonParser.parseString(FileUtils.readFileToString(new File(url.getPath()))).getAsJsonArray();
 
         Map<Plugin, Boolean> map = new HashMap<>();
-        for (Object obj : jsonArray) {
-            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+        for (JsonElement obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON(obj.getAsJsonObject());
             plugin.detectInstalled(new HashSet<Plugin>());
             plugin.installedPath = "";
             plugin.installedVersion = "0.14";
@@ -275,11 +274,11 @@ public class DependencyResolverTest {
     @Test
     public void testResolveMissingLib() throws Exception {
         URL url = PluginManagerTest.class.getResource("/self_npe.json");
-        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+        JsonArray jsonArray = JsonParser.parseString(FileUtils.readFileToString(new File(url.getPath()))).getAsJsonArray();
 
         Map<Plugin, Boolean> map = new HashMap<>();
-        for (Object obj : jsonArray) {
-            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+        for (JsonElement obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON(obj.getAsJsonObject());
             plugin.detectInstalled(new HashSet<Plugin>());
             plugin.installedPath = "";
             plugin.installedVersion = "0.14";
@@ -306,11 +305,11 @@ public class DependencyResolverTest {
     @Test
     public void testResolveLibIfLibBroken() throws Exception {
         URL url = PluginManagerTest.class.getResource("/broken.json");
-        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+        JsonArray jsonArray = JsonParser.parseString(FileUtils.readFileToString(new File(url.getPath()))).getAsJsonArray();
 
         Map<Plugin, Boolean> map = new HashMap<>();
-        for (Object obj : jsonArray) {
-            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+        for (JsonElement obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON(obj.getAsJsonObject());
             plugin.detectInstalled(new HashSet<Plugin>());
             plugin.installedPath = "";
             plugin.installedVersion = "0.1";
@@ -334,11 +333,11 @@ public class DependencyResolverTest {
     @Test
     public void testUpdateLibWithPlugin() throws Exception {
         URL url = PluginManagerTest.class.getResource("/lib_update.json");
-        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+        JsonArray jsonArray = JsonParser.parseString(FileUtils.readFileToString(new File(url.getPath()))).getAsJsonArray();
 
         Map<Plugin, Boolean> map = new HashMap<>();
-        for (Object obj : jsonArray) {
-            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+        for (JsonElement obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON(obj.getAsJsonObject());
             plugin.detectInstalled(new HashSet<Plugin>());
             plugin.installedPath = "";
             plugin.installedVersion = "0.1";
@@ -364,11 +363,11 @@ public class DependencyResolverTest {
     @Test
     public void testUpdateWhenInstall() throws Exception {
         URL url = PluginManagerTest.class.getResource("/installed.json");
-        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+        JsonArray jsonArray = JsonParser.parseString(FileUtils.readFileToString(new File(url.getPath()))).getAsJsonArray();
 
         Map<Plugin, Boolean> map = new HashMap<>();
-        for (Object obj : jsonArray) {
-            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+        for (JsonElement obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON(obj.getAsJsonObject());
             plugin.detectInstalled(new HashSet<Plugin>());
 
             map.put(plugin, true);
@@ -390,11 +389,11 @@ public class DependencyResolverTest {
     @Test
     public void testInstallNewLibWithMinVersion() throws Exception {
         URL url = PluginManagerTest.class.getResource("/installed2.json");
-        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+        JsonArray jsonArray = JsonParser.parseString(FileUtils.readFileToString(new File(url.getPath()))).getAsJsonArray();
 
         Map<Plugin, Boolean> map = new HashMap<>();
-        for (Object obj : jsonArray) {
-            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+        for (JsonElement obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON(obj.getAsJsonObject());
             plugin.detectInstalled(new HashSet<Plugin>());
 
             map.put(plugin, Boolean.TRUE);
@@ -459,11 +458,11 @@ public class DependencyResolverTest {
     @Test
     public void testLibsWithSymbolNames() throws Exception {
         URL url = PluginManagerTest.class.getResource("/http2_libs.json");
-        JSONArray jsonArray = (JSONArray) JSONSerializer.toJSON(FileUtils.readFileToString(new File(url.getPath())), new JsonConfig());
+        JsonArray jsonArray = JsonParser.parseString(FileUtils.readFileToString(new File(url.getPath()))).getAsJsonArray();
 
         Map<Plugin, Boolean> map = new HashMap<>();
-        for (Object obj : jsonArray) {
-            Plugin plugin = Plugin.fromJSON((JSONObject) obj);
+        for (JsonElement obj : jsonArray) {
+            Plugin plugin = Plugin.fromJSON(obj.getAsJsonObject());
             plugin.detectInstalled(new HashSet<Plugin>());
             map.put(plugin, true);
         }

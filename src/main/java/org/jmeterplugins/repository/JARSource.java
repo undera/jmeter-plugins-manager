@@ -2,10 +2,10 @@ package org.jmeterplugins.repository;
 
 import java.io.IOException;
 
-import net.sf.json.JSON;
+import com.google.gson.JsonElement;
 
 abstract public class JARSource implements Cloneable {
-    public abstract JSON getRepo() throws IOException;
+    public abstract JsonElement getRepo() throws IOException;
 
     public abstract void reportStats(String[] usageStats) throws IOException;
 
