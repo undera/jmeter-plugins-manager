@@ -1,6 +1,5 @@
 package org.jmeterplugins.repository;
 
-import kg.apc.emulators.TestJMeterUtils;
 import org.apache.jmeter.gui.plugin.MenuCreator;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -13,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 public class PluginManagerMenuCreatorTest {
     @BeforeClass
     public static void setup() {
-        TestJMeterUtils.createJmeterEnv();
+        JMeterTestEnv.createJMeterEnv();
     }
 
     @Test

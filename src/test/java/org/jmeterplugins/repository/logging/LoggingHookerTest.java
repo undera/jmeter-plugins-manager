@@ -1,6 +1,6 @@
 package org.jmeterplugins.repository.logging;
 
-import kg.apc.emulators.TestJMeterUtils;
+import org.jmeterplugins.repository.JMeterTestEnv;
 import org.apache.jmeter.util.JMeterUtils;
 import org.jmeterplugins.repository.PluginManager;
 import org.jmeterplugins.repository.PluginManagerTest;
@@ -15,7 +15,7 @@ public class LoggingHookerTest {
 
     @BeforeClass
     public static void setup() {
-        TestJMeterUtils.createJmeterEnv();
+        JMeterTestEnv.createJMeterEnv();
         URL url = PluginManagerTest.class.getResource("/testVirtualPlugin.json");
         JMeterUtils.setProperty("jpgc.repo.address", url.getFile());
     }

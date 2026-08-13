@@ -1,6 +1,6 @@
 package org.jmeterplugins.repository.plugins;
 
-import kg.apc.emulators.TestJMeterUtils;
+import org.jmeterplugins.repository.JMeterTestEnv;
 import org.apache.jmeter.util.JMeterUtils;
 import org.jmeterplugins.repository.Plugin;
 import org.jmeterplugins.repository.PluginManager;
@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 public class PluginSuggesterTest {
     @BeforeClass
     public static void setup() {
-        TestJMeterUtils.createJmeterEnv();
+        JMeterTestEnv.createJMeterEnv();
     }
 
 

@@ -1,6 +1,6 @@
 package org.jmeterplugins.repository.logging;
 
-import kg.apc.emulators.TestJMeterUtils;
+import org.jmeterplugins.repository.JMeterTestEnv;
 import org.apache.jmeter.util.JMeterUtils;
 import org.apache.log.LogEvent;
 import org.jmeterplugins.repository.PluginManager;
@@ -17,7 +17,7 @@ import static org.junit.Assert.*;
 public class LoggerPanelWrappingTest {
     @BeforeClass
     public static void setup() {
-        TestJMeterUtils.createJmeterEnv();
+        JMeterTestEnv.createJMeterEnv();
         URL url = PluginManagerTest.class.getResource("/testVirtualPlugin.json");
         JMeterUtils.setProperty("jpgc.repo.address", url.getFile());
     }
