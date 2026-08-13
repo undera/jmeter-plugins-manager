@@ -10,12 +10,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import junit.framework.AssertionFailedError;
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
-import net.sf.json.JsonConfig;
 
 import org.apache.commons.io.FileUtils;
 
@@ -49,14 +50,13 @@ public class RepoTest {
         List<String> problems = new ArrayList<>();
         File[] files = getRepoFiles();
 
-        JSONArray merged = new JSONArray();
+        JsonArray merged = new JsonArray();
         for (File repoFile : files) {
             System.out.println("Checking repo: " + repoFile.getCanonicalPath());
             String content = new String(Files.readAllBytes(Paths.get(repoFile.getAbsolutePath())), "UTF-8");
-            JSON json = JSONSerializer.toJSON(content, new JsonConfig());
-            JSONArray list = (JSONArray) json;
-            for (Object item : list) {
-                JSONObject spec = (JSONObject) item;
+            JsonArray list = JsonParser.parseString(content).getAsJsonArray();
+            for (JsonElement item : list) {
+                JsonObject spec = item.getAsJsonObject();
                 checkPlugin(problems, repoFile, spec);
                 merged.add(spec);
             }
@@ -67,7 +67,7 @@ public class RepoTest {
         }
 
         try (PrintWriter out = new PrintWriter(new File(repo.getAbsolutePath() + s + "all.json"));) {
-            out.print(merged.toString(1));
+            out.print(new GsonBuilder().setPrettyPrinting().create().toJson(merged));
         }
     }
 
@@ -83,17 +83,17 @@ public class RepoTest {
         return files;
     }
 
-    private void checkPlugin(List<String> problems, File repoFile, JSONObject spec) {
+    private void checkPlugin(List<String> problems, File repoFile, JsonObject spec) {
         Plugin plugin = Plugin.fromJSON(spec);
         if (plugin.isVirtual()) {
             return;
         }
 
         String maxVersion = plugin.getMaxVersion();
-        JSONObject maxVerObject = spec.getJSONObject("versions").getJSONObject(maxVersion);
+        JsonObject maxVerObject = spec.getAsJsonObject("versions").getAsJsonObject(maxVersion);
 
-        JSONObject newVersions = new JSONObject();
-        newVersions.put(maxVersion, maxVerObject);
+        JsonObject newVersions = new JsonObject();
+        newVersions.add(maxVersion, maxVerObject);
 
         try {
             System.out.println("Checking plugin: " + plugin);
@@ -106,7 +106,7 @@ public class RepoTest {
                 File to = new File(libExt.getAbsolutePath() + File.separator + dest.getName());
                 jar.renameTo(to);
 
-                maxVerObject.put("downloadUrl", "lib/ext/" + dest.getName());
+                maxVerObject.addProperty("downloadUrl", "lib/ext/" + dest.getName());
             }
         } catch (Throwable e) {
             problems.add(repoFile.getName() + ":" + plugin);
@@ -116,13 +116,13 @@ public class RepoTest {
 
         checkLibs(problems, repoFile, plugin, maxVerObject);
 
-        if (!maxVerObject.isEmpty()) {
-            newVersions.put(maxVersion, maxVerObject);
-            spec.put("versions", newVersions);
+        if (maxVerObject.size() > 0) {
+            newVersions.add(maxVersion, maxVerObject);
+            spec.add("versions", newVersions);
         }
     }
 
-    private void checkLibs(List<String> problems, File repoFile, Plugin plugin, JSONObject maxVerObject) {
+    private void checkLibs(List<String> problems, File repoFile, Plugin plugin, JsonObject maxVerObject) {
         Map<String, String> libs = plugin.getLibs(plugin.getCandidateVersion());
         for (String id : libs.keySet()) {
             if (!cache.containsKey(libs.get(id))) {
@@ -141,7 +141,7 @@ public class RepoTest {
                 }
             }
 
-            maxVerObject.getJSONObject("libs").put(id, "lib/" + cache.get(libs.get(id)));
+            maxVerObject.getAsJsonObject("libs").addProperty(id, "lib/" + cache.get(libs.get(id)));
         }
     }
 

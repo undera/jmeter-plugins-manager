@@ -61,11 +61,6 @@
             <version>2.17.0</version>
         </dependency>
         <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <version>1.11.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.github.weisj</groupId>
             <artifactId>darklaf-property-loader</artifactId>
             <version>2.3.0</version>
@@ -88,10 +83,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>net.sf.json-lib</groupId>
-            <artifactId>json-lib</artifactId>
-            <version>2.4</version>
-            <classifier>jdk15</classifier>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.14.0</version>
         </dependency>
 
         <dependency>
@@ -127,7 +121,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.1</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -137,12 +131,26 @@
                         <configuration>
                             <artifactSet>
                                 <includes>
-                                    <include>net.sf.json-lib:json-lib</include>
-                                    <include>commons-lang:commons-lang</include>
-                                    <include>net.sf.ezmorph:ezmorph</include>
-                                    <include>commons-beanutils:commons-beanutils</include>
+                                    <include>com.google.code.gson:gson</include>
                                 </includes>
                             </artifactSet>
+                            <!-- we land in JMeter's lib/ext next to arbitrary other plugins,
+                                 so don't expose a bare com.google.gson that could clash -->
+                            <relocations>
+                                <relocation>
+                                    <pattern>com.google.gson</pattern>
+                                    <shadedPattern>org.jmeterplugins.repository.shaded.gson</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <filters>
+                                <filter>
+                                    <artifact>com.google.code.gson:gson</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/versions/**</exclude>
+                                        <exclude>module-info.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>

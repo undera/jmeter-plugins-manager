@@ -1,7 +1,7 @@
 package org.jmeterplugins.repository;
 
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.apache.jmeter.engine.JMeterEngine;
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ public class PluginTest {
     public void testVirtual() throws Exception {
         PluginMock obj = new PluginMock("virtual");
         obj.setCandidateVersion("0");
-        obj.setVersions(JSONObject.fromObject("{\"0\": {\"downloadUrl\": null}}", new JsonConfig()));
+        obj.setVersions(JsonParser.parseString("{\"0\": {\"downloadUrl\": null}}").getAsJsonObject());
         assertTrue(obj.isVirtual());
         HashSet<String> depends = new HashSet<>();
         depends.add("mock");
@@ -62,7 +62,7 @@ public class PluginTest {
     @Test
     public void testInstallerClass() {
         String str = "{\"id\": 0, \"markerClass\": 0, \"name\": 0, \"description\": 0, \"helpUrl\": 0, \"vendor\": 0, \"installerClass\": \"test\"}";
-        Plugin p = Plugin.fromJSON(JSONObject.fromObject(str, new JsonConfig()));
+        Plugin p = Plugin.fromJSON(JsonParser.parseString(str).getAsJsonObject());
         assertEquals("test", p.getInstallerClass());
     }
 
@@ -70,12 +70,12 @@ public class PluginTest {
     public void testVersionChanges() {
         String str = "{\"id\": 0,  \"markerClass\": 0, \"name\": 0, \"description\": 0, \"helpUrl\": 0, \"vendor\": 0, \"installerClass\": \"test\", " +
                 "\"versions\" : { \"0.1\" : { \"changes\": \"fix verified exception\" } }}";
-        Plugin p = Plugin.fromJSON(JSONObject.fromObject(str, new JsonConfig()));
+        Plugin p = Plugin.fromJSON(JsonParser.parseString(str).getAsJsonObject());
         assertEquals("fix verified exception", p.getVersionChanges("0.1"));
 
         str = "{\"id\": 0,  \"markerClass\": 0, \"name\": 0, \"description\": 0, \"helpUrl\": 0, \"vendor\": 0, \"installerClass\": \"test\", " +
                 "\"versions\" : { \"0.1\" : {  } }}";
-        p = Plugin.fromJSON(JSONObject.fromObject(str, new JsonConfig()));
+        p = Plugin.fromJSON(JsonParser.parseString(str).getAsJsonObject());
         assertNull(p.getVersionChanges("0.1"));
     }
 
@@ -83,7 +83,7 @@ public class PluginTest {
     public void testAllData() {
         String str = "{\"id\": \"id\", \"markerClass\": \"class\", \"name\": \"name\", \"description\": \"description\"," +
                 " \"helpUrl\": 0, \"vendor\": 0, \"installerClass\": \"test\"}";
-        Plugin p = Plugin.fromJSON(JSONObject.fromObject(str, new JsonConfig()));
+        Plugin p = Plugin.fromJSON(JsonParser.parseString(str).getAsJsonObject());
         assertEquals("idnamedescriptionclass", p.getSearchIndexString());
     }
 }

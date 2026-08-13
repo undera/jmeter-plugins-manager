@@ -1,12 +1,12 @@
 package org.jmeterplugins.repository;
 
-import net.sf.json.JSON;
+import com.google.gson.JsonElement;
 
 import java.io.IOException;
 
 public class JARSourceEmul extends JARSource {
     @Override
-    public JSON getRepo() throws IOException {
+    public JsonElement getRepo() throws IOException {
         return null;
     }
 

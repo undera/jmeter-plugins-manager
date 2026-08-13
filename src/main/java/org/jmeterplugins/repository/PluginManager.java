@@ -1,10 +1,8 @@
 package org.jmeterplugins.repository;
 
 
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import org.apache.jmeter.assertions.Assertion;
 import org.apache.jmeter.config.ConfigElement;
 import org.apache.jmeter.control.Controller;
@@ -68,15 +66,15 @@ public class PluginManager {
             return;
         }
 
-        JSON json = jarSource.getRepo();
+        JsonElement json = jarSource.getRepo();
 
-        if (!(json instanceof JSONArray)) {
+        if (json == null || !json.isJsonArray()) {
             throw new RuntimeException("Result is not array");
         }
 
-        for (Object elm : (JSONArray) json) {
-            if (elm instanceof JSONObject) {
-                Plugin plugin = Plugin.fromJSON((JSONObject) elm);
+        for (JsonElement elm : json.getAsJsonArray()) {
+            if (elm.isJsonObject()) {
+                Plugin plugin = Plugin.fromJSON(elm.getAsJsonObject());
                 if (plugin.getName().isEmpty()) {
                     log.debug("Skip empty name: " + plugin);
                     continue;
@@ -467,7 +465,7 @@ public class PluginManager {
                 };
                 String[] searchPaths = {plugin.installedPath};
                 List<String> list = ClassFinder.findClassesThatExtend(searchPaths, superClasses);
-                report.append(plugin.id).append("\n").append("\"componentClasses\":").append(JSONSerializer.toJSON(list.toArray()).toString()).append(",\n");
+                report.append(plugin.id).append("\n").append("\"componentClasses\":").append(new Gson().toJson(list)).append(",\n");
             } catch (Throwable e) {
                 log.error("Failed to get classes", e);
             }

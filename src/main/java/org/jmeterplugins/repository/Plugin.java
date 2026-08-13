@@ -1,9 +1,9 @@
 package org.jmeterplugins.repository;
 
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
-import net.sf.json.JSONObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.apache.jmeter.engine.JMeterEngine;
 import org.apache.jmeter.util.JMeterUtils;
 import org.slf4j.Logger;
@@ -27,7 +27,7 @@ public class Plugin {
     private static final Logger log = LoggerFactory.getLogger(Plugin.class);
     private static final Pattern dependsParser = Pattern.compile("([^=<>]+)([=<>]+[0-9.]+)?");
     public static final String VER_STOCK = "0.0.0-STOCK";
-    protected JSONObject versions = new JSONObject();
+    protected JsonObject versions = new JsonObject();
     protected String id;
     protected String markerClass;
     protected String installedPath;
@@ -49,40 +49,71 @@ public class Plugin {
         id = aId;
     }
 
-    public static Plugin fromJSON(JSONObject elm) {
-        Plugin inst = new Plugin(elm.getString("id"));
-        if (!(elm.get("markerClass") instanceof JSONNull)) {
-            inst.markerClass = elm.getString("markerClass");
+    public static Plugin fromJSON(JsonObject elm) {
+        Plugin inst = new Plugin(getString(elm, "id"));
+        if (!isNull(elm, "markerClass")) {
+            inst.markerClass = getString(elm, "markerClass");
         }
         inst.componentClasses = new ArrayList<>();
         if (inst.markerClass != null) {
             inst.componentClasses.add(inst.markerClass);
         }
-        if (elm.containsKey("componentClasses")) {
-            JSONArray componentsJSON = elm.getJSONArray("componentClasses");
-            if (componentsJSON.size() > 0) {
-                for (int i = 0; i < componentsJSON.size(); i++) {
-                    inst.componentClasses.add(componentsJSON.getString(i));
-                }
+        if (elm.has("componentClasses")) {
+            JsonArray componentsJSON = elm.getAsJsonArray("componentClasses");
+            for (JsonElement component : componentsJSON) {
+                inst.componentClasses.add(component.getAsString());
             }
         }
-        if (elm.get("versions") instanceof JSONObject) {
-            inst.versions = elm.getJSONObject("versions");
+        if (elm.has("versions") && elm.get("versions").isJsonObject()) {
+            inst.versions = elm.getAsJsonObject("versions");
         }
-        inst.name = elm.getString("name");
-        inst.description = elm.getString("description");
-        if (elm.containsKey("screenshotUrl")) {
-            inst.screenshot = elm.getString("screenshotUrl");
+        inst.name = getString(elm, "name");
+        inst.description = getString(elm, "description");
+        if (elm.has("screenshotUrl")) {
+            inst.screenshot = getString(elm, "screenshotUrl");
         }
-        inst.helpLink = elm.getString("helpUrl");
-        inst.vendor = elm.getString("vendor");
-        if (elm.containsKey("canUninstall")) {
-            inst.canUninstall = elm.getBoolean("canUninstall");
+        inst.helpLink = getString(elm, "helpUrl");
+        inst.vendor = getString(elm, "vendor");
+        if (elm.has("canUninstall")) {
+            inst.canUninstall = elm.get("canUninstall").getAsBoolean();
         }
-        if (elm.containsKey("installerClass")) {
-            inst.installerClass = elm.getString("installerClass");
+        if (elm.has("installerClass")) {
+            inst.installerClass = getString(elm, "installerClass");
         }
         return inst;
+    }
+
+    private static boolean isNull(JsonObject elm, String key) {
+        return elm.has(key) && elm.get(key).isJsonNull();
+    }
+
+    /**
+     * Reads a repo field as string, keeping the coercions the repo relies on: numbers and
+     * booleans stringify, and an explicit JSON null yields the literal "null" as json-lib did.
+     * A field that is absent altogether is a broken repo entry, so it fails loudly.
+     */
+    private static String getString(JsonObject elm, String key) {
+        JsonElement value = elm.get(key);
+        if (value == null) {
+            throw new IllegalArgumentException("Repository entry has no '" + key + "' field: " + elm);
+        }
+        return asString(value);
+    }
+
+    private static String asString(JsonElement value) {
+        return value.isJsonNull() ? "null" : value.getAsString();
+    }
+
+    /**
+     * A version whose body is absent or JSON null reads as an empty one, so callers see
+     * "no depends / no libs / no changes" instead of blowing up. That is what json-lib
+     * returned from getJSONObject() for such versions, and the repo does contain them.
+     *
+     * @return the body of given version, or an empty object when that version is absent or null
+     */
+    private JsonObject getVersionSpec(String verStr) {
+        JsonElement spec = (verStr == null) ? null : versions.get(verStr);
+        return (spec != null && spec.isJsonObject()) ? spec.getAsJsonObject() : new JsonObject();
     }
 
     @Override
@@ -145,7 +176,7 @@ public class Plugin {
     }
 
     public boolean isVersionFrozenToJMeter() {
-        return versions.containsKey("");
+        return versions.has("");
     }
 
     public String getMaxVersion() {
@@ -159,14 +190,11 @@ public class Plugin {
 
     public Set<String> getVersions() {
         Set<String> versions = new TreeSet<>(new VersionComparator());
-        for (Object o : this.versions.keySet()) {
-            if (o instanceof String) {
-                String ver = (String) o;
-                if (ver.isEmpty()) {
-                    versions.add(getJMeterVersion());
-                } else {
-                    versions.add(ver);
-                }
+        for (String ver : this.versions.keySet()) {
+            if (ver.isEmpty()) {
+                versions.add(getJMeterVersion());
+            } else {
+                versions.add(ver);
             }
         }
 
@@ -279,15 +307,22 @@ public class Plugin {
     public String getDownloadUrl(String version) {
         String location;
         if (isVersionFrozenToJMeter()) {
-            String downloadUrl = versions.getJSONObject("").getString("downloadUrl");
-            location = String.format(downloadUrl, getJMeterVersion());
+            location = String.format(readDownloadUrl(""), getJMeterVersion());
         } else {
-            if (!versions.containsKey(version)) {
+            if (!versions.has(version)) {
                 throw new IllegalArgumentException("Version " + version + " not found for plugin " + this);
             }
-            location = versions.getJSONObject(version).getString("downloadUrl");
+            location = readDownloadUrl(version);
         }
         return location;
+    }
+
+    private String readDownloadUrl(String verStr) {
+        JsonElement url = getVersionSpec(verStr).get("downloadUrl");
+        if (url == null) {
+            throw new IllegalArgumentException("Version " + verStr + " of plugin " + this + " has no downloadUrl");
+        }
+        return asString(url);
     }
 
     public String getName() {
@@ -337,18 +372,16 @@ public class Plugin {
 
     public Set<String> getDepends() {
         Set<String> depends = new HashSet<>();
-        JSONObject version = versions.getJSONObject(getCandidateVersion());
-        if (version.containsKey("depends")) {
-            JSONArray list = version.getJSONArray("depends");
-            for (Object o : list) {
-                if (o instanceof String) {
-                    String dep = (String) o;
-                    Matcher m = dependsParser.matcher(dep);
-                    if (!m.find()) {
-                        throw new IllegalArgumentException("Cannot parse depend str: " + dep);
-                    }
-                    depends.add(m.group(1));
+        JsonObject version = getVersionSpec(getCandidateVersion());
+        if (version.has("depends")) {
+            JsonArray list = version.getAsJsonArray("depends");
+            for (JsonElement o : list) {
+                String dep = asString(o);
+                Matcher m = dependsParser.matcher(dep);
+                if (!m.find()) {
+                    throw new IllegalArgumentException("Cannot parse depend str: " + dep);
                 }
+                depends.add(m.group(1));
             }
         }
         return depends;
@@ -356,14 +389,10 @@ public class Plugin {
 
     public Map<String, String> getLibs(String verStr) {
         Map<String, String> depends = new HashMap<>();
-        JSONObject version = versions.getJSONObject(isVersionFrozenToJMeter() ? "" : verStr);
-        if (version.containsKey("libs")) {
-            JSONObject list = version.getJSONObject("libs");
-            for (Object o : list.keySet()) {
-                if (o instanceof String) {
-                    String dep = (String) o;
-                    depends.put(dep, list.getString(dep));
-                }
+        JsonObject version = getVersionSpec(isVersionFrozenToJMeter() ? "" : verStr);
+        if (version.has("libs")) {
+            for (Map.Entry<String, JsonElement> lib : version.getAsJsonObject("libs").entrySet()) {
+                depends.put(lib.getKey(), asString(lib.getValue()));
             }
         }
         return depends;
@@ -381,9 +410,9 @@ public class Plugin {
     }
 
     public String getVersionChanges(String versionStr) {
-        JSONObject version = versions.getJSONObject(versionStr);
-        return version.containsKey("changes") ?
-                version.getString("changes") :
+        JsonObject version = getVersionSpec(versionStr);
+        return version.has("changes") ?
+                asString(version.get("changes")) :
                 null;
     }
 

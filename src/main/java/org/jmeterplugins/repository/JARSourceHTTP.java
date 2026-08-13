@@ -1,10 +1,8 @@
 package org.jmeterplugins.repository;
 
-import net.sf.json.JSON;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
-import net.sf.json.JsonConfig;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -140,7 +138,7 @@ public class JARSourceHTTP extends JARSource {
         return client;
     }
 
-    protected JSON getJSON(String uri) throws IOException {
+    protected JsonElement getJSON(String uri) throws IOException {
         log.info("Requesting " + uri);
 
         HttpRequestBase get = new HttpGet(uri);
@@ -169,7 +167,7 @@ public class JARSourceHTTP extends JARSource {
             }
 
             cacheRepo(response, result, uri);
-            return JSONSerializer.toJSON(response, new JsonConfig());
+            return JsonParser.parseString(response);
         } finally {
             get.abort();
             try {
@@ -265,29 +263,29 @@ public class JARSourceHTTP extends JARSource {
         return buffer.toString();
     }
 
-    protected JSONArray getRepositories(String path) throws IOException {
-        final List<JSON> repositories = new ArrayList<>(addresses.length);
+    protected JsonArray getRepositories(String path) throws IOException {
+        final List<JsonElement> repositories = new ArrayList<>(addresses.length);
         for (String address : addresses) {
             PluginsRepo repo = getRepoCache(address + path);
             if (repo != null && repo.isActual()) {
                 log.info("Found cached repo");
-                repositories.add(JSONSerializer.toJSON(repo.getRepoJSON(), new JsonConfig()));
+                repositories.add(JsonParser.parseString(repo.getRepoJSON()));
             } else {
                 repositories.add(getJSON(address + path));
             }
         }
 
-        final JSONArray result = new JSONArray();
+        final JsonArray result = new JsonArray();
         final List<String> pluginsIDs = new ArrayList<>();
 
-        for (JSON json : repositories) {
-            if (!(json instanceof JSONArray)) {
+        for (JsonElement json : repositories) {
+            if (json == null || !json.isJsonArray()) {
                 throw new RuntimeException("Result is not array");
             }
 
-            for (Object elm : (JSONArray) json) {
+            for (JsonElement elm : json.getAsJsonArray()) {
                 // resolve plugin-id conflicts
-                String id = ((JSONObject) elm).getString("id");
+                String id = elm.getAsJsonObject().get("id").getAsString();
                 if (!pluginsIDs.contains(id)) {
                     pluginsIDs.add(id);
                     result.add(elm);
@@ -300,7 +298,7 @@ public class JARSourceHTTP extends JARSource {
     }
 
     @Override
-    public JSON getRepo() throws IOException {
+    public JsonElement getRepo() throws IOException {
         return getRepositories("?installID=" + getInstallID());
     }
 
