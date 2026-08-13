@@ -208,6 +208,31 @@
                         <arguments>${arguments} -Psonatype-oss-release</arguments>
                     </configuration>
                 </plugin>
+                <!-- Pinned here, not only in the release profile below, because the publish
+                     command invokes `javadoc:jar source:jar gpg:sign` directly. Without this
+                     Maven resolves whatever is newest that day, so a release could break on a
+                     plugin nobody here upgraded. -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.3.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.11.2</version>
+                    <configuration>
+                        <!-- we document for humans, not for the JDK 8+ HTML validator. The old
+                             -Dadditionalparam=-Xdoclint:none is a javadoc 2.x switch that 3.x
+                             silently ignores, so the suppression has to live here. -->
+                        <doclint>none</doclint>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.2.7</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -225,7 +250,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.3.1</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -238,11 +262,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.11.2</version>
-                        <configuration>
-                            <!-- we document for humans, not for the JDK 8+ HTML validator -->
-                            <doclint>none</doclint>
-                        </configuration>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -255,7 +274,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>3.2.7</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
