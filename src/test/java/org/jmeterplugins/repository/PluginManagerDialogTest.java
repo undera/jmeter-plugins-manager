@@ -49,8 +49,9 @@ public class PluginManagerDialogTest {
     public void testFailDownload() throws Exception {
         if (!GraphicsEnvironment.getLocalGraphicsEnvironment().isHeadlessInstance()) {
             String addr = JMeterUtils.getPropDefault("jpgc.repo.address", "https://jmeter-plugins.org/repo/");
+            FailingHttpStub failing = new FailingHttpStub();
             try {
-                JMeterUtils.setProperty("jpgc.repo.address", "http://httpstat.us/500");
+                JMeterUtils.setProperty("jpgc.repo.address", failing.url());
                 PluginManager aManager = new PluginManager();
                 PluginManagerDialog frame = new PluginManagerDialog(aManager);
                 frame.componentShown(null);
@@ -68,6 +69,7 @@ public class PluginManagerDialogTest {
                 frame.actionPerformed(null);
             } finally {
                 JMeterUtils.setProperty("jpgc.repo.address", addr);
+                failing.close();
             }
         }
     }
