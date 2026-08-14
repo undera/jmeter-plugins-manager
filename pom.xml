@@ -212,6 +212,12 @@
                 <configuration>
                     <publishingServerId>central</publishingServerId>
                     <autoPublish>true</autoPublish>
+                    <!-- The plugin defaults to waiting only until VALIDATED, then prints
+                         "To finish publishing visit ..." whether or not autoPublish is set -
+                         which reads like the release stalled and needs a click, while Central
+                         is in fact already publishing it. Wait for the real end state so the
+                         build's success means the artifacts are published. -->
+                    <waitUntil>published</waitUntil>
                 </configuration>
             </plugin>
         </plugins>
