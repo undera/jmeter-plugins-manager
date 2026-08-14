@@ -141,12 +141,24 @@ public class TestPlanAnalyzer {
         }
     }
 
+    /**
+     * Answers whether a class from the test plan is available to JMeter. Only a genuinely absent
+     * class counts as missing: a class that is present but fails to link, or a failure of
+     * SaveService itself, means we cannot tell - and answering "missing" there would have us
+     * offer the user a plugin for every element of their test plan.
+     *
+     * @return false only when the class is definitely not on the classpath
+     */
     public static boolean isClassExists(String className) {
         try {
             Class.forName(SaveService.aliasToClass(className));
             return true;
-        } catch (ClassNotFoundException | NoClassDefFoundError e) {
+        } catch (ClassNotFoundException e) {
+            log.debug("Class is not available: " + className);
             return false;
+        } catch (LinkageError e) {
+            log.warn("Cannot tell whether class is available, assuming it is: " + className, e);
+            return true;
         }
     }
 }
