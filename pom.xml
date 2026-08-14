@@ -4,15 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>9</version>
-    </parent>
-
     <groupId>kg.apc</groupId>
     <artifactId>jmeter-plugins-manager</artifactId>
-    <version>1.12</version>
+    <version>2.0</version>
     <packaging>jar</packaging>
 
     <name>JMeter Plugins Manager</name>
@@ -42,24 +36,51 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <!-- referenced by maven-release-plugin's arguments below, as oss-parent used to declare it -->
+        <arguments/>
     </properties>
 
     <dependencies>
+        <!-- We are installed into JMeter's lib/ext and shade nothing but gson, so everything
+             below other than gson is supplied by the JMeter installation we run inside. Declaring
+             it `provided` keeps it on our compile and test classpath while keeping it out of the
+             published POM: at `compile` this single entry made us declare 161 transitive
+             artifacts (tika-parsers, POI, Spring, CXF, netcdf) as requirements on our consumers.
+             Its transitives are what we compile the rest of the code against, deliberately, so
+             that the classpath we build on is the one JMeter actually ships. -->
+        <dependency>
+            <groupId>org.apache.jmeter</groupId>
+            <artifactId>ApacheJMeter_core</artifactId>
+            <version>5.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- The exception to the rule above: JMeter 5.0 ships log4j 2.11.0, which is
+             Log4Shell-vulnerable, and we do not want that version in our build or in anyone's
+             scanner output. We pin ahead of JMeter and rely on JMeter's own copy at runtime.
+             That only works while our code stays compilable against the log4j of the oldest
+             JMeter we support - check that when raising this version. -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <version>2.26.1</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>2.26.1</version>
+            <scope>provided</scope>
         </dependency>
+        <!-- the slf4j binding: nothing compiles against it, tests need it to log at all -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.26.1</version>
+            <scope>test</scope>
         </dependency>
+
+        <!-- present only in JMeter 5.6+, hence the Class.forName guard in PluginIcon -->
         <dependency>
             <groupId>com.github.weisj</groupId>
             <artifactId>darklaf-property-loader</artifactId>
@@ -67,42 +88,27 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- supplied by the jmeter-plugins install, and it is what invokes PluginManagerCMD -->
         <dependency>
-            <groupId>org.apache.jmeter</groupId>
-            <artifactId>ApacheJMeter_core</artifactId>
-            <version>2.13</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-math3</groupId>
-                    <artifactId>commons-math3</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-pool2</groupId>
-                    <artifactId>commons-pool2</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>kg.apc</groupId>
+            <artifactId>cmdrunner</artifactId>
+            <version>2.3</version>
+            <scope>provided</scope>
         </dependency>
+
+        <!-- the only dependency we actually ship, shaded -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.14.0</version>
         </dependency>
 
+        <!-- supplies the DebugSampler that plugins-map.jmx references -->
         <dependency>
             <groupId>org.apache.jmeter</groupId>
-            <artifactId>ApacheJMeter_http</artifactId>
-            <version>2.13</version>
+            <artifactId>ApacheJMeter_components</artifactId>
+            <version>5.0</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-math3</groupId>
-                    <artifactId>commons-math3</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-pool2</groupId>
-                    <artifactId>commons-pool2</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>kg.apc</groupId>
@@ -110,10 +116,12 @@
             <version>0.5</version>
             <scope>test</scope>
         </dependency>
+        <!-- declared so we stop inheriting a compile-scoped junit through JMeter -->
         <dependency>
-            <groupId>kg.apc</groupId>
-            <artifactId>cmdrunner</artifactId>
-            <version>2.3</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
@@ -173,6 +181,14 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.15</version>
+                <configuration>
+                    <!-- instrument only our own code. Besides being what we measure, it avoids
+                         JMeter's transitive ph-css, whose generated parser has a method too
+                         large for JaCoCo to instrument at all. -->
+                    <includes>
+                        <include>org/jmeterplugins/**</include>
+                    </includes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -199,9 +215,99 @@
                 </configuration>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <!-- keeps `mvn release:perform` passing the release profile, as oss-parent did -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>3.1.1</version>
+                    <configuration>
+                        <mavenExecutorId>forked-path</mavenExecutorId>
+                        <useReleaseProfile>false</useReleaseProfile>
+                        <arguments>${arguments} -Psonatype-oss-release</arguments>
+                    </configuration>
+                </plugin>
+                <!-- Pinned here, not only in the release profile below, because the publish
+                     command invokes `javadoc:jar source:jar gpg:sign` directly. Without this
+                     Maven resolves whatever is newest that day, so a release could break on a
+                     plugin nobody here upgraded. -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.3.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.11.2</version>
+                    <configuration>
+                        <!-- we document for humans, not for the JDK 8+ HTML validator. The old
+                             -Dadditionalparam=-Xdoclint:none is a javadoc 2.x switch that 3.x
+                             silently ignores, so the suppression has to live here. -->
+                        <doclint>none</doclint>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.2.7</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
     <profiles>
+        <!-- Was inherited from org.sonatype.oss:oss-parent:9. Kept under the same id so any
+             existing release command keeps working. Central requires sources, javadoc and
+             signatures; the parent's distributionManagement is not reproduced, because it
+             pointed at the decommissioned oss.sonatype.org and central-publishing-maven-plugin
+             replaces it. -->
+        <profile>
+            <id>sonatype-oss-release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
         <!-- JMeter's own launcher opens these for Java 9+, and the JMeter 2.13-era xstream
              we compile against needs them to initialise SaveService under the module system -->
         <profile>
