@@ -2,6 +2,7 @@ package org.jmeterplugins.repository;
 
 import kg.apc.cmdtools.AbstractCMDTool;
 import org.apache.jmeter.util.JMeterUtils;
+import org.jmeterplugins.repository.logging.LoggingConfigurator;
 import org.jmeterplugins.repository.plugins.PluginSuggester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,27 +10,21 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Constructor;
 import java.net.URLDecoder;
 import java.util.*;
 
-import static org.jmeterplugins.repository.logging.LoggingHooker.isJMeter32orLater;
 
 public class PluginManagerCMD extends AbstractCMDTool implements GenericCallback<String> {
     private static final Logger log = LoggerFactory.getLogger(PluginManagerCMD.class);
 
     public PluginManagerCMD() {
         setJMeterHome();
-        if (isJMeter32orLater()) {
-            configureCMDLogging();
-        }
+        configureCMDLogging();
     }
 
     private void configureCMDLogging() {
         try {
-            Class cls = Class.forName("org.jmeterplugins.repository.logging.LoggingConfigurator");
-            Constructor constructor = cls.getConstructor();
-            constructor.newInstance();
+            new LoggingConfigurator();
         } catch (Throwable ex) {
             System.out.println("Fail to configure logging " + ex.getMessage());
             ex.printStackTrace(System.out);

@@ -6,7 +6,7 @@
 
     <groupId>kg.apc</groupId>
     <artifactId>jmeter-plugins-manager</artifactId>
-    <version>1.12</version>
+    <version>2.0</version>
     <packaging>jar</packaging>
 
     <name>JMeter Plugins Manager</name>
@@ -41,21 +41,46 @@
     </properties>
 
     <dependencies>
+        <!-- We are installed into JMeter's lib/ext and shade nothing but gson, so everything
+             below other than gson is supplied by the JMeter installation we run inside. Declaring
+             it `provided` keeps it on our compile and test classpath while keeping it out of the
+             published POM: at `compile` this single entry made us declare 161 transitive
+             artifacts (tika-parsers, POI, Spring, CXF, netcdf) as requirements on our consumers.
+             Its transitives are what we compile the rest of the code against, deliberately, so
+             that the classpath we build on is the one JMeter actually ships. -->
+        <dependency>
+            <groupId>org.apache.jmeter</groupId>
+            <artifactId>ApacheJMeter_core</artifactId>
+            <version>5.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- The exception to the rule above: JMeter 5.0 ships log4j 2.11.0, which is
+             Log4Shell-vulnerable, and we do not want that version in our build or in anyone's
+             scanner output. We pin ahead of JMeter and rely on JMeter's own copy at runtime.
+             That only works while our code stays compilable against the log4j of the oldest
+             JMeter we support - check that when raising this version. -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <version>2.26.1</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>2.26.1</version>
+            <scope>provided</scope>
         </dependency>
+        <!-- the slf4j binding: nothing compiles against it, tests need it to log at all -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>2.26.1</version>
+            <scope>test</scope>
         </dependency>
+
+        <!-- present only in JMeter 5.6+, hence the Class.forName guard in PluginIcon -->
         <dependency>
             <groupId>com.github.weisj</groupId>
             <artifactId>darklaf-property-loader</artifactId>
@@ -63,42 +88,27 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- supplied by the jmeter-plugins install, and it is what invokes PluginManagerCMD -->
         <dependency>
-            <groupId>org.apache.jmeter</groupId>
-            <artifactId>ApacheJMeter_core</artifactId>
-            <version>2.13</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-math3</groupId>
-                    <artifactId>commons-math3</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-pool2</groupId>
-                    <artifactId>commons-pool2</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>kg.apc</groupId>
+            <artifactId>cmdrunner</artifactId>
+            <version>2.3</version>
+            <scope>provided</scope>
         </dependency>
+
+        <!-- the only dependency we actually ship, shaded -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.14.0</version>
         </dependency>
 
+        <!-- supplies the DebugSampler that plugins-map.jmx references -->
         <dependency>
             <groupId>org.apache.jmeter</groupId>
-            <artifactId>ApacheJMeter_http</artifactId>
-            <version>2.13</version>
+            <artifactId>ApacheJMeter_components</artifactId>
+            <version>5.0</version>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-math3</groupId>
-                    <artifactId>commons-math3</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-pool2</groupId>
-                    <artifactId>commons-pool2</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>kg.apc</groupId>
@@ -106,10 +116,12 @@
             <version>0.5</version>
             <scope>test</scope>
         </dependency>
+        <!-- declared so we stop inheriting a compile-scoped junit through JMeter -->
         <dependency>
-            <groupId>kg.apc</groupId>
-            <artifactId>cmdrunner</artifactId>
-            <version>2.3</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
@@ -169,6 +181,14 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.15</version>
+                <configuration>
+                    <!-- instrument only our own code. Besides being what we measure, it avoids
+                         JMeter's transitive ph-css, whose generated parser has a method too
+                         large for JaCoCo to instrument at all. -->
+                    <includes>
+                        <include>org/jmeterplugins/**</include>
+                    </includes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

@@ -31,7 +31,7 @@ public class PluginTest {
         PluginMock obj = new PluginMock();
         obj.setMarkerClass(JMeterEngine.class.getCanonicalName());
         obj.detectInstalled(new HashSet<Plugin>());
-        assertEquals("2.13", obj.getCandidateVersion());
+        assertEquals(Plugin.getJMeterVersion(), obj.getCandidateVersion());
     }
 
     @Test

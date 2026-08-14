@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import java.net.URL;
 
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 public class LoggingHookerTest {
 
@@ -20,15 +20,10 @@ public class LoggingHookerTest {
         JMeterUtils.setProperty("jpgc.repo.address", url.getFile());
     }
 
-    /**
-     * For logging in JMeter 2.13-3.1
-     */
     @Test
-    public void testFlowOld() throws Exception {
+    public void testHooksLog4jAppender() throws Exception {
         LoggingHooker hooker = new LoggingHooker(new PluginManager());
         hooker.hook();
-        assertFalse(hooker.isJMeter32orLater());
+        assertNotNull(org.apache.logging.log4j.LogManager.getContext(false));
     }
-
-
 }
