@@ -9,15 +9,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.reflect.Field;
-import java.net.InetSocketAddress;
 import java.net.URL;
 
 import static org.junit.Assert.*;
@@ -103,18 +97,19 @@ public class PluginManagerTest {
 
     @Test
     public void testApplyChanges() throws Exception {
+        FailingHttpStub failing = new FailingHttpStub();
         String imgPath = "file:///" + new File(".").getAbsolutePath() + "/target/classes/org/jmeterplugins/logo.png";
         String str = "{\"id\": 0,  \"markerClass\": \"" + PluginsListTest.class.getName() + "\"," +
                 " \"screenshotUrl\": \"" + imgPath + "\", \"name\": 3, \"description\": 4, \"helpUrl\": 5, \"vendor\": 5, \"installerClass\": \"test\", " +
                 "\"versions\" : { \"0.1\" : { \"changes\": \"fix verified exception1\" }," +
                 "\"0.2\" : { \"changes\": \"fix verified exception1\", \"libs\": {\n" +
-                "          \"jpgc-common\": \"http://httpstat.us/500\"\n" +
+                "          \"jpgc-common\": \"" + failing.url() + "\"\n" +
                 "        }}," +
-                "\"0.3\" : { \"changes\": \"fix verified exception1\", \"downloadUrl\": \"http://httpstat.us/500\" } }}";
+                "\"0.3\" : { \"changes\": \"fix verified exception1\", \"downloadUrl\": \"" + failing.url() + "\" } }}";
 
         String addr = JMeterUtils.getPropDefault("jpgc.repo.address", "https://jmeter-plugins.org/repo/");
         try {
-            JMeterUtils.setProperty("jpgc.repo.address", "http://httpstat.us/500");
+            JMeterUtils.setProperty("jpgc.repo.address", failing.url());
 
             Plugin p = Plugin.fromJSON(JsonParser.parseString(str).getAsJsonObject());
             PluginManager manager = new PluginManager();
@@ -162,27 +157,16 @@ public class PluginManagerTest {
 
         } finally {
             JMeterUtils.setProperty("jpgc.repo.address", addr);
+            failing.close();
         }
     }
 
     @Test
     public void testRetryDownload() throws Throwable {
-        // a local stub, so this does not depend on a third-party host being up and truthful
-        HttpServer server = HttpServer.create(new InetSocketAddress("localhost", 0), 0);
-        server.createContext("/", new HttpHandler() {
-            @Override
-            public void handle(HttpExchange exchange) throws IOException {
-                byte[] body = "failed on purpose".getBytes();
-                exchange.sendResponseHeaders(500, body.length);
-                try (OutputStream out = exchange.getResponseBody()) {
-                    out.write(body);
-                }
-            }
-        });
-        server.start();
+        FailingHttpStub server = new FailingHttpStub();
 
         String addr = JMeterUtils.getPropDefault("jpgc.repo.address", "https://jmeter-plugins.org/repo/");
-        JMeterUtils.setProperty("jpgc.repo.address", "http://localhost:" + server.getAddress().getPort() + "/");
+        JMeterUtils.setProperty("jpgc.repo.address", server.url());
         PluginManager mgr = new PluginManager();
         long start = System.currentTimeMillis();
         try {
@@ -193,7 +177,7 @@ public class PluginManagerTest {
 
         } finally {
             JMeterUtils.setProperty("jpgc.repo.address", addr);
-            server.stop(0);
+            server.close();
         }
         // one retry, 5s apart, before giving up
         assertTrue(5000 < (System.currentTimeMillis() - start));
